@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Inwazja Add-on | Modułowy Loader
 // @namespace    http://tampermonkey.net/
-// @version      2.0.0
+// @version      2.0.1
 // @description  Ładuje moduły Inwazja Add-on z GitHub Pages
 // @author       Anon
 // @match        *://*.margonem.pl/*
@@ -11,17 +11,13 @@
 (function() {
     'use strict';
     
-    const BASE_URL = "https://twojanazwa.github.io/inwazja-addon/modules/";
-    const VERSION = "2.0.0";
+    const BASE_URL = "https://inwazja-margonem.github.io/inwazja-addon/";
+    const VERSION = "2.0.1";
     
     const modules = [
         "core-ui.js",
-        "auto-message.js", 
-        "inventory.js",
-        "clan.js",
-        "skills.js",
-        "quests.js",
-        "settings.js"
+        "auto-message.js"
+        // Pozostałe moduły dodamy później
     ];
     
     function loadModule(moduleName) {
@@ -51,7 +47,7 @@
             }
         }
         
-        console.log('🎉 Inwazja Add-on: wszystkie moduły załadowane');
+        console.log('🎉 Inwazja Add-on: moduły załadowane');
     }
     
     // Zaczekaj aż strona się załadze
