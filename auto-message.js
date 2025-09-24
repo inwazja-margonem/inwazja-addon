@@ -1,4 +1,4 @@
-// modules/auto-message.js
+// auto-message.js
 (function() {
     'use strict';
     
@@ -12,8 +12,14 @@
             return;
         }
         
-        function showAutoMessage(content, title, subtitle) {
+        function showAutoMessage(title, subtitle) {
             const cfg = window.inwazjaConfig;
+            const content = document.getElementById('inwazja-content');
+            
+            if (!content) {
+                setTimeout(() => showAutoMessage(title, subtitle), 100);
+                return;
+            }
             
             content.innerHTML = `
                 <div class="auto-container">
@@ -127,6 +133,8 @@
 
             // Funkcja aktualizacji listy ignorowanych graczy
             function updateIgnoreList() {
+                if (!ignoreList) return;
+                
                 ignoreList.innerHTML = cfg.ignoredPlayers.map(player => `
                     <div class="ignore-item">
                         <span class="ignore-player">${player}</span>
@@ -141,150 +149,167 @@
                         cfg.ignoredPlayers = cfg.ignoredPlayers.filter(p => p !== playerToRemove);
                         window.inwazjaSaveConfig(cfg);
                         updateIgnoreList();
-                        ignoreLimit.classList.toggle('show', cfg.ignoredPlayers.length >= 5);
+                        if (ignoreLimit) ignoreLimit.classList.toggle('show', cfg.ignoredPlayers.length >= 5);
                     });
                 });
             }
 
             // Obsługa zakładek wiadomości
-            messageTabs.querySelectorAll('.message-tab').forEach(tab => {
-                tab.addEventListener('click', () => {
-                    const tabIndex = parseInt(tab.dataset.tab);
+            if (messageTabs) {
+                messageTabs.querySelectorAll('.message-tab').forEach(tab => {
+                    tab.addEventListener('click', () => {
+                        const tabIndex = parseInt(tab.dataset.tab);
 
-                    // Zapisz aktualną wiadomość przed zmianą zakładki
-                    cfg.autoMessages[cfg.currentMessageTab] = autoMessageText.value;
+                        // Zapisz aktualną wiadomość przed zmianą zakładki
+                        cfg.autoMessages[cfg.currentMessageTab] = autoMessageText.value;
 
-                    // Zmień zakładkę
-                    cfg.currentMessageTab = tabIndex;
+                        // Zmień zakładkę
+                        cfg.currentMessageTab = tabIndex;
 
-                    // Zaktualizuj UI
-                    messageTabs.querySelectorAll('.message-tab').forEach(t => t.classList.remove('active'));
-                    tab.classList.add('active');
+                        // Zaktualizuj UI
+                        messageTabs.querySelectorAll('.message-tab').forEach(t => t.classList.remove('active'));
+                        tab.classList.add('active');
 
-                    // Załaduj wiadomość z nowej zakładki
-                    autoMessageText.value = cfg.autoMessages[tabIndex] || '';
-                    autoPreview.textContent = cfg.autoMessages[tabIndex] || 'Brak wiadomości...';
+                        // Załaduj wiadomość z nowej zakładki
+                        autoMessageText.value = cfg.autoMessages[tabIndex] || '';
+                        if (autoPreview) autoPreview.textContent = cfg.autoMessages[tabIndex] || 'Brak wiadomości...';
 
-                    // Zaktualizuj informację o zakładce
-                    const infoElement = autoMessageText.nextElementSibling;
-                    if (infoElement && infoElement.classList.contains('auto-info')) {
-                        infoElement.textContent = `Maksymalnie 200 znaków | Zakładka ${tabIndex + 1}/5`;
-                    }
+                        // Zaktualizuj informację o zakładce
+                        const infoElement = autoMessageText.nextElementSibling;
+                        if (infoElement && infoElement.classList.contains('auto-info')) {
+                            infoElement.textContent = `Maksymalnie 200 znaków | Zakładka ${tabIndex + 1}/5`;
+                        }
 
-                    const previewTitle = autoPreview.previousElementSibling;
-                    if (previewTitle) {
-                        previewTitle.textContent = `Podgląd wiadomości (zakładka ${tabIndex + 1}):`;
-                    }
+                        const previewTitle = autoPreview ? autoPreview.previousElementSibling : null;
+                        if (previewTitle) {
+                            previewTitle.textContent = `Podgląd wiadomości (zakładka ${tabIndex + 1}):`;
+                        }
 
-                    window.inwazjaSaveConfig(cfg);
+                        window.inwazjaSaveConfig(cfg);
+                    });
                 });
-            });
+            }
 
             // Przycisk czyszczenia aktualnej zakładki
-            clearButton.addEventListener('click', () => {
-                cfg.autoMessages[cfg.currentMessageTab] = '';
-                autoMessageText.value = '';
-                autoPreview.textContent = 'Brak wiadomości...';
-                window.inwazjaSaveConfig(cfg);
-            });
+            if (clearButton) {
+                clearButton.addEventListener('click', () => {
+                    cfg.autoMessages[cfg.currentMessageTab] = '';
+                    autoMessageText.value = '';
+                    if (autoPreview) autoPreview.textContent = 'Brak wiadomości...';
+                    window.inwazjaSaveConfig(cfg);
+                });
+            }
 
             // Toggle głównego skryptu
-            autoToggle.addEventListener('click', () => {
-                cfg.autoEnabled = !cfg.autoEnabled;
-                autoToggle.classList.toggle('active');
-                autoStatusText.textContent = `Status skryptu: ${cfg.autoEnabled ? 'AKTYWNY' : 'NIEAKTYWNY'}`;
-                autoStatusText.className = `status-text ${cfg.autoEnabled ? 'active' : 'inactive'}`;
-                window.inwazjaSaveConfig(cfg);
-            });
+            if (autoToggle) {
+                autoToggle.addEventListener('click', () => {
+                    cfg.autoEnabled = !cfg.autoEnabled;
+                    autoToggle.classList.toggle('active');
+                    if (autoStatusText) {
+                        autoStatusText.textContent = `Status skryptu: ${cfg.autoEnabled ? 'AKTYWNY' : 'NIEAKTYWNY'}`;
+                        autoStatusText.className = `status-text ${cfg.autoEnabled ? 'active' : 'inactive'}`;
+                    }
+                    window.inwazjaSaveConfig(cfg);
+                });
+            }
 
             // Textarea wiadomości
-            autoMessageText.addEventListener('input', (e) => {
-                const message = e.target.value.slice(0, 200);
-                e.target.value = message;
-                cfg.autoMessages[cfg.currentMessageTab] = message;
-                autoPreview.textContent = message || 'Brak wiadomości...';
-                window.inwazjaSaveConfig(cfg);
-            });
+            if (autoMessageText) {
+                autoMessageText.addEventListener('input', (e) => {
+                    const message = e.target.value.slice(0, 200);
+                    e.target.value = message;
+                    cfg.autoMessages[cfg.currentMessageTab] = message;
+                    if (autoPreview) autoPreview.textContent = message || 'Brak wiadomości...';
+                    window.inwazjaSaveConfig(cfg);
+                });
+            }
 
             // Checkbox powtarzania wiadomości
-            repeatCheckbox.addEventListener('click', () => {
-                cfg.repeatMessage = !cfg.repeatMessage;
-                repeatCheckbox.classList.toggle('checked');
-                repeatLabel.textContent = `Powtarzaj wiadomość: ${cfg.repeatMessage ? 'AKTYWNE' : 'NIEAKTYWNE'}`;
-                repeatLabel.className = `checkbox-label ${cfg.repeatMessage ? 'checked' : ''}`;
-                window.inwazjaSaveConfig(cfg);
-            });
+            if (repeatCheckbox) {
+                repeatCheckbox.addEventListener('click', () => {
+                    cfg.repeatMessage = !cfg.repeatMessage;
+                    repeatCheckbox.classList.toggle('checked');
+                    if (repeatLabel) {
+                        repeatLabel.textContent = `Powtarzaj wiadomość: ${cfg.repeatMessage ? 'AKTYWNE' : 'NIEAKTYWNE'}`;
+                        repeatLabel.className = `checkbox-label ${cfg.repeatMessage ? 'checked' : ''}`;
+                    }
+                    window.inwazjaSaveConfig(cfg);
+                });
+            }
 
             // Toggle harmonogramu
-            scheduleToggle.addEventListener('click', () => {
-                cfg.scheduleEnabled = !cfg.scheduleEnabled;
-                scheduleToggle.classList.toggle('active');
-                scheduleStart.disabled = !cfg.scheduleEnabled;
-                scheduleEnd.disabled = !cfg.scheduleEnabled;
-                window.inwazjaSaveConfig(cfg);
-            });
+            if (scheduleToggle) {
+                scheduleToggle.addEventListener('click', () => {
+                    cfg.scheduleEnabled = !cfg.scheduleEnabled;
+                    scheduleToggle.classList.toggle('active');
+                    if (scheduleStart) scheduleStart.disabled = !cfg.scheduleEnabled;
+                    if (scheduleEnd) scheduleEnd.disabled = !cfg.scheduleEnabled;
+                    window.inwazjaSaveConfig(cfg);
+                });
+            }
 
             // Zmiana godzin harmonogramu
-            scheduleStart.addEventListener('change', (e) => {
-                cfg.scheduleStart = e.target.value;
-                window.inwazjaSaveConfig(cfg);
-            });
+            if (scheduleStart) {
+                scheduleStart.addEventListener('change', (e) => {
+                    cfg.scheduleStart = e.target.value;
+                    window.inwazjaSaveConfig(cfg);
+                });
+            }
 
-            scheduleEnd.addEventListener('change', (e) => {
-                cfg.scheduleEnd = e.target.value;
-                window.inwazjaSaveConfig(cfg);
-            });
+            if (scheduleEnd) {
+                scheduleEnd.addEventListener('change', (e) => {
+                    cfg.scheduleEnd = e.target.value;
+                    window.inwazjaSaveConfig(cfg);
+                });
+            }
 
             // Dodawanie graczy do listy ignorowanych
-            ignoreInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    const playerName = ignoreInput.value.trim();
-                    if (playerName) {
-                        if (cfg.ignoredPlayers.length >= 5) {
-                            // Pokazujemy komunikat o limicie
-                            ignoreLimit.classList.add('show');
-                            return;
-                        }
+            if (ignoreInput) {
+                ignoreInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        const playerName = ignoreInput.value.trim();
+                        if (playerName) {
+                            if (cfg.ignoredPlayers.length >= 5) {
+                                if (ignoreLimit) ignoreLimit.classList.add('show');
+                                return;
+                            }
 
-                        if (!cfg.ignoredPlayers.includes(playerName)) {
-                            cfg.ignoredPlayers.push(playerName);
-                            window.inwazjaSaveConfig(cfg);
-                            ignoreInput.value = '';
-                            updateIgnoreList();
-                            ignoreLimit.classList.toggle('show', cfg.ignoredPlayers.length >= 5);
+                            if (!cfg.ignoredPlayers.includes(playerName)) {
+                                cfg.ignoredPlayers.push(playerName);
+                                window.inwazjaSaveConfig(cfg);
+                                ignoreInput.value = '';
+                                updateIgnoreList();
+                                if (ignoreLimit) ignoreLimit.classList.toggle('show', cfg.ignoredPlayers.length >= 5);
+                            }
                         }
                     }
-                }
-            });
+                });
+            }
 
             // Inicjalizacja
-            autoPreview.textContent = cfg.autoMessages[cfg.currentMessageTab] || 'Brak wiadomości...';
+            if (autoPreview) autoPreview.textContent = cfg.autoMessages[cfg.currentMessageTab] || 'Brak wiadomości...';
             updateIgnoreList();
         }
         
         // Nasłuchuj zmiany modułu
         window.addEventListener('inwazjaModuleChange', (event) => {
             if (event.detail.moduleId === 'auto-message') {
-                const content = document.getElementById('inwazja-content');
-                if (content) {
-                    showAutoMessage(content, event.detail.title, event.detail.subtitle);
-                }
+                console.log('📢 Auto-message: otrzymano event zmiany modułu');
+                showAutoMessage(event.detail.title, event.detail.subtitle);
             }
         });
         
         // Jeśli auto-message jest aktywnym tabem przy starcie
         if (window.inwazjaConfig.activeTab === 'auto-message') {
+            console.log('🔍 Auto-message: aktywny tab przy starcie');
             setTimeout(() => {
-                const content = document.getElementById('inwazja-content');
-                if (content) {
-                    showAutoMessage(content, 'Auto-message', 'Skrypt na automatyczne odpisywanie graczom podczas nieobecności.');
-                }
-            }, 500);
+                showAutoMessage('Auto-message', 'Skrypt na automatyczne odpisywanie graczom podczas nieobecności.');
+            }, 1000);
         }
         
-        console.log('✅ Inwazja Add-on: Auto-message załadowany');
+        console.log('✅ Inwazja Add-on: Auto-message zainicjalizowany');
     }
     
     // Opóźnij inicjalizację aby core UI na pewno był gotowy
-    setTimeout(initAutoMessage, 50);
+    setTimeout(initAutoMessage, 500);
 })();
