@@ -1,663 +1,845 @@
-// auto-message.js
+// core-ui.js
 (function() {
     'use strict';
     
-    if (window.inwazjaAutoMessageLoaded) return;
-    window.inwazjaAutoMessageLoaded = true;
+    if (window.inwazjaCoreLoaded) return;
+    window.inwazjaCoreLoaded = true;
     
-    const autoMessageCSS = `
-.auto-container {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    padding: 8px;
-}
+    /**********************
+     *  Ustawienia i storage
+     **********************/
+    const STORAGE_KEY = 'inwazjaAddonConfig_v2_0';
+    
+    // Domyślne ustawienia
+    const DEFAULT_CFG = {
+        pos: null,
+        size: { width: 800, height: 600 },
+        iconPos: null,
+        opacity: 1.0,
+        autoMessages: ["", "", "", "", ""],
+        currentMessageTab: 0,
+        autoEnabled: false,
+        repeatMessage: false,
+        scheduleEnabled: false,
+        scheduleStart: "08:00",
+        scheduleEnd: "22:00",
+        ignoredPlayers: [],
+        activeTab: null,
+        firstRun: true
+    };
+    
+    function loadConfig() {
+        try {
+            const raw = localStorage.getItem(STORAGE_KEY);
+            if (!raw) return Object.assign({}, DEFAULT_CFG);
+            const loaded = Object.assign({}, DEFAULT_CFG, JSON.parse(raw || '{}'));
+            
+            if (!loaded.autoMessages || loaded.autoMessages.length !== 5) {
+                loaded.autoMessages = ["", "", "", "", ""];
+            }
+            
+            if (!Array.isArray(loaded.ignoredPlayers)) {
+                loaded.ignoredPlayers = [];
+            }
+            
+            return loaded;
+        } catch (e) {
+            console.warn('Inwazja: błąd wczytywania configu', e);
+            return Object.assign({}, DEFAULT_CFG);
+        }
+    }
+    
+    function saveConfig(cfg) {
+        try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(cfg));
+        } catch (e) {
+            console.warn('Inwazja: błąd zapisu configu', e);
+        }
+    }
+    
+    // Globalny config dostępny dla wszystkich modułów
+    window.inwazjaConfig = loadConfig();
+    window.inwazjaSaveConfig = saveConfig;
+    
+    /**********************
+     *  Stałe kolory
+     **********************/
+    const DEFAULT_COLOR = { r: 36, g: 36, b: 36 };
+    const DEFAULT_GLOW = 'rgba(120, 120, 120, 0.6)';
+    let currentOpacity = typeof window.inwazjaConfig.opacity === 'number' ? window.inwazjaConfig.opacity : 1.0;
+    
+    /**********************
+     *  CSS (stylowanie)
+     **********************/
+    const css = `
+    /* --- ikona --- */
+    #inwazja-icon {
+        position: fixed;
+        left: 20px; top: 20px;
+        width: 130px;
+        height: 36px;
+        padding: 6px 10px;
+        background: rgba(12,12,12,0.95);
+        border: 2px solid rgba(255,255,255,0.06);
+        border-radius: 8px;
+        color: #fff;
+        font-weight: 700;
+        font-size: 13px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap:8px;
+        cursor: pointer;
+        z-index: 2147483005;
+        user-select: none;
+        transition: transform 0.12s ease, box-shadow .12s ease, border-color .16s ease;
+        box-sizing: border-box;
+    }
+    #inwazja-icon.dragging { transform: none !important; transition: none !important; }
 
-.message-tabs-container {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 10px;
-}
+    #inwazja-icon:hover {
+        transform: translateY(-3px) scale(1.02);
+        box-shadow: 0 10px 22px rgba(0,0,0,0.6);
+    }
 
-.message-tabs {
-    display: flex;
-    gap: 4px;
-}
+    /* --- okno (panel) --- */
+    #inwazja-panel {
+        position: fixed;
+        z-index: 2147483004;
+        min-width: 600px;
+        min-height: 400px;
+        width: ${window.inwazjaConfig.size?.width || 800}px;
+        height: ${window.inwazjaConfig.size?.height || 600}px;
+        border-radius: 10px;
+        overflow: hidden;
+        display: none;
+        flex-direction: column;
+        color: #eaeff5;
+        font-family: Inter, "Segoe UI", Roboto, Arial, sans-serif;
+        box-shadow: 0 36px 80px rgba(0,0,0,0.6);
+        -webkit-user-select: none;
+        user-select: none;
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(.98);
+        transition: opacity .22s ease, transform .22s ease;
+        pointer-events: auto;
+        border: 1px solid rgba(255,255,255,0.03);
+        box-sizing: border-box;
+    }
+    #inwazja-panel.ia-visible { display:flex; opacity: 1; transform: translate(0, 0) scale(1); }
 
-.message-tab {
-    padding: 6px 12px;
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 12px;
-    font-weight: 600;
-    transition: all 0.3s ease;
-    min-width: 30px;
-    text-align: center;
-}
+    /* header */
+    #inwazja-header {
+        height: 40px;
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        padding: 0 10px;
+        gap:8px;
+        cursor: move;
+        background: rgba(0,0,0,0.18);
+        border-bottom: 1px solid rgba(255,255,255,0.02);
+    }
+    #inwazja-header .title {
+        font-weight:800;
+        font-size:13px;
+        display:flex;
+        align-items:center;
+        gap:8px;
+    }
+    #inwazja-header .version {
+        opacity: 0.7;
+        font-size: 11px;
+        margin-left: 8px;
+        padding-left: 8px;
+        border-left: 1px solid rgba(255,255,255,0.2);
+    }
+    #inwazja-controls { display:flex; align-items:center; gap:6px; }
 
-.message-tab:hover {
-    background: rgba(255,255,255,0.08);
-    border-color: rgba(255,255,255,0.2);
-}
+    .ia-btn { background:transparent; border:none; color:inherit; padding:4px 6px; border-radius:4px; cursor:pointer; font-size:13px; transition: background 0.2s ease; }
+    .ia-btn:hover { background: rgba(255,255,255,0.02); }
+    .ia-btn.active { background: rgba(100, 200, 255, 0.2); }
 
-.message-tab.active {
-    background: rgba(100, 255, 100, 0.2);
-    border-color: rgba(100, 255, 100, 0.5);
-    color: #4CAF50;
-}
+    #inwazja-close {
+        color: #d6d6d6;
+        border:1px solid rgba(255,255,255,0.03);
+        padding:4px 6px;
+        border-radius:4px;
+        transition: all 0.2s ease;
+    }
+    #inwazja-close:hover {
+        color:#ff6b6b;
+        background: rgba(255,107,107,0.1);
+        border-color: rgba(255,107,107,0.3);
+    }
 
-.clear-button {
-    padding: 4px 8px;
-    background: rgba(255,100,100,0.1);
-    border: 1px solid rgba(255,100,100,0.3);
-    border-radius: 4px;
-    color: #ff6b6b;
-    font-size: 11px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
+    /* --- SUWAK PRZEZROCZYSTOŚCI --- */
+    #inwazja-opacity {
+        width: 80px;
+        height: 5px;
+        background: rgba(255,255,255,0.1);
+        border-radius: 3px;
+        outline: none;
+        cursor: pointer;
+        -webkit-appearance: none;
+        margin: 0;
+        padding: 0;
+    }
 
-.clear-button:hover {
-    background: rgba(255,100,100,0.2);
-    border-color: rgba(255,100,100,0.5);
-}
+    #inwazja-opacity::-webkit-slider-runnable-track {
+        width: 100%;
+        height: 5px;
+        background: rgba(255,255,255,0.1);
+        border-radius: 3px;
+        border: none;
+    }
 
-.message-content {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
+    #inwazja-opacity::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        width: 14px;
+        height: 14px;
+        background: #000000;
+        border-radius: 50%;
+        border: 2px solid rgba(255,255,255,0.3);
+        cursor: pointer;
+        margin-top: -4.5px;
+    }
 
-.auto-status {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 10px;
-    background: rgba(255,255,255,0.02);
-    border-radius: 6px;
-    border: 1px solid rgba(255,255,255,0.05);
-}
+    #inwazja-opacity::-moz-range-track {
+        width: 100%;
+        height: 5px;
+        background: rgba(255,255,255,0.1);
+        border-radius: 3px;
+        border: none;
+    }
 
-.status-text {
-    font-size:12px;
-    transition: color 0.3s ease;
-}
+    #inwazja-opacity::-moz-range-thumb {
+        width: 14px;
+        height: 14px;
+        background: #000000;
+        border-radius: 50%;
+        border: 2px solid rgba(255,255,255,0.3);
+        cursor: pointer;
+    }
 
-.status-text.active {
-    color: #4CAF50;
-}
+    /* body: kafelki + content */
+    #inwazja-body {
+        display:flex;
+        flex:1;
+        gap:12px;
+        padding:10px;
+        box-sizing:border-box;
+        overflow: hidden;
+        height: calc(100% - 70px);
+    }
 
-.status-text.inactive {
-    color: #f44336;
-}
+    #inwazja-tiles {
+        width: 200px;
+        flex-shrink:0;
+        display:grid;
+        grid-template-columns: 1fr;
+        gap:8px;
+        overflow-y: auto;
+        overflow-x: hidden;
+        max-height: 100%;
+    }
 
-.auto-toggle {
-    position: relative;
-    width: 45px;
-    height: 22px;
-    background: rgba(255,255,255,0.1);
-    border-radius: 11px;
-    cursor: pointer;
-    transition: background 0.3s ease;
-}
+    .inwazja-tile {
+        border-radius:8px;
+        padding:8px 10px;
+        min-height: 50px;
+        height: auto;
+        display:flex;
+        flex-direction:column;
+        justify-content:center;
+        background: linear-gradient(180deg, rgba(255,255,255,0.015), rgba(0,0,0,0.05));
+        border:1px solid rgba(255,255,255,0.02);
+        transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+        position:relative;
+        overflow:hidden;
+        cursor:pointer;
+    }
 
-.auto-toggle.active {
-    background: rgba(100, 255, 100, 0.3);
-}
+    .inwazja-tile:hover {
+        transform: translateY(-1px) scale(1.005);
+        box-shadow: 0 4px 10px var(--inwazja-glow, rgba(255,255,255,0.03));
+        border-color: color-mix(in srgb, var(--inwazja-glow, rgba(255,255,255,0.06)) 20%, rgba(255,255,255,0.02));
+    }
 
-.auto-toggle::before {
-    content: '';
-    position: absolute;
-    top: 1px;
-    left: 1px;
-    width: 20px;
-    height: 20px;
-    background: rgba(255,255,255,0.8);
-    border-radius: 50%;
-    transition: transform 0.3s ease;
-}
+    #inwazja-content {
+        flex:1;
+        padding:8px;
+        overflow: auto;
+        border-radius:6px;
+        overflow-x: hidden;
+        max-height: 100%;
+    }
 
-.auto-toggle.active::before {
-    transform: translateX(23px);
-    background: rgba(100, 255, 100, 1);
-}
+    /* footer */
+    #inwazja-footer {
+        height:30px;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        padding:4px 8px;
+        border-top:1px solid rgba(255,255,255,0.02);
+        font-size:11px;
+        opacity:0.95;
+        background: rgba(0,0,0,0.06);
+    }
 
-.checkbox-container {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 8px;
-    background: rgba(255,255,255,0.02);
-    border-radius: 6px;
-    border: 1px solid rgba(255,255,255,0.05);
-}
+    /* resizer */
+    #inwazja-resizer {
+        position:absolute;
+        right:6px;
+        bottom:6px;
+        width:14px;
+        height:14px;
+        cursor: se-resize;
+        border-radius:2px;
+        z-index:2147483010;
+        background: linear-gradient(135deg, transparent 50%, rgba(255,255,255,0.3) 50%);
+        border: 1px solid rgba(255,255,255,0.1);
+        transition: all 0.2s ease;
+    }
+    #inwazja-resizer:hover {
+        background: linear-gradient(135deg, transparent 50%, rgba(255,255,255,0.5) 50%);
+        border-color: rgba(255,255,255,0.3);
+    }
 
-.custom-checkbox {
-    position: relative;
-    width: 18px;
-    height: 18px;
-    background: rgba(255,255,255,0.05);
-    border: 2px solid rgba(255,255,255,0.2);
-    border-radius: 3px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
+    /* --- DASHBOARD STYLES --- */
+    .dashboard-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 40px 20px;
+        text-align: center;
+        height: 100%;
+    }
 
-.custom-checkbox.checked {
-    background: rgba(100, 255, 100, 0.3);
-    border-color: rgba(100, 255, 100, 0.6);
-}
+    .dashboard-title {
+        font-size: 28px;
+        font-weight: 800;
+        margin-bottom: 10px;
+        background: linear-gradient(135deg, #00ff88, #00ccff);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
 
-.custom-checkbox.checked::after {
-    content: '✓';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    color: #4CAF50;
-    font-size: 12px;
-    font-weight: bold;
-}
+    .dashboard-subtitle {
+        font-size: 14px;
+        opacity: 0.8;
+        margin-bottom: 30px;
+        max-width: 400px;
+        line-height: 1.5;
+    }
 
-.checkbox-label {
-    font-size: 12px;
-    transition: color 0.3s ease;
-}
+    .dashboard-version {
+        font-size: 12px;
+        opacity: 0.6;
+        margin-bottom: 40px;
+        padding: 8px 16px;
+        background: rgba(255,255,255,0.05);
+        border-radius: 20px;
+        border: 1px solid rgba(255,255,255,0.1);
+    }
 
-.checkbox-label.checked {
-    color: #4CAF50;
-}
+    .dashboard-stats {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+        width: 100%;
+        max-width: 400px;
+        margin-top: 20px;
+    }
 
-.schedule-container {
-    padding: 12px;
-    background: rgba(255,255,255,0.02);
-    border-radius: 8px;
-    border: 1px solid rgba(255,255,255,0.05);
-}
+    .dashboard-stat {
+        padding: 15px;
+        background: rgba(255,255,255,0.03);
+        border-radius: 8px;
+        border: 1px solid rgba(255,255,255,0.05);
+    }
 
-.schedule-header {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 12px;
-}
+    .dashboard-stat-value {
+        font-size: 24px;
+        font-weight: 700;
+        margin-bottom: 5px;
+    }
 
-.schedule-toggle {
-    position: relative;
-    width: 35px;
-    height: 18px;
-    background: rgba(255,255,255,0.1);
-    border-radius: 9px;
-    cursor: pointer;
-    transition: background 0.3s ease;
-}
+    .dashboard-stat-label {
+        font-size: 11px;
+        opacity: 0.7;
+    }
 
-.schedule-toggle.active {
-    background: rgba(100, 255, 100, 0.3);
-}
+    /* SCROLLBARY */
+    #inwazja-tiles::-webkit-scrollbar,
+    #inwazja-content::-webkit-scrollbar {
+        width: 6px;
+    }
 
-.schedule-toggle::before {
-    content: '';
-    position: absolute;
-    top: 1px;
-    left: 1px;
-    width: 16px;
-    height: 16px;
-    background: rgba(255,255,255,0.8);
-    border-radius: 50%;
-    transition: transform 0.3s ease;
-}
+    #inwazja-tiles::-webkit-scrollbar-track,
+    #inwazja-content::-webkit-scrollbar-track {
+        background: rgba(255,255,255,0.02);
+        border-radius: 3px;
+    }
 
-.schedule-toggle.active::before {
-    transform: translateX(17px);
-    background: rgba(100, 255, 100, 1);
-}
+    #inwazja-tiles::-webkit-scrollbar-thumb,
+    #inwazja-content::-webkit-scrollbar-thumb {
+        background: rgba(255,255,255,0.15);
+        border-radius: 3px;
+        transition: background 0.2s ease;
+    }
 
-.schedule-time {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-top: 8px;
-}
+    #inwazja-tiles::-webkit-scrollbar-thumb:hover,
+    #inwazja-content::-webkit-scrollbar-thumb:hover {
+        background: rgba(255,255,255,0.25);
+    }
 
-.time-input {
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 4px;
-    padding: 6px 8px;
-    color: #eaeff5;
-    font-family: inherit;
-    font-size: 12px;
-    width: 70px;
-    outline: none;
-}
+    /* RESPONSYWNOŚĆ */
+    @media (max-width: 900px) {
+        #inwazja-panel {
+            width: 95vw;
+            height: 80vh;
+            min-width: 400px;
+            min-height: 300px;
+        }
+        #inwazja-tiles { width: 35%; }
+    }
 
-.time-input:focus {
-    border-color: rgba(255,255,255,0.3);
-}
-
-.auto-textarea {
-    width: 100%;
-    min-height: 80px;
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 5px;
-    padding: 8px;
-    color: #eaeff5;
-    font-family: inherit;
-    font-size: 13px;
-    resize: vertical;
-    outline: none;
-}
-
-.auto-textarea:focus {
-    border-color: rgba(255,255,255,0.3);
-    background: rgba(255,255,255,0.08);
-}
-
-.auto-preview {
-    padding: 10px;
-    background: rgba(0,0,0,0.2);
-    border-radius: 5px;
-    border-left: 2px solid rgba(255,255,255,0.2);
-    font-size: 12px;
-    line-height: 1.4;
-}
-
-.auto-info {
-    font-size: 11px;
-    opacity: 0.7;
-    margin-top: 6px;
-}
-
-.ignore-container {
-    padding: 12px;
-    background: rgba(255,255,255,0.02);
-    border-radius: 8px;
-    border: 1px solid rgba(255,255,255,0.05);
-}
-
-.ignore-header {
-    font-size: 12px;
-    font-weight: 600;
-    margin-bottom: 8px;
-}
-
-.ignore-input-container {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 10px;
-}
-
-.ignore-input {
-    flex: 1;
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 4px;
-    padding: 6px 8px;
-    color: #eaeff5;
-    font-family: inherit;
-    font-size: 12px;
-    outline: none;
-}
-
-.ignore-input:focus {
-    border-color: rgba(255,255,255,0.3);
-}
-
-.ignore-input::placeholder {
-    color: rgba(255,255,255,0.4);
-}
-
-.ignore-list {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    min-height: 30px;
-}
-
-.ignore-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 6px 8px;
-    background: rgba(255,255,255,0.03);
-    border-radius: 4px;
-    border: 1px solid rgba(255,255,255,0.05);
-}
-
-.ignore-player {
-    font-size: 11px;
-    color: #eaeff5;
-}
-
-.ignore-remove {
-    background: rgba(255,100,100,0.1);
-    border: 1px solid rgba(255,100,100,0.3);
-    border-radius: 3px;
-    color: #ff6b6b;
-    font-size: 10px;
-    width: 16px;
-    height: 16px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.ignore-remove:hover {
-    background: rgba(255,100,100,0.2);
-    border-color: rgba(255,100,100,0.5);
-}
-
-.ignore-limit {
-    font-size: 10px;
-    color: #ff6b6b;
-    margin-top: 6px;
-    opacity: 0.8;
-    display: none;
-}
-
-.ignore-limit.show {
-    display: block;
-}
-
-.ignore-info {
-    font-size: 10px;
-    opacity: 0.7;
-    margin-top: 4px;
-}
+    @media (max-width: 600px) {
+        #inwazja-tiles { width: 100%; grid-template-columns: repeat(2, 1fr); }
+        #inwazja-body { flex-direction: column; }
+    }
     `;
     
-    function addAutoMessageStyles() {
-        if (document.getElementById('inwazja-auto-message-styles')) return;
-        
+    if (typeof GM_addStyle !== 'undefined') {
+        GM_addStyle(css);
+    } else {
         const style = document.createElement('style');
-        style.id = 'inwazja-auto-message-styles';
-        style.textContent = autoMessageCSS;
+        style.textContent = css;
         document.head.appendChild(style);
     }
     
-    function initAutoMessage() {
-        if (!window.inwazjaCoreLoaded) {
-            setTimeout(initAutoMessage, 100);
-            return;
-        }
+    /**********************
+     *  Budowa DOM
+     **********************/
+    const prevIcon = document.getElementById('inwazja-icon');
+    if (prevIcon) prevIcon.remove();
+    const prevPanel = document.getElementById('inwazja-panel');
+    if (prevPanel) prevPanel.remove();
+    
+    // Ikona
+    const icon = document.createElement('div');
+    icon.id = 'inwazja-icon';
+    icon.title = 'Inwazja Add-on';
+    icon.textContent = 'Inwazja Add-on';
+    document.body.appendChild(icon);
+    
+    // Panel
+    const panel = document.createElement('div');
+    panel.id = 'inwazja-panel';
+    panel.innerHTML = `
+        <div id="inwazja-header">
+            <div class="title">
+                Inwazja Add-on
+                <span class="version">| v. 2.0.0</span>
+            </div>
+            <div id="inwazja-controls">
+                <button id="inwazja-dashboard" class="ia-btn" title="Dashboard">🏠</button>
+                <input id="inwazja-opacity" type="range" min="0.5" max="1" step="0.01" value="${currentOpacity}" title="Przezroczystość">
+                <button id="inwazja-close" class="ia-btn" title="Zamknij">✖</button>
+            </div>
+        </div>
+        <div id="inwazja-body">
+            <div id="inwazja-tiles"></div>
+            <div id="inwazja-content"><div style="opacity:.9">Wersja: modułowa 2.0.0. <strong id="inwazja-activeTitle"></strong></div></div>
+        </div>
+        <div id="inwazja-footer">Modułowy UI | Inwazja Add-on v2.0.0</div>
+        <div id="inwazja-resizer" aria-hidden="true" title="Zmień rozmiar okna"></div>
+    `;
+    document.body.appendChild(panel);
+    
+    // Kafelki
+    const modulesData = [
+        { id: 'auto-message', title: 'Auto-message', subtitle: 'Skrypt na automatyczne odpisywanie graczom podczas nieobecności.' },
+        { id: 'inventory', title: 'Ekwipunek', subtitle: 'Przegląd przedmiotów' },
+        { id: 'clan', title: 'Klan', subtitle: 'Lista członków i statusy' },
+        { id: 'skills', title: 'Umiejętności', subtitle: 'Tooltipy i cooldowny' },
+        { id: 'quests', title: 'Zadania', subtitle: 'Postępy i nagrody' },
+        { id: 'settings', title: 'Ustawienia', subtitle: 'Preferencje GUI' }
+    ];
+    
+    const tilesContainer = document.getElementById('inwazja-tiles');
+    modulesData.forEach(m => {
+        const t = document.createElement('div');
+        t.className = 'inwazja-tile';
+        t.dataset.id = m.id;
+        t.innerHTML = `<div style="font-weight:700; font-size:12px;">${m.title}</div><div style="opacity:.9;font-size:10px; line-height:1.2;">${m.subtitle}</div>`;
+        t.title = `${m.title}: ${m.subtitle}`;
+        tilesContainer.appendChild(t);
         
-        addAutoMessageStyles();
-        
-        function showAutoMessage(title, subtitle) {
-            const cfg = window.inwazjaConfig;
-            const content = document.getElementById('inwazja-content');
+        t.addEventListener('click', () => {
+            // Usuń aktywność z przycisku dashboard
+            const dashboardBtn = document.getElementById('inwazja-dashboard');
+            if (dashboardBtn) dashboardBtn.classList.remove('active');
             
-            if (!content) {
-                setTimeout(() => showAutoMessage(title, subtitle), 100);
-                return;
-            }
+            // Event dla modułów do obsługi
+            const event = new CustomEvent('inwazjaModuleChange', { 
+                detail: { moduleId: m.id, title: m.title, subtitle: m.subtitle }
+            });
+            window.dispatchEvent(event);
             
-            content.innerHTML = `
-                <div class="auto-container">
-                    <h3 style="margin-top:0; margin-bottom: 12px; font-size:14px;">${title}</h3>
-                    <div style="opacity:.9; margin-bottom: 16px; font-size:12px;">${subtitle}</div>
-
-                    <div class="message-tabs-container">
-                        <div class="message-tabs" id="messageTabs">
-                            <div class="message-tab ${cfg.currentMessageTab === 0 ? 'active' : ''}" data-tab="0">1</div>
-                            <div class="message-tab ${cfg.currentMessageTab === 1 ? 'active' : ''}" data-tab="1">2</div>
-                            <div class="message-tab ${cfg.currentMessageTab === 2 ? 'active' : ''}" data-tab="2">3</div>
-                            <div class="message-tab ${cfg.currentMessageTab === 3 ? 'active' : ''}" data-tab="3">4</div>
-                            <div class="message-tab ${cfg.currentMessageTab === 4 ? 'active' : ''}" data-tab="4">5</div>
-                        </div>
-                        <div class="clear-button" id="clearButton" title="Wyczyść treść aktualnej zakładki">🗑️</div>
-                    </div>
-
-                    <div class="message-content">
-                        <div class="auto-status">
-                            <div class="auto-toggle ${cfg.autoEnabled ? 'active' : ''}" id="autoToggle"></div>
-                            <div class="status-text ${cfg.autoEnabled ? 'active' : 'inactive'}" id="autoStatusText">
-                                Status skryptu: <strong>${cfg.autoEnabled ? 'AKTYWNY' : 'NIEAKTYWNY'}</strong>
-                            </div>
-                        </div>
-
-                        <div>
-                            <div style="margin-bottom: 6px; font-weight: 600; font-size:12px;">Treść wiadomości:</div>
-                            <textarea class="auto-textarea" id="autoMessageText" placeholder="Wpisz wiadomość, która będzie automatycznie wysyłana do graczy...">${cfg.autoMessages[cfg.currentMessageTab] || ''}</textarea>
-                            <div class="auto-info">Maksymalnie 200 znaków | Zakładka ${cfg.currentMessageTab + 1}/5</div>
-                        </div>
-
-                        <div class="checkbox-container">
-                            <div class="custom-checkbox ${cfg.repeatMessage ? 'checked' : ''}" id="repeatCheckbox"></div>
-                            <div class="checkbox-label ${cfg.repeatMessage ? 'checked' : ''}" id="repeatLabel">
-                                Powtarzaj wiadomość: <strong>${cfg.repeatMessage ? 'AKTYWNE' : 'NIEAKTYWNE'}</strong>
-                            </div>
-                        </div>
-
-                        <div class="schedule-container">
-                            <div class="schedule-header">
-                                <div class="schedule-toggle ${cfg.scheduleEnabled ? 'active' : ''}" id="scheduleToggle"></div>
-                                <div style="font-size:12px; font-weight:600;">Harmonogram aktywności</div>
-                            </div>
-                            <div style="font-size:11px; opacity:0.8; margin-bottom:10px;">
-                                Określ godziny, w których skrypt ma automatycznie odpowiadać
-                            </div>
-
-                            <div class="schedule-time">
-                                <span style="font-size:11px;">Od:</span>
-                                <input type="time" class="time-input" id="scheduleStart" value="${cfg.scheduleStart}" ${!cfg.scheduleEnabled ? 'disabled' : ''}>
-                                <span style="font-size:11px;">Do:</span>
-                                <input type="time" class="time-input" id="scheduleEnd" value="${cfg.scheduleEnd}" ${!cfg.scheduleEnabled ? 'disabled' : ''}>
-                            </div>
-                        </div>
-
-                        <div>
-                            <div style="margin-bottom: 6px; font-weight: 600; font-size:12px;">Podgląd wiadomości (zakładka ${cfg.currentMessageTab + 1}):</div>
-                            <div class="auto-preview" id="autoPreview">
-                                ${cfg.autoMessages[cfg.currentMessageTab] ? cfg.autoMessages[cfg.currentMessageTab] : 'Brak wiadomości...'}
-                            </div>
-                        </div>
-
-                        <div class="ignore-container">
-                            <div class="ignore-header">Ignorowanie wysyłania wiadomości do graczy:</div>
-                            <div class="ignore-input-container">
-                                <input type="text" class="ignore-input" id="ignoreInput" placeholder="Wpisz nick gracza i naciśnij Enter" maxlength="20">
-                            </div>
-                            <div class="ignore-list" id="ignoreList">
-                                ${cfg.ignoredPlayers.map(player => `
-                                    <div class="ignore-item">
-                                        <span class="ignore-player">${player}</span>
-                                        <div class="ignore-remove" data-player="${player}">×</div>
-                                    </div>
-                                `).join('')}
-                            </div>
-                            <div class="ignore-info">Maksymalnie 5 graczy. Wiadomości nie będą wysyłane do ignorowanych graczy.</div>
-                            <div class="ignore-limit ${cfg.ignoredPlayers.length >= 5 ? 'show' : ''}" id="ignoreLimit">
-                                Osiągnięto limit dodanych graczy - usuń kogoś i spróbuj ponownie.
-                            </div>
-                        </div>
-                    </div>
-
-                    <div style="margin-top: 8px; font-size: 11px; opacity: 0.7;">
-                        ⓘ System będzie automatycznie odpowiadał na prywatne wiadomości zgodnie z ustawieniami.
-                    </div>
-                </div>
-            `;
-
-            const autoToggle = document.getElementById('autoToggle');
-            const autoStatusText = document.getElementById('autoStatusText');
-            const autoMessageText = document.getElementById('autoMessageText');
-            const autoPreview = document.getElementById('autoPreview');
-            const repeatCheckbox = document.getElementById('repeatCheckbox');
-            const repeatLabel = document.getElementById('repeatLabel');
-            const scheduleToggle = document.getElementById('scheduleToggle');
-            const scheduleStart = document.getElementById('scheduleStart');
-            const scheduleEnd = document.getElementById('scheduleEnd');
-            const messageTabs = document.getElementById('messageTabs');
-            const clearButton = document.getElementById('clearButton');
-            const ignoreInput = document.getElementById('ignoreInput');
-            const ignoreList = document.getElementById('ignoreList');
-            const ignoreLimit = document.getElementById('ignoreLimit');
-
-            function updateIgnoreList() {
-                if (!ignoreList) return;
-                
-                ignoreList.innerHTML = cfg.ignoredPlayers.map(player => `
-                    <div class="ignore-item">
-                        <span class="ignore-player">${player}</span>
-                        <div class="ignore-remove" data-player="${player}">×</div>
-                    </div>
-                `).join('');
-
-                ignoreList.querySelectorAll('.ignore-remove').forEach(btn => {
-                    btn.addEventListener('click', function() {
-                        const playerToRemove = this.dataset.player;
-                        cfg.ignoredPlayers = cfg.ignoredPlayers.filter(p => p !== playerToRemove);
-                        window.inwazjaSaveConfig(cfg);
-                        updateIgnoreList();
-                        if (ignoreLimit) ignoreLimit.classList.toggle('show', cfg.ignoredPlayers.length >= 5);
-                    });
-                });
-            }
-
-            if (messageTabs) {
-                messageTabs.querySelectorAll('.message-tab').forEach(tab => {
-                    tab.addEventListener('click', () => {
-                        const tabIndex = parseInt(tab.dataset.tab);
-
-                        cfg.autoMessages[cfg.currentMessageTab] = autoMessageText.value;
-                        cfg.currentMessageTab = tabIndex;
-
-                        messageTabs.querySelectorAll('.message-tab').forEach(t => t.classList.remove('active'));
-                        tab.classList.add('active');
-
-                        autoMessageText.value = cfg.autoMessages[tabIndex] || '';
-                        if (autoPreview) autoPreview.textContent = cfg.autoMessages[tabIndex] || 'Brak wiadomości...';
-
-                        const infoElement = autoMessageText.nextElementSibling;
-                        if (infoElement && infoElement.classList.contains('auto-info')) {
-                            infoElement.textContent = `Maksymalnie 200 znaków | Zakładka ${tabIndex + 1}/5`;
-                        }
-
-                        const previewTitle = autoPreview ? autoPreview.previousElementSibling : null;
-                        if (previewTitle) {
-                            previewTitle.textContent = `Podgląd wiadomości (zakładka ${tabIndex + 1}):`;
-                        }
-
-                        window.inwazjaSaveConfig(cfg);
-                    });
-                });
-            }
-
-            if (clearButton) {
-                clearButton.addEventListener('click', () => {
-                    cfg.autoMessages[cfg.currentMessageTab] = '';
-                    autoMessageText.value = '';
-                    if (autoPreview) autoPreview.textContent = 'Brak wiadomości...';
-                    window.inwazjaSaveConfig(cfg);
-                });
-            }
-
-            if (autoToggle) {
-                autoToggle.addEventListener('click', () => {
-                    cfg.autoEnabled = !cfg.autoEnabled;
-                    autoToggle.classList.toggle('active');
-                    if (autoStatusText) {
-                        autoStatusText.textContent = `Status skryptu: ${cfg.autoEnabled ? 'AKTYWNY' : 'NIEAKTYWNY'}`;
-                        autoStatusText.className = `status-text ${cfg.autoEnabled ? 'active' : 'inactive'}`;
-                    }
-                    window.inwazjaSaveConfig(cfg);
-                });
-            }
-
-            if (autoMessageText) {
-                autoMessageText.addEventListener('input', (e) => {
-                    const message = e.target.value.slice(0, 200);
-                    e.target.value = message;
-                    cfg.autoMessages[cfg.currentMessageTab] = message;
-                    if (autoPreview) autoPreview.textContent = message || 'Brak wiadomości...';
-                    window.inwazjaSaveConfig(cfg);
-                });
-            }
-
-            if (repeatCheckbox) {
-                repeatCheckbox.addEventListener('click', () => {
-                    cfg.repeatMessage = !cfg.repeatMessage;
-                    repeatCheckbox.classList.toggle('checked');
-                    if (repeatLabel) {
-                        repeatLabel.textContent = `Powtarzaj wiadomość: ${cfg.repeatMessage ? 'AKTYWNE' : 'NIEAKTYWNE'}`;
-                        repeatLabel.className = `checkbox-label ${cfg.repeatMessage ? 'checked' : ''}`;
-                    }
-                    window.inwazjaSaveConfig(cfg);
-                });
-            }
-
-            if (scheduleToggle) {
-                scheduleToggle.addEventListener('click', () => {
-                    cfg.scheduleEnabled = !cfg.scheduleEnabled;
-                    scheduleToggle.classList.toggle('active');
-                    if (scheduleStart) scheduleStart.disabled = !cfg.scheduleEnabled;
-                    if (scheduleEnd) scheduleEnd.disabled = !cfg.scheduleEnabled;
-                    window.inwazjaSaveConfig(cfg);
-                });
-            }
-
-            if (scheduleStart) {
-                scheduleStart.addEventListener('change', (e) => {
-                    cfg.scheduleStart = e.target.value;
-                    window.inwazjaSaveConfig(cfg);
-                });
-            }
-
-            if (scheduleEnd) {
-                scheduleEnd.addEventListener('change', (e) => {
-                    cfg.scheduleEnd = e.target.value;
-                    window.inwazjaSaveConfig(cfg);
-                });
-            }
-
-            if (ignoreInput) {
-                ignoreInput.addEventListener('keypress', (e) => {
-                    if (e.key === 'Enter') {
-                        const playerName = ignoreInput.value.trim();
-                        if (playerName) {
-                            if (cfg.ignoredPlayers.length >= 5) {
-                                if (ignoreLimit) ignoreLimit.classList.add('show');
-                                return;
-                            }
-
-                            if (!cfg.ignoredPlayers.includes(playerName)) {
-                                cfg.ignoredPlayers.push(playerName);
-                                window.inwazjaSaveConfig(cfg);
-                                ignoreInput.value = '';
-                                updateIgnoreList();
-                                if (ignoreLimit) ignoreLimit.classList.toggle('show', cfg.ignoredPlayers.length >= 5);
-                            }
-                        }
-                    }
-                });
-            }
-
-            if (autoPreview) autoPreview.textContent = cfg.autoMessages[cfg.currentMessageTab] || 'Brak wiadomości...';
-            updateIgnoreList();
-        }
-        
-        window.addEventListener('inwazjaModuleChange', (event) => {
-            if (event.detail.moduleId === 'auto-message') {
-                showAutoMessage(event.detail.title, event.detail.subtitle);
-            }
+            window.inwazjaConfig.activeTab = m.id;
+            window.inwazjaSaveConfig(window.inwazjaConfig);
         });
-        
-        if (window.inwazjaConfig.activeTab === 'auto-message') {
-            setTimeout(() => {
-                showAutoMessage('Auto-message', 'Skrypt na automatyczne odpisywanie graczom podczas nieobecności.');
-            }, 1000);
-        }
-        
-        console.log('✅ Inwazja Add-on: Auto-message załadowany');
+    });
+    
+    /**********************
+     *  Funkcje pomocnicze
+     **********************/
+    function applyTheme() {
+        panel.style.background = `rgba(${DEFAULT_COLOR.r}, ${DEFAULT_COLOR.g}, ${DEFAULT_COLOR.b}, ${currentOpacity})`;
+        panel.style.setProperty('--inwazja-glow', DEFAULT_GLOW);
     }
     
-    setTimeout(initAutoMessage, 500);
+    function enableMouseWheelScroll(element) {
+        if (!element) return;
+        element.addEventListener('wheel', (e) => {
+            if (element.scrollHeight > element.clientHeight) {
+                element.scrollTop += e.deltaY;
+                e.preventDefault();
+            }
+        }, { passive: false });
+    }
+    
+    /**********************
+     *  Funkcja Dashboard
+     **********************/
+    function showDashboard() {
+        const content = document.getElementById('inwazja-content');
+        const dashboardBtn = document.getElementById('inwazja-dashboard');
+        
+        // Oznacz przycisk jako aktywny
+        document.querySelectorAll('#inwazja-controls .ia-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        if (dashboardBtn) dashboardBtn.classList.add('active');
+        
+        // Ustaw tytuł
+        window.inwazjaSetActiveTitle('Dashboard');
+        
+        // Generuj statystyki
+        const totalMessages = window.inwazjaConfig.autoMessages.filter(msg => msg.length > 0).length;
+        const ignoredPlayers = window.inwazjaConfig.ignoredPlayers.length;
+        const autoEnabled = window.inwazjaConfig.autoEnabled ? 'Tak' : 'Nie';
+        const scheduleEnabled = window.inwazjaConfig.scheduleEnabled ? 'Tak' : 'Nie';
+        
+        content.innerHTML = `
+            <div class="dashboard-container">
+                <div class="dashboard-title">Inwazja Add-on</div>
+                <div class="dashboard-subtitle">
+                    Zaawansowany dodatek do Margonem z funkcją automatycznego odpowiadania na wiadomości i wieloma innymi modułami.
+                </div>
+                <div class="dashboard-version">Wersja 2.0.0 | Modułowy System</div>
+                
+                <div class="dashboard-stats">
+                    <div class="dashboard-stat">
+                        <div class="dashboard-stat-value">${totalMessages}/5</div>
+                        <div class="dashboard-stat-label">Aktywne wiadomości</div>
+                    </div>
+                    <div class="dashboard-stat">
+                        <div class="dashboard-stat-value">${ignoredPlayers}/5</div>
+                        <div class="dashboard-stat-label">Ignorowani gracze</div>
+                    </div>
+                    <div class="dashboard-stat">
+                        <div class="dashboard-stat-value">${autoEnabled}</div>
+                        <div class="dashboard-stat-label">Auto-odpowiadanie</div>
+                    </div>
+                    <div class="dashboard-stat">
+                        <div class="dashboard-stat-value">${scheduleEnabled}</div>
+                        <div class="dashboard-stat-label">Harmonogram</div>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 30px; font-size: 11px; opacity: 0.6;">
+                    Kliknij w kafelek po lewej stronie, aby przejść do konkretnego modułu.
+                </div>
+            </div>
+        `;
+    }
+    
+    // Funkcje pomocnicze dostępne globalnie
+    window.inwazjaShowModuleContent = function(contentHTML) {
+        const content = document.getElementById('inwazja-content');
+        if (content) content.innerHTML = contentHTML;
+    };
+    
+    window.inwazjaSetActiveTitle = function(title) {
+        const titleElement = document.getElementById('inwazja-activeTitle');
+        if (titleElement) titleElement.textContent = title;
+    };
+    
+    /**********************
+     *  Inicjalizacja pozycjonowania
+     **********************/
+    const cfg = window.inwazjaConfig;
+    
+    // Pozycjonowanie ikony
+    if (cfg.iconPos && typeof cfg.iconPos.left === 'number') {
+        icon.style.left = cfg.iconPos.left + 'px';
+        icon.style.top = cfg.iconPos.top + 'px';
+    } else {
+        icon.style.left = '20px';
+        icon.style.top  = '20px';
+    }
+    
+    // Pozycjonowanie panelu
+    if (cfg.pos && typeof cfg.pos.left === 'number') {
+        panel.style.left = cfg.pos.left + 'px';
+        panel.style.top  = cfg.pos.top + 'px';
+        panel.style.transform = 'translate(0,0)';
+    } else {
+        panel.style.left = '50%';
+        panel.style.top  = '50%';
+        panel.style.transform = 'translate(-50%,-50%) scale(.98)';
+    }
+    
+    // Rozmiar panelu
+    if (cfg.size && cfg.size.width && cfg.size.height) {
+        panel.style.width = cfg.size.width + 'px';
+        panel.style.height = cfg.size.height + 'px';
+    }
+    
+    applyTheme();
+    
+    /**********************
+     *  Event Listeners
+     **********************/
+    // Suwak przezroczystości
+    const opacityInput = document.getElementById('inwazja-opacity');
+    if (opacityInput) {
+        opacityInput.value = currentOpacity;
+        opacityInput.addEventListener('input', (e) => {
+            currentOpacity = parseFloat(e.target.value);
+            applyTheme();
+            cfg.opacity = currentOpacity;
+            saveConfig(cfg);
+        });
+    }
+    
+    // Przycisk dashboard
+    const dashboardBtn = document.getElementById('inwazja-dashboard');
+    if (dashboardBtn) {
+        dashboardBtn.addEventListener('click', () => {
+            showDashboard();
+            window.inwazjaConfig.activeTab = 'dashboard';
+            window.inwazjaSaveConfig(window.inwazjaConfig);
+        });
+    }
+    
+    // Przycisk zamknięcia
+    const closeBtn = document.getElementById('inwazja-close');
+    if (closeBtn) {
+        closeBtn.addEventListener('click', () => {
+            panel.classList.remove('ia-visible');
+        });
+    }
+    
+    // Drag & drop ikony
+    (function iconClickDrag() {
+        let down = false, moved = false;
+        let startX = 0, startY = 0;
+        const THRESHOLD = 6;
+        
+        icon.addEventListener('pointerdown', (e) => {
+            if (e.button !== 0) return;
+            down = true; moved = false;
+            startX = e.clientX; startY = e.clientY;
+            icon.classList.add('dragging');
+            e.preventDefault();
+        });
+        
+        window.addEventListener('pointermove', (e) => {
+            if (!down) return;
+            const dx = e.clientX - startX, dy = e.clientY - startY;
+            if (!moved && Math.abs(dx) < THRESHOLD && Math.abs(dy) < THRESHOLD) return;
+            moved = true;
+            const left = Math.max(6, Math.min(window.innerWidth - icon.offsetWidth - 6, e.clientX - (icon.offsetWidth/2)));
+            const top  = Math.max(6, Math.min(window.innerHeight - icon.offsetHeight - 6, e.clientY - (icon.offsetHeight/2)));
+            icon.style.left = left + 'px';
+            icon.style.top  = top  + 'px';
+        });
+        
+        window.addEventListener('pointerup', (e) => {
+            if (!down) return;
+            down = false;
+            icon.classList.remove('dragging');
+            if (moved) {
+                cfg.iconPos = { left: parseInt(icon.style.left), top: parseInt(icon.style.top) };
+                saveConfig(cfg);
+                return;
+            }
+            if (panel.classList.contains('ia-visible')) {
+                panel.classList.remove('ia-visible');
+            } else {
+                panel.classList.add('ia-visible');
+                if (cfg.pos && typeof cfg.pos.left === 'number') {
+                    panel.style.transform = 'translate(0,0)';
+                } else {
+                    panel.style.transform = 'translate(-50%,-50%) scale(.98)';
+                }
+                
+                setTimeout(() => {
+                    enableMouseWheelScroll(document.getElementById('inwazja-tiles'));
+                    enableMouseWheelScroll(document.getElementById('inwazja-content'));
+                }, 100);
+            }
+        });
+    })();
+    
+    // Drag panelu
+    (function panelDrag() {
+        const header = document.getElementById('inwazja-header');
+        if (!header) return;
+        
+        let dragging = false, startX = 0, startY = 0, startLeft = 0, startTop = 0;
+        
+        header.addEventListener('pointerdown', (e) => {
+            if (e.target.id === 'inwazja-opacity' || e.target.closest('#inwazja-opacity')) return;
+            if (e.target.id === 'inwazja-close' || e.target.id === 'inwazja-dashboard') return;
+            if (e.button !== 0) return;
+            dragging = true;
+            
+            if (!cfg.pos || typeof cfg.pos.left !== 'number') {
+                const rect = panel.getBoundingClientRect();
+                startLeft = rect.left;
+                startTop  = rect.top;
+                panel.style.left = startLeft + 'px';
+                panel.style.top  = startTop  + 'px';
+                panel.style.transform = 'translate(0,0)';
+            } else {
+                startLeft = parseInt(panel.style.left || 0);
+                startTop  = parseInt(panel.style.top || 0);
+            }
+            startX = e.clientX; startY = e.clientY;
+            document.body.style.userSelect = 'none';
+            e.preventDefault();
+        });
+        
+        window.addEventListener('pointermove', (e) => {
+            if (!dragging) return;
+            const dx = e.clientX - startX, dy = e.clientY - startY;
+            let left = startLeft + dx, top = startTop + dy;
+            left = Math.max(6, Math.min(window.innerWidth - panel.offsetWidth - 6, left));
+            top  = Math.max(6, Math.min(window.innerHeight - panel.offsetHeight - 6, top));
+            panel.style.left = left + 'px';
+            panel.style.top  = top  + 'px';
+        });
+        
+        window.addEventListener('pointerup', () => {
+            if (!dragging) return;
+            dragging = false;
+            document.body.style.userSelect = '';
+            cfg.pos = { left: parseInt(panel.style.left), top: parseInt(panel.style.top) };
+            saveConfig(cfg);
+        });
+    })();
+    
+    // Resizer
+    (function resizerInit(){
+        const resizer = document.getElementById('inwazja-resizer');
+        if (!resizer) return;
+        
+        let resizing = false, startX=0, startY=0, startW=0, startH=0;
+        resizer.addEventListener('pointerdown', (e) => {
+            if (e.button !== 0) return;
+            resizing = true;
+            startX = e.clientX; startY = e.clientY;
+            startW = panel.offsetWidth; startH = panel.offsetHeight;
+            document.body.style.userSelect = 'none';
+            e.preventDefault();
+        });
+        
+        window.addEventListener('pointermove', (e) => {
+            if (!resizing) return;
+            const dx = e.clientX - startX, dy = e.clientY - startY;
+            const newW = Math.max(600, Math.min(startW + dx, window.innerWidth - 40));
+            const newH = Math.max(400, Math.min(startH + dy, window.innerHeight - 40));
+            panel.style.width = newW + 'px';
+            panel.style.height = newH + 'px';
+        });
+        
+        window.addEventListener('pointerup', () => {
+            if (!resizing) return;
+            resizing = false;
+            document.body.style.userSelect = '';
+            cfg.size = { width: panel.offsetWidth, height: panel.offsetHeight };
+            saveConfig(cfg);
+        });
+    })();
+    
+    // Obsługa resize okna
+    window.addEventListener('resize', () => {
+        const left = parseInt(panel.style.left || 0), top = parseInt(panel.style.top || 0);
+        const w = panel.offsetWidth, h = panel.offsetHeight;
+        let changed = false, newLeft = left, newTop = top;
+        if (left + w > window.innerWidth - 8) { newLeft = Math.max(8, window.innerWidth - w - 8); changed = true; }
+        if (top + h > window.innerHeight - 8) { newTop = Math.max(8, window.innerHeight - h - 8); changed = true; }
+        if (changed) {
+            panel.style.left = newLeft + 'px';
+            panel.style.top = newTop + 'px';
+            cfg.pos = { left: newLeft, top: newTop };
+            saveConfig(cfg);
+        }
+        
+        const iconLeft = parseInt(icon.style.left || 0), iconTop = parseInt(icon.style.top || 0);
+        let iconChanged = false, newIconLeft = iconLeft, newIconTop = iconTop;
+        if (iconLeft + icon.offsetWidth > window.innerWidth - 6) { newIconLeft = Math.max(6, window.innerWidth - icon.offsetWidth - 6); iconChanged = true; }
+        if (iconTop + icon.offsetHeight > window.innerHeight - 6) { newIconTop = Math.max(6, window.innerHeight - icon.offsetHeight - 6); iconChanged = true; }
+        if (iconChanged) {
+            icon.style.left = newIconLeft + 'px';
+            icon.style.top  = newIconTop + 'px';
+            cfg.iconPos = { left: newIconLeft, top: newIconTop };
+            saveConfig(cfg);
+        }
+    });
+    
+    // Zapisz przed zamknięciem
+    window.addEventListener('beforeunload', () => {
+        cfg.opacity = currentOpacity;
+        if (panel.style.left && panel.style.top) {
+            const leftVal = parseFloat(panel.style.left);
+            if (!isNaN(leftVal)) cfg.pos = { left: leftVal, top: parseFloat(panel.style.top) };
+        }
+        cfg.size = { width: panel.offsetWidth, height: panel.offsetHeight };
+        cfg.iconPos = { left: parseFloat(icon.style.left), top: parseFloat(icon.style.top) };
+        saveConfig(cfg);
+    });
+    
+    /**********************
+     *  Inicjalizacja Dashboard
+     **********************/
+    // Inicjalizacja scrolla
+    setTimeout(() => {
+        enableMouseWheelScroll(document.getElementById('inwazja-tiles'));
+        enableMouseWheelScroll(document.getElementById('inwazja-content'));
+    }, 500);
+    
+    // Automatyczne wyświetlenie Dashboard przy pierwszym uruchomieniu
+    if (!cfg.activeTab || cfg.activeTab === 'dashboard') {
+        setTimeout(() => {
+            showDashboard();
+        }, 100);
+    } else {
+        const tile = tilesContainer.querySelector(`[data-id="${cfg.activeTab}"]`);
+        if (tile) {
+            setTimeout(() => {
+                tile.click();
+            }, 100);
+        }
+    }
+    
+    console.log('✅ Inwazja Add-on: Core UI załadowany z Dashboardem');
 })();
