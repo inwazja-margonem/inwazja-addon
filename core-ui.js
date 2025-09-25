@@ -72,36 +72,36 @@
      *  CSS (stylowanie)
      **********************/
     const css = `
-/* --- ikona --- */
-#inwazja-icon {
-    position: fixed;
-    left: 20px; top: 20px;
-    width: 140px;
-    height: 36px;
-    padding: 6px 12px;
-    background: rgba(12,12,12,0.95);
-    border: 2px solid rgba(255,255,255,0.06);
-    border-radius: 8px;
-    color: #fff;
-    font-weight: 700;
-    font-size: 13px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    cursor: pointer;
-    z-index: 2147483005;
-    user-select: none;
-    transition: transform 0.12s ease, box-shadow .12s ease, border-color .16s ease;
-    box-sizing: border-box;
-    white-space: nowrap;
-}
-#inwazja-icon.dragging { transform: none !important; transition: none !important; }
+    /* --- ikona --- */
+    #inwazja-icon {
+        position: fixed;
+        left: 20px; top: 20px;
+        width: 140px;
+        height: 36px;
+        padding: 6px 12px;
+        background: rgba(12,12,12,0.95);
+        border: 2px solid rgba(255,255,255,0.06);
+        border-radius: 8px;
+        color: #fff;
+        font-weight: 700;
+        font-size: 13px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        cursor: pointer;
+        z-index: 2147483005;
+        user-select: none;
+        transition: transform 0.12s ease, box-shadow .12s ease, border-color .16s ease;
+        box-sizing: border-box;
+        white-space: nowrap;
+    }
+    #inwazja-icon.dragging { transform: none !important; transition: none !important; }
 
-#inwazja-icon:hover {
-    transform: translateY(-3px) scale(1.02);
-    box-shadow: 0 10px 22px rgba(0,0,0,0.6);
-}
+    #inwazja-icon:hover {
+        transform: translateY(-3px) scale(1.02);
+        box-shadow: 0 10px 22px rgba(0,0,0,0.6);
+    }
 
     /* --- okno (panel) --- */
     #inwazja-panel {
@@ -516,67 +516,67 @@
     }
     
     /**********************
- *  Funkcja Dashboard
- **********************/
-function showDashboard() {
-    const content = document.getElementById('inwazja-content');
-    const dashboardBtn = document.getElementById('inwazja-dashboard');
-    
-    if (!content) {
-        console.error('Dashboard: nie znaleziono elementu content');
-        return;
+     *  Funkcja Dashboard
+     **********************/
+    function showDashboard() {
+        const content = document.getElementById('inwazja-content');
+        const dashboardBtn = document.getElementById('inwazja-dashboard');
+        
+        if (!content) {
+            console.error('Dashboard: nie znaleziono elementu content');
+            return;
+        }
+        
+        console.log('Dashboard: pokazuję panel powitalny');
+        
+        // Oznacz przycisk jako aktywny
+        document.querySelectorAll('#inwazja-controls .ia-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        if (dashboardBtn) dashboardBtn.classList.add('active');
+        
+        // Ustaw tytuł
+        window.inwazjaSetActiveTitle('Dashboard');
+        
+        // Generuj statystyki
+        const totalMessages = window.inwazjaConfig.autoMessages.filter(msg => msg.length > 0).length;
+        const ignoredPlayers = window.inwazjaConfig.ignoredPlayers.length;
+        const autoEnabled = window.inwazjaConfig.autoEnabled ? 'Tak' : 'Nie';
+        const scheduleEnabled = window.inwazjaConfig.scheduleEnabled ? 'Tak' : 'Nie';
+        
+        content.innerHTML = `
+            <div class="dashboard-container">
+                <div class="dashboard-title">Inwazja Add-on</div>
+                <div class="dashboard-subtitle">
+                    Zaawansowany dodatek do Margonem z funkcją automatycznego odpowiadania na wiadomości i wieloma innymi modułami.
+                </div>
+                <div class="dashboard-version">Wersja 2.0.0 | Modułowy System</div>
+                
+                <div class="dashboard-stats">
+                    <div class="dashboard-stat">
+                        <div class="dashboard-stat-value">${totalMessages}/5</div>
+                        <div class="dashboard-stat-label">Aktywne wiadomości</div>
+                    </div>
+                    <div class="dashboard-stat">
+                        <div class="dashboard-stat-value">${ignoredPlayers}/5</div>
+                        <div class="dashboard-stat-label">Ignorowani gracze</div>
+                    </div>
+                    <div class="dashboard-stat">
+                        <div class="dashboard-stat-value">${autoEnabled}</div>
+                        <div class="dashboard-stat-label">Auto-odpowiadanie</div>
+                    </div>
+                    <div class="dashboard-stat">
+                        <div class="dashboard-stat-value">${scheduleEnabled}</div>
+                        <div class="dashboard-stat-label">Harmonogram</div>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 30px; font-size: 11px; opacity: 0.6;">
+                    Kliknij w kafelek po lewej stronie, aby przejść do konkretnego modułu.
+                </div>
+            </div>
+        `;
     }
-    
-    console.log('Dashboard: pokazuję panel powitalny');
-    
-    // Oznacz przycisk jako aktywny
-    document.querySelectorAll('#inwazja-controls .ia-btn').forEach(btn => {
-        btn.classList.remove('active');
-    });
-    if (dashboardBtn) dashboardBtn.classList.add('active');
-    
-    // Ustaw tytuł
-    window.inwazjaSetActiveTitle('Dashboard');
-    
-    // Generuj statystyki
-    const totalMessages = window.inwazjaConfig.autoMessages.filter(msg => msg.length > 0).length;
-    const ignoredPlayers = window.inwazjaConfig.ignoredPlayers.length;
-    const autoEnabled = window.inwazjaConfig.autoEnabled ? 'Tak' : 'Nie';
-    const scheduleEnabled = window.inwazjaConfig.scheduleEnabled ? 'Tak' : 'Nie';
-    
-    content.innerHTML = `
-        <div class="dashboard-container">
-            <div class="dashboard-title">Inwazja Add-on</div>
-            <div class="dashboard-subtitle">
-                Zaawansowany dodatek do Margonem z funkcją automatycznego odpowiadania na wiadomości i wieloma innymi modułami.
-            </div>
-            <div class="dashboard-version">Wersja 2.0.0 | Modułowy System</div>
-            
-            <div class="dashboard-stats">
-                <div class="dashboard-stat">
-                    <div class="dashboard-stat-value">${totalMessages}/5</div>
-                    <div class="dashboard-stat-label">Aktywne wiadomości</div>
-                </div>
-                <div class="dashboard-stat">
-                    <div class="dashboard-stat-value">${ignoredPlayers}/5</div>
-                    <div class="dashboard-stat-label">Ignorowani gracze</div>
-                </div>
-                <div class="dashboard-stat">
-                    <div class="dashboard-stat-value">${autoEnabled}</div>
-                    <div class="dashboard-stat-label">Auto-odpowiadanie</div>
-                </div>
-                <div class="dashboard-stat">
-                    <div class="dashboard-stat-value">${scheduleEnabled}</div>
-                    <div class="dashboard-stat-label">Harmonogram</div>
-                </div>
-            </div>
-            
-            <div style="margin-top: 30px; font-size: 11px; opacity: 0.6;">
-                Kliknij w kafelek po lewej stronie, aby przejść do konkretnego modułu.
-            </div>
-        </div>
-    `;
-}
     
     // Funkcje pomocnicze dostępne globalnie
     window.inwazjaShowModuleContent = function(contentHTML) {
@@ -625,141 +625,241 @@ function showDashboard() {
     /**********************
      *  Event Listeners
      **********************/
-function initializeEventListeners() {
-    console.log('Inicjalizacja event listeners...');
     
-    // Suwak przezroczystości
-    const opacityInput = document.getElementById('inwazja-opacity');
-    if (opacityInput) {
-        opacityInput.value = currentOpacity;
-        opacityInput.addEventListener('input', (e) => {
-            currentOpacity = parseFloat(e.target.value);
-            applyTheme();
-            window.inwazjaConfig.opacity = currentOpacity;
-            window.inwazjaSaveConfig(window.inwazjaConfig);
-        });
-        console.log('Suwak przezroczystości: OK');
-    } else {
-        console.error('Suwak przezroczystości: nie znaleziono');
-    }
-    
-    // Przycisk dashboard - TO JEST NAJWAŻNIEJSZE!
-    const dashboardBtn = document.getElementById('inwazja-dashboard');
-    if (dashboardBtn) {
-        dashboardBtn.addEventListener('click', () => {
-            console.log('Dashboard: kliknięto przycisk');
-            showDashboard();
-            window.inwazjaConfig.activeTab = 'dashboard';
-            window.inwazjaSaveConfig(window.inwazjaConfig);
-        });
-        console.log('Przycisk dashboard: OK');
-    } else {
-        console.error('Przycisk dashboard: nie znaleziono!');
-        // Debug: sprawdź co jest w controls
-        const controls = document.getElementById('inwazja-controls');
-        if (controls) {
-            console.log('Zawartość controls:', controls.innerHTML);
-        }
-    }
-    
-    // Przycisk zamknięcia
-    const closeBtn = document.getElementById('inwazja-close');
-    if (closeBtn) {
-        closeBtn.addEventListener('click', () => {
-            panel.classList.remove('ia-visible');
-        });
-        console.log('Przycisk zamknięcia: OK');
-    }
-}
-    
-    /**********************
-     *  Inicjalizacja Dashboard
-     **********************/
-    function initializeDashboard() {
-    console.log('Inicjalizacja dashboard...');
-    
-    // Automatyczne wyświetlenie Dashboard przy pierwszym uruchomieniu
-    if (!window.inwazjaConfig.activeTab || window.inwazjaConfig.activeTab === 'dashboard') {
-        console.log('Wyświetlam dashboard (pierwsze uruchomienie)');
-        setTimeout(() => {
-            showDashboard();
-        }, 100);
-    } else {
-        console.log('Aktywny tab:', window.inwazjaConfig.activeTab);
-        const tile = document.querySelector(`[data-id="${window.inwazjaConfig.activeTab}"]`);
-        if (tile) {
-            setTimeout(() => {
-                tile.click();
-            }, 100);
-        }
-    }
-}
-
     // Drag & drop ikony
-(function iconClickDrag() {
-    let down = false, moved = false;
-    let startX = 0, startY = 0;
-    const THRESHOLD = 6;
-    
-    icon.addEventListener('pointerdown', (e) => {
-        if (e.button !== 0) return;
-        down = true; moved = false;
-        startX = e.clientX; startY = e.clientY;
-        icon.classList.add('dragging');
-        e.preventDefault();
-    });
-    
-    window.addEventListener('pointermove', (e) => {
-        if (!down) return;
-        const dx = e.clientX - startX, dy = e.clientY - startY;
-        if (!moved && Math.abs(dx) < THRESHOLD && Math.abs(dy) < THRESHOLD) return;
-        moved = true;
-        const left = Math.max(6, Math.min(window.innerWidth - icon.offsetWidth - 6, e.clientX - (icon.offsetWidth/2)));
-        const top  = Math.max(6, Math.min(window.innerHeight - icon.offsetHeight - 6, e.clientY - (icon.offsetHeight/2)));
-        icon.style.left = left + 'px';
-        icon.style.top  = top  + 'px';
-    });
-    
-    window.addEventListener('pointerup', (e) => {
-        if (!down) return;
-        down = false;
-        icon.classList.remove('dragging');
-        if (moved) {
-            cfg.iconPos = { left: parseInt(icon.style.left), top: parseInt(icon.style.top) };
-            saveConfig(cfg);
-            return;
-        }
+    (function iconClickDrag() {
+        let down = false, moved = false;
+        let startX = 0, startY = 0;
+        const THRESHOLD = 6;
         
-        if (panel.classList.contains('ia-visible')) {
-            panel.classList.remove('ia-visible');
-        } else {
-            panel.classList.add('ia-visible');
-            if (cfg.pos && typeof cfg.pos.left === 'number') {
-                panel.style.transform = 'translate(0,0)';
-            } else {
-                panel.style.transform = 'translate(-50%,-50%) scale(.98)';
+        icon.addEventListener('pointerdown', (e) => {
+            if (e.button !== 0) return;
+            down = true; moved = false;
+            startX = e.clientX; startY = e.clientY;
+            icon.classList.add('dragging');
+            e.preventDefault();
+        });
+        
+        window.addEventListener('pointermove', (e) => {
+            if (!down) return;
+            const dx = e.clientX - startX, dy = e.clientY - startY;
+            if (!moved && Math.abs(dx) < THRESHOLD && Math.abs(dy) < THRESHOLD) return;
+            moved = true;
+            const left = Math.max(6, Math.min(window.innerWidth - icon.offsetWidth - 6, e.clientX - (icon.offsetWidth/2)));
+            const top  = Math.max(6, Math.min(window.innerHeight - icon.offsetHeight - 6, e.clientY - (icon.offsetHeight/2)));
+            icon.style.left = left + 'px';
+            icon.style.top  = top  + 'px';
+        });
+        
+        window.addEventListener('pointerup', (e) => {
+            if (!down) return;
+            down = false;
+            icon.classList.remove('dragging');
+            if (moved) {
+                cfg.iconPos = { left: parseInt(icon.style.left), top: parseInt(icon.style.top) };
+                saveConfig(cfg);
+                return;
             }
             
-            // AUTOMATYCZNIE PRZEJDŹ NA DASHBOARD PO OTWARCIU
-            setTimeout(() => {
+            if (panel.classList.contains('ia-visible')) {
+                panel.classList.remove('ia-visible');
+            } else {
+                panel.classList.add('ia-visible');
+                if (cfg.pos && typeof cfg.pos.left === 'number') {
+                    panel.style.transform = 'translate(0,0)';
+                } else {
+                    panel.style.transform = 'translate(-50%,-50%) scale(.98)';
+                }
+                
+                // AUTOMATYCZNIE PRZEJDŹ NA DASHBOARD PO OTWARCIU
+                setTimeout(() => {
+                    showDashboard();
+                    window.inwazjaConfig.activeTab = 'dashboard';
+                    window.inwazjaSaveConfig(window.inwazjaConfig);
+                    
+                    enableMouseWheelScroll(document.getElementById('inwazja-tiles'));
+                    enableMouseWheelScroll(document.getElementById('inwazja-content'));
+                }, 100);
+            }
+        });
+    })();
+    
+    // Drag panelu
+    (function panelDrag() {
+        const header = document.getElementById('inwazja-header');
+        if (!header) return;
+        
+        let dragging = false, startX = 0, startY = 0, startLeft = 0, startTop = 0;
+        
+        header.addEventListener('pointerdown', (e) => {
+            if (e.target.id === 'inwazja-opacity' || e.target.closest('#inwazja-opacity')) return;
+            if (e.target.id === 'inwazja-close' || e.target.id === 'inwazja-dashboard') return;
+            if (e.button !== 0) return;
+            dragging = true;
+            
+            if (!cfg.pos || typeof cfg.pos.left !== 'number') {
+                const rect = panel.getBoundingClientRect();
+                startLeft = rect.left;
+                startTop  = rect.top;
+                panel.style.left = startLeft + 'px';
+                panel.style.top  = startTop  + 'px';
+                panel.style.transform = 'translate(0,0)';
+            } else {
+                startLeft = parseInt(panel.style.left || 0);
+                startTop  = parseInt(panel.style.top || 0);
+            }
+            startX = e.clientX; startY = e.clientY;
+            document.body.style.userSelect = 'none';
+            e.preventDefault();
+        });
+        
+        window.addEventListener('pointermove', (e) => {
+            if (!dragging) return;
+            const dx = e.clientX - startX, dy = e.clientY - startY;
+            let left = startLeft + dx, top = startTop + dy;
+            left = Math.max(6, Math.min(window.innerWidth - panel.offsetWidth - 6, left));
+            top  = Math.max(6, Math.min(window.innerHeight - panel.offsetHeight - 6, top));
+            panel.style.left = left + 'px';
+            panel.style.top  = top  + 'px';
+        });
+        
+        window.addEventListener('pointerup', () => {
+            if (!dragging) return;
+            dragging = false;
+            document.body.style.userSelect = '';
+            cfg.pos = { left: parseInt(panel.style.left), top: parseInt(panel.style.top) };
+            saveConfig(cfg);
+        });
+    })();
+    
+    // Resizer
+    (function resizerInit(){
+        const resizer = document.getElementById('inwazja-resizer');
+        if (!resizer) return;
+        
+        let resizing = false, startX=0, startY=0, startW=0, startH=0;
+        resizer.addEventListener('pointerdown', (e) => {
+            if (e.button !== 0) return;
+            resizing = true;
+            startX = e.clientX; startY = e.clientY;
+            startW = panel.offsetWidth; startH = panel.offsetHeight;
+            document.body.style.userSelect = 'none';
+            e.preventDefault();
+        });
+        
+        window.addEventListener('pointermove', (e) => {
+            if (!resizing) return;
+            const dx = e.clientX - startX, dy = e.clientY - startY;
+            const newW = Math.max(600, Math.min(startW + dx, window.innerWidth - 40));
+            const newH = Math.max(400, Math.min(startH + dy, window.innerHeight - 40));
+            panel.style.width = newW + 'px';
+            panel.style.height = newH + 'px';
+        });
+        
+        window.addEventListener('pointerup', () => {
+            if (!resizing) return;
+            resizing = false;
+            document.body.style.userSelect = '';
+            cfg.size = { width: panel.offsetWidth, height: panel.offsetHeight };
+            saveConfig(cfg);
+        });
+    })();
+    
+    /**********************
+     *  Inicjalizacja Event Listeners
+     **********************/
+    function initializeEventListeners() {
+        console.log('Inicjalizacja event listeners...');
+        
+        // Suwak przezroczystości
+        const opacityInput = document.getElementById('inwazja-opacity');
+        if (opacityInput) {
+            opacityInput.value = currentOpacity;
+            opacityInput.addEventListener('input', (e) => {
+                currentOpacity = parseFloat(e.target.value);
+                applyTheme();
+                window.inwazjaConfig.opacity = currentOpacity;
+                window.inwazjaSaveConfig(window.inwazjaConfig);
+            });
+            console.log('Suwak przezroczystości: OK');
+        }
+        
+        // Przycisk dashboard
+        const dashboardBtn = document.getElementById('inwazja-dashboard');
+        if (dashboardBtn) {
+            dashboardBtn.addEventListener('click', () => {
+                console.log('Dashboard: kliknięto przycisk');
                 showDashboard();
                 window.inwazjaConfig.activeTab = 'dashboard';
                 window.inwazjaSaveConfig(window.inwazjaConfig);
-                
-                enableMouseWheelScroll(document.getElementById('inwazja-tiles'));
-                enableMouseWheelScroll(document.getElementById('inwazja-content'));
-            }, 100);
+            });
+            console.log('Przycisk dashboard: OK');
+        }
+        
+        // Przycisk zamknięcia
+        const closeBtn = document.getElementById('inwazja-close');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => {
+                panel.classList.remove('ia-visible');
+            });
+            console.log('Przycisk zamknięcia: OK');
+        }
+    }
+    
+    // Obsługa resize okna
+    window.addEventListener('resize', () => {
+        const left = parseInt(panel.style.left || 0), top = parseInt(panel.style.top || 0);
+        const w = panel.offsetWidth, h = panel.offsetHeight;
+        let changed = false, newLeft = left, newTop = top;
+        if (left + w > window.innerWidth - 8) { newLeft = Math.max(8, window.innerWidth - w - 8); changed = true; }
+        if (top + h > window.innerHeight - 8) { newTop = Math.max(8, window.innerHeight - h - 8); changed = true; }
+        if (changed) {
+            panel.style.left = newLeft + 'px';
+            panel.style.top = newTop + 'px';
+            cfg.pos = { left: newLeft, top: newTop };
+            saveConfig(cfg);
+        }
+        
+        const iconLeft = parseInt(icon.style.left || 0), iconTop = parseInt(icon.style.top || 0);
+        let iconChanged = false, newIconLeft = iconLeft, newIconTop = iconTop;
+        if (iconLeft + icon.offsetWidth > window.innerWidth - 6) { newIconLeft = Math.max(6, window.innerWidth - icon.offsetWidth - 6); iconChanged = true; }
+        if (iconTop + icon.offsetHeight > window.innerHeight - 6) { newIconTop = Math.max(6, window.innerHeight - icon.offsetHeight - 6); iconChanged = true; }
+        if (iconChanged) {
+            icon.style.left = newIconLeft + 'px';
+            icon.style.top  = newIconTop + 'px';
+            cfg.iconPos = { left: newIconLeft, top: newIconTop };
+            saveConfig(cfg);
         }
     });
+    
+    // Zapisz przed zamknięciem
+    window.addEventListener('beforeunload', () => {
+        cfg.opacity = currentOpacity;
+        if (panel.style.left && panel.style.top) {
+            const leftVal = parseFloat(panel.style.left);
+            if (!isNaN(leftVal)) cfg.pos = { left: leftVal, top: parseFloat(panel.style.top) };
+        }
+        cfg.size = { width: panel.offsetWidth, height: panel.offsetHeight };
+        cfg.iconPos = { left: parseFloat(icon.style.left), top: parseFloat(icon.style.top) };
+        saveConfig(cfg);
+    });
+    
+    /**********************
+     *  Finalna inicjalizacja
+     **********************/
+    setTimeout(() => {
+        initializeEventListeners();
+        
+        // Zawsze pokazuj dashboard przy otwarciu
+        console.log('Automatyczne wyświetlanie dashboardu...');
+        showDashboard();
+        window.inwazjaConfig.activeTab = 'dashboard';
+        window.inwazjaSaveConfig(window.inwazjaConfig);
+        
+        // Inicjalizacja scrolla
+        enableMouseWheelScroll(document.getElementById('inwazja-tiles'));
+        enableMouseWheelScroll(document.getElementById('inwazja-content'));
+        
+        console.log('✅ Inwazja Add-on: Core UI w pełni załadowany z Dashboardem');
+    }, 100);
 })();
-// WYWOŁAJ INICJALIZACJĘ NA KONIEC SKRYPTU - DODAJ TO:
-setTimeout(() => {
-    initializeEventListeners();
-    initializeDashboard();
-    
-    // Inicjalizacja scrolla
-    enableMouseWheelScroll(document.getElementById('inwazja-tiles'));
-    enableMouseWheelScroll(document.getElementById('inwazja-content'));
-    
-    console.log('✅ Inwazja Add-on: Core UI w pełni załadowany');
-}, 100);
