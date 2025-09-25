@@ -1,4 +1,4 @@
-// modules/core-ui.js
+// core-ui.js
 (function() {
     'use strict';
     
@@ -24,7 +24,8 @@
         scheduleStart: "08:00",
         scheduleEnd: "22:00",
         ignoredPlayers: [],
-        activeTab: null
+        activeTab: null,
+        firstRun: true
     };
     
     function loadConfig() {
@@ -157,6 +158,7 @@
 
     .ia-btn { background:transparent; border:none; color:inherit; padding:4px 6px; border-radius:4px; cursor:pointer; font-size:13px; transition: background 0.2s ease; }
     .ia-btn:hover { background: rgba(255,255,255,0.02); }
+    .ia-btn.active { background: rgba(100, 200, 255, 0.2); }
 
     #inwazja-close {
         color: #d6d6d6;
@@ -305,6 +307,72 @@
         border-color: rgba(255,255,255,0.3);
     }
 
+    /* --- DASHBOARD STYLES --- */
+    .dashboard-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 40px 20px;
+        text-align: center;
+        height: 100%;
+    }
+
+    .dashboard-title {
+        font-size: 28px;
+        font-weight: 800;
+        margin-bottom: 10px;
+        background: linear-gradient(135deg, #00ff88, #00ccff);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .dashboard-subtitle {
+        font-size: 14px;
+        opacity: 0.8;
+        margin-bottom: 30px;
+        max-width: 400px;
+        line-height: 1.5;
+    }
+
+    .dashboard-version {
+        font-size: 12px;
+        opacity: 0.6;
+        margin-bottom: 40px;
+        padding: 8px 16px;
+        background: rgba(255,255,255,0.05);
+        border-radius: 20px;
+        border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .dashboard-stats {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+        width: 100%;
+        max-width: 400px;
+        margin-top: 20px;
+    }
+
+    .dashboard-stat {
+        padding: 15px;
+        background: rgba(255,255,255,0.03);
+        border-radius: 8px;
+        border: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .dashboard-stat-value {
+        font-size: 24px;
+        font-weight: 700;
+        margin-bottom: 5px;
+    }
+
+    .dashboard-stat-label {
+        font-size: 11px;
+        opacity: 0.7;
+    }
+
     /* SCROLLBARY */
     #inwazja-tiles::-webkit-scrollbar,
     #inwazja-content::-webkit-scrollbar {
@@ -372,25 +440,25 @@
     // Panel
     const panel = document.createElement('div');
     panel.id = 'inwazja-panel';
-        panel.innerHTML = `
-    <div id="inwazja-header">
-        <div class="title">
-            Inwazja Add-on
-            <span class="version">| v. 2.0.0</span>
+    panel.innerHTML = `
+        <div id="inwazja-header">
+            <div class="title">
+                Inwazja Add-on
+                <span class="version">| v. 2.0.0</span>
+            </div>
+            <div id="inwazja-controls">
+                <button id="inwazja-dashboard" class="ia-btn" title="Dashboard">🏠</button>
+                <input id="inwazja-opacity" type="range" min="0.5" max="1" step="0.01" value="${currentOpacity}" title="Przezroczystość">
+                <button id="inwazja-close" class="ia-btn" title="Zamknij">✖</button>
+            </div>
         </div>
-        <div id="inwazja-controls">
-            <button id="inwazja-dashboard" class="ia-btn" title="Dashboard">🏠</button>
-            <input id="inwazja-opacity" type="range" min="0.5" max="1" step="0.01" value="${currentOpacity}" title="Przezroczystość">
-            <button id="inwazja-close" class="ia-btn" title="Zamknij">✖</button>
+        <div id="inwazja-body">
+            <div id="inwazja-tiles"></div>
+            <div id="inwazja-content"><div style="opacity:.9">Wersja: modułowa 2.0.0. <strong id="inwazja-activeTitle"></strong></div></div>
         </div>
-    </div>
-    <div id="inwazja-body">
-        <div id="inwazja-tiles"></div>
-        <div id="inwazja-content"><div style="opacity:.9">Wersja: modułowa 2.0.0. <strong id="inwazja-activeTitle"></strong></div></div>
-    </div>
-    <div id="inwazja-footer">Modułowy UI | Inwazja Add-on v2.0.0</div>
-    <div id="inwazja-resizer" aria-hidden="true" title="Zmień rozmiar okna"></div>
-`;
+        <div id="inwazja-footer">Modułowy UI | Inwazja Add-on v2.0.0</div>
+        <div id="inwazja-resizer" aria-hidden="true" title="Zmień rozmiar okna"></div>
+    `;
     document.body.appendChild(panel);
     
     // Kafelki
@@ -413,6 +481,10 @@
         tilesContainer.appendChild(t);
         
         t.addEventListener('click', () => {
+            // Usuń aktywność z przycisku dashboard
+            const dashboardBtn = document.getElementById('inwazja-dashboard');
+            if (dashboardBtn) dashboardBtn.classList.remove('active');
+            
             // Event dla modułów do obsługi
             const event = new CustomEvent('inwazjaModuleChange', { 
                 detail: { moduleId: m.id, title: m.title, subtitle: m.subtitle }
@@ -423,17 +495,6 @@
             window.inwazjaSaveConfig(window.inwazjaConfig);
         });
     });
-    
-    // Funkcje pomocnicze dostępne globalnie
-    window.inwazjaShowModuleContent = function(contentHTML) {
-        const content = document.getElementById('inwazja-content');
-        if (content) content.innerHTML = contentHTML;
-    };
-    
-    window.inwazjaSetActiveTitle = function(title) {
-        const titleElement = document.getElementById('inwazja-activeTitle');
-        if (titleElement) titleElement.textContent = title;
-    };
     
     /**********************
      *  Funkcje pomocnicze
@@ -452,6 +513,73 @@
             }
         }, { passive: false });
     }
+    
+    /**********************
+     *  Funkcja Dashboard
+     **********************/
+    function showDashboard() {
+        const content = document.getElementById('inwazja-content');
+        const dashboardBtn = document.getElementById('inwazja-dashboard');
+        
+        // Oznacz przycisk jako aktywny
+        document.querySelectorAll('#inwazja-controls .ia-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        if (dashboardBtn) dashboardBtn.classList.add('active');
+        
+        // Ustaw tytuł
+        window.inwazjaSetActiveTitle('Dashboard');
+        
+        // Generuj statystyki
+        const totalMessages = window.inwazjaConfig.autoMessages.filter(msg => msg.length > 0).length;
+        const ignoredPlayers = window.inwazjaConfig.ignoredPlayers.length;
+        const autoEnabled = window.inwazjaConfig.autoEnabled ? 'Tak' : 'Nie';
+        const scheduleEnabled = window.inwazjaConfig.scheduleEnabled ? 'Tak' : 'Nie';
+        
+        content.innerHTML = `
+            <div class="dashboard-container">
+                <div class="dashboard-title">Inwazja Add-on</div>
+                <div class="dashboard-subtitle">
+                    Zaawansowany dodatek do Margonem z funkcją automatycznego odpowiadania na wiadomości i wieloma innymi modułami.
+                </div>
+                <div class="dashboard-version">Wersja 2.0.0 | Modułowy System</div>
+                
+                <div class="dashboard-stats">
+                    <div class="dashboard-stat">
+                        <div class="dashboard-stat-value">${totalMessages}/5</div>
+                        <div class="dashboard-stat-label">Aktywne wiadomości</div>
+                    </div>
+                    <div class="dashboard-stat">
+                        <div class="dashboard-stat-value">${ignoredPlayers}/5</div>
+                        <div class="dashboard-stat-label">Ignorowani gracze</div>
+                    </div>
+                    <div class="dashboard-stat">
+                        <div class="dashboard-stat-value">${autoEnabled}</div>
+                        <div class="dashboard-stat-label">Auto-odpowiadanie</div>
+                    </div>
+                    <div class="dashboard-stat">
+                        <div class="dashboard-stat-value">${scheduleEnabled}</div>
+                        <div class="dashboard-stat-label">Harmonogram</div>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 30px; font-size: 11px; opacity: 0.6;">
+                    Kliknij w kafelek po lewej stronie, aby przejść do konkretnego modułu.
+                </div>
+            </div>
+        `;
+    }
+    
+    // Funkcje pomocnicze dostępne globalnie
+    window.inwazjaShowModuleContent = function(contentHTML) {
+        const content = document.getElementById('inwazja-content');
+        if (content) content.innerHTML = contentHTML;
+    };
+    
+    window.inwazjaSetActiveTitle = function(title) {
+        const titleElement = document.getElementById('inwazja-activeTitle');
+        if (titleElement) titleElement.textContent = title;
+    };
     
     /**********************
      *  Inicjalizacja pozycjonowania
@@ -498,6 +626,16 @@
             applyTheme();
             cfg.opacity = currentOpacity;
             saveConfig(cfg);
+        });
+    }
+    
+    // Przycisk dashboard
+    const dashboardBtn = document.getElementById('inwazja-dashboard');
+    if (dashboardBtn) {
+        dashboardBtn.addEventListener('click', () => {
+            showDashboard();
+            window.inwazjaConfig.activeTab = 'dashboard';
+            window.inwazjaSaveConfig(window.inwazjaConfig);
         });
     }
     
@@ -570,7 +708,7 @@
         
         header.addEventListener('pointerdown', (e) => {
             if (e.target.id === 'inwazja-opacity' || e.target.closest('#inwazja-opacity')) return;
-            if (e.target.id === 'inwazja-close') return;
+            if (e.target.id === 'inwazja-close' || e.target.id === 'inwazja-dashboard') return;
             if (e.button !== 0) return;
             dragging = true;
             
@@ -667,59 +805,6 @@
             saveConfig(cfg);
         }
     });
-
-    function showDashboard() {
-    const content = document.getElementById('inwazja-content');
-    const dashboardBtn = document.getElementById('inwazja-dashboard');
-    
-    // Oznacz przycisk jako aktywny
-    document.querySelectorAll('#inwazja-controls .ia-btn').forEach(btn => {
-        btn.classList.remove('active');
-    });
-    if (dashboardBtn) dashboardBtn.classList.add('active');
-    
-    // Ustaw tytuł
-    window.inwazjaSetActiveTitle('Dashboard');
-    
-    // Generuj statystyki
-    const totalMessages = window.inwazjaConfig.autoMessages.filter(msg => msg.length > 0).length;
-    const ignoredPlayers = window.inwazjaConfig.ignoredPlayers.length;
-    const autoEnabled = window.inwazjaConfig.autoEnabled ? 'Tak' : 'Nie';
-    const scheduleEnabled = window.inwazjaConfig.scheduleEnabled ? 'Tak' : 'Nie';
-    
-    content.innerHTML = `
-        <div class="dashboard-container">
-            <div class="dashboard-title">Inwazja Add-on</div>
-            <div class="dashboard-subtitle">
-                Zaawansowany dodatek do Margonem z funkcją automatycznego odpowiadania na wiadomości i wieloma innymi modułami.
-            </div>
-            <div class="dashboard-version">Wersja 2.0.0 | Modułowy System</div>
-            
-            <div class="dashboard-stats">
-                <div class="dashboard-stat">
-                    <div class="dashboard-stat-value">${totalMessages}/5</div>
-                    <div class="dashboard-stat-label">Aktywne wiadomości</div>
-                </div>
-                <div class="dashboard-stat">
-                    <div class="dashboard-stat-value">${ignoredPlayers}/5</div>
-                    <div class="dashboard-stat-label">Ignorowani gracze</div>
-                </div>
-                <div class="dashboard-stat">
-                    <div class="dashboard-stat-value">${autoEnabled}</div>
-                    <div class="dashboard-stat-label">Auto-odpowiadanie</div>
-                </div>
-                <div class="dashboard-stat">
-                    <div class="dashboard-stat-value">${scheduleEnabled}</div>
-                    <div class="dashboard-stat-label">Harmonogram</div>
-                </div>
-            </div>
-            
-            <div style="margin-top: 30px; font-size: 11px; opacity: 0.6;">
-                Kliknij w kafelek po lewej stronie, aby przejść do konkretnego modułu.
-            </div>
-        </div>
-    `;
-}
     
     // Zapisz przed zamknięciem
     window.addEventListener('beforeunload', () => {
@@ -733,11 +818,28 @@
         saveConfig(cfg);
     });
     
+    /**********************
+     *  Inicjalizacja Dashboard
+     **********************/
     // Inicjalizacja scrolla
     setTimeout(() => {
         enableMouseWheelScroll(document.getElementById('inwazja-tiles'));
         enableMouseWheelScroll(document.getElementById('inwazja-content'));
     }, 500);
     
-    console.log('✅ Inwazja Add-on: Core UI załadowany');
+    // Automatyczne wyświetlenie Dashboard przy pierwszym uruchomieniu
+    if (!cfg.activeTab || cfg.activeTab === 'dashboard') {
+        setTimeout(() => {
+            showDashboard();
+        }, 100);
+    } else {
+        const tile = tilesContainer.querySelector(`[data-id="${cfg.activeTab}"]`);
+        if (tile) {
+            setTimeout(() => {
+                tile.click();
+            }, 100);
+        }
+    }
+    
+    console.log('✅ Inwazja Add-on: Core UI załadowany z Dashboardem');
 })();
