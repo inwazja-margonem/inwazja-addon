@@ -1,4 +1,4 @@
-// core-ui.js
+// core-ui.js (POPRAWIONA WERSJA)
 (function() {
     'use strict';
     
@@ -774,16 +774,45 @@
         
         tile.addEventListener('click', function() {
             const moduleId = this.dataset.id;
+            const content = document.getElementById('inwazja-content');
+            
             if (moduleId === 'auto-message') {
-                window.dispatchEvent(new CustomEvent('inwazjaModuleChange', {
-                    detail: { 
-                        moduleId: 'auto-message', 
-                        title: 'Auto-message', 
-                        subtitle: 'Skrypt na automatyczne odpisywanie graczom podczas nieobecności.' 
-                    }
-                }));
+                // Sprawdź czy moduł auto-message jest już załadowany
+                if (typeof window.initializeAutoMessageModule === 'function') {
+                    // Moduł już załadowany - po prostu go zainicjuj
+                    window.initializeAutoMessageModule(content);
+                } else {
+                    // Moduł nie załadowany - pokaż loading i załaduj
+                    content.innerHTML = `
+                        <div style="display:flex; align-items:center; justify-content:center; height:100%; flex-direction:column;">
+                            <div style="font-size:14px; opacity:0.7; margin-bottom:10px;">Ładowanie Auto-message...</div>
+                            <div style="font-size:11px; opacity:0.5;">auto-message.js</div>
+                        </div>
+                    `;
+                    
+                    // Dynamicznie załaduj auto-message.js
+                    const script = document.createElement('script');
+                    script.src = 'https://raw.githack.com/inwazja-margonem/inwazja-addon/main/auto-message.js';
+                    script.onload = function() {
+                        if (typeof window.initializeAutoMessageModule === 'function') {
+                            window.initializeAutoMessageModule(content);
+                        }
+                    };
+                    script.onerror = function() {
+                        content.innerHTML = `
+                            <div style="padding:25px;">
+                                <h3 style="margin-top:0; color:#eaeff5; font-size:18px;">Auto-message</h3>
+                                <div style="opacity:0.8; margin-bottom:15px; font-size:14px; color:#b0b8c5;">Błąd ładowania modułu</div>
+                                <div style="font-size:12px; opacity:0.6; color:#b0b8c5;">
+                                    Nie udało się załadować modułu z GitHub.
+                                </div>
+                            </div>
+                        `;
+                    };
+                    document.head.appendChild(script);
+                }
             } else {
-                const content = document.getElementById('inwazja-content');
+                // Dla innych modułów
                 content.innerHTML = `
                     <div style="padding:25px;">
                         <h3 style="margin-top:0; color:#eaeff5; font-size:18px;">${this.querySelector('div').textContent}</h3>
