@@ -667,6 +667,59 @@
             saveConfig(cfg);
         }
     });
+
+    function showDashboard() {
+    const content = document.getElementById('inwazja-content');
+    const dashboardBtn = document.getElementById('inwazja-dashboard');
+    
+    // Oznacz przycisk jako aktywny
+    document.querySelectorAll('#inwazja-controls .ia-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    if (dashboardBtn) dashboardBtn.classList.add('active');
+    
+    // Ustaw tytuł
+    window.inwazjaSetActiveTitle('Dashboard');
+    
+    // Generuj statystyki
+    const totalMessages = window.inwazjaConfig.autoMessages.filter(msg => msg.length > 0).length;
+    const ignoredPlayers = window.inwazjaConfig.ignoredPlayers.length;
+    const autoEnabled = window.inwazjaConfig.autoEnabled ? 'Tak' : 'Nie';
+    const scheduleEnabled = window.inwazjaConfig.scheduleEnabled ? 'Tak' : 'Nie';
+    
+    content.innerHTML = `
+        <div class="dashboard-container">
+            <div class="dashboard-title">Inwazja Add-on</div>
+            <div class="dashboard-subtitle">
+                Zaawansowany dodatek do Margonem z funkcją automatycznego odpowiadania na wiadomości i wieloma innymi modułami.
+            </div>
+            <div class="dashboard-version">Wersja 2.0.0 | Modułowy System</div>
+            
+            <div class="dashboard-stats">
+                <div class="dashboard-stat">
+                    <div class="dashboard-stat-value">${totalMessages}/5</div>
+                    <div class="dashboard-stat-label">Aktywne wiadomości</div>
+                </div>
+                <div class="dashboard-stat">
+                    <div class="dashboard-stat-value">${ignoredPlayers}/5</div>
+                    <div class="dashboard-stat-label">Ignorowani gracze</div>
+                </div>
+                <div class="dashboard-stat">
+                    <div class="dashboard-stat-value">${autoEnabled}</div>
+                    <div class="dashboard-stat-label">Auto-odpowiadanie</div>
+                </div>
+                <div class="dashboard-stat">
+                    <div class="dashboard-stat-value">${scheduleEnabled}</div>
+                    <div class="dashboard-stat-label">Harmonogram</div>
+                </div>
+            </div>
+            
+            <div style="margin-top: 30px; font-size: 11px; opacity: 0.6;">
+                Kliknij w kafelek po lewej stronie, aby przejść do konkretnego modułu.
+            </div>
+        </div>
+    `;
+}
     
     // Zapisz przed zamknięciem
     window.addEventListener('beforeunload', () => {
