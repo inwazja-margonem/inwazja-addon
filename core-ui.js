@@ -1,11 +1,11 @@
-// core-ui.js - POPRAWIONA WERSJA
+// core-ui.js
 (function() {
     'use strict';
     
     if (window.inwazjaCoreLoaded) return;
     window.inwazjaCoreLoaded = true;
     
-    console.log('🎨 Inwazja Core UI: ładowanie...');
+    console.log('🚀 Inwazja Core UI: ładowanie...');
     
     /**********************
      *  Konfiguracja
@@ -49,19 +49,17 @@
     window.inwazjaSaveConfig = saveConfig;
     
     /**********************
-     *  Tworzenie DOM z INLINE STYLES
+     *  Tworzenie DOM
      **********************/
-    // Usuń stare elementy
     document.getElementById('inwazja-icon')?.remove();
     document.getElementById('inwazja-panel')?.remove();
     
-    // Ikona z INLINE STYLES
+    // Ikona
     const icon = document.createElement('div');
     icon.id = 'inwazja-icon';
     icon.textContent = 'Inwazja Add-on';
     icon.title = 'Inwazja Add-on - Kliknij aby otworzyć';
     
-    // STYLE IKONY - INLINE
     icon.style.cssText = `
         position: fixed;
         left: 20px;
@@ -95,7 +93,6 @@
     const panel = document.createElement('div');
     panel.id = 'inwazja-panel';
     
-    // STYLE PANELU - INLINE
     panel.style.cssText = `
         position: fixed;
         z-index: 9999;
@@ -140,6 +137,7 @@
                     cursor: pointer;
                     border-radius: 5px;
                     font-size: 16px;
+                    transition: all 0.2s ease;
                 ">🏠</button>
                 <button id="inwazja-close" class="ia-btn" title="Zamknij" style="
                     background: rgba(255,100,100,0.2);
@@ -149,6 +147,7 @@
                     cursor: pointer;
                     border-radius: 5px;
                     font-size: 16px;
+                    transition: all 0.2s ease;
                 ">✖</button>
             </div>
         </div>
@@ -159,6 +158,7 @@
             padding: 20px;
             height: calc(100% - 65px);
             background: rgba(0,0,0,0.2);
+            overflow: hidden;
         ">
             <div id="inwazja-tiles" style="
                 width: 200px;
@@ -166,6 +166,8 @@
                 flex-direction: column;
                 gap: 10px;
                 flex-shrink: 0;
+                overflow-y: auto;
+                padding-right: 5px;
             ">
                 <div class="inwazja-tile" data-id="auto-message" style="
                     padding: 15px;
@@ -174,6 +176,7 @@
                     border-radius: 8px;
                     cursor: pointer;
                     transition: all 0.3s ease;
+                    flex-shrink: 0;
                 ">
                     <div style="font-weight:bold; font-size:14px; color:#00ffcc;">Auto-message</div>
                     <div style="opacity:0.8; font-size:12px; margin-top:5px; color:#a0f0ff;">Automatyczne odpisywanie</div>
@@ -185,6 +188,7 @@
                     border-radius: 8px;
                     cursor: pointer;
                     transition: all 0.3s ease;
+                    flex-shrink: 0;
                 ">
                     <div style="font-weight:bold; font-size:14px; color:#00ffcc;">Ekwipunek</div>
                     <div style="opacity:0.8; font-size:12px; margin-top:5px; color:#a0f0ff;">Przegląd przedmiotów</div>
@@ -196,6 +200,7 @@
                     border-radius: 8px;
                     cursor: pointer;
                     transition: all 0.3s ease;
+                    flex-shrink: 0;
                 ">
                     <div style="font-weight:bold; font-size:14px; color:#00ffcc;">Klan</div>
                     <div style="opacity:0.8; font-size:12px; margin-top:5px; color:#a0f0ff;">Lista członków</div>
@@ -207,6 +212,7 @@
                     border-radius: 8px;
                     cursor: pointer;
                     transition: all 0.3s ease;
+                    flex-shrink: 0;
                 ">
                     <div style="font-weight:bold; font-size:14px; color:#00ffcc;">Umiejętności</div>
                     <div style="opacity:0.8; font-size:12px; margin-top:5px; color:#a0f0ff;">Tooltipy i cooldowny</div>
@@ -218,6 +224,7 @@
                     border-radius: 8px;
                     cursor: pointer;
                     transition: all 0.3s ease;
+                    flex-shrink: 0;
                 ">
                     <div style="font-weight:bold; font-size:14px; color:#00ffcc;">Zadania</div>
                     <div style="opacity:0.8; font-size:12px; margin-top:5px; color:#a0f0ff;">Postępy i nagrody</div>
@@ -229,6 +236,7 @@
                     border-radius: 8px;
                     cursor: pointer;
                     transition: all 0.3s ease;
+                    flex-shrink: 0;
                 ">
                     <div style="font-weight:bold; font-size:14px; color:#00ffcc;">Ustawienia</div>
                     <div style="opacity:0.8; font-size:12px; margin-top:5px; color:#a0f0ff;">Preferencje GUI</div>
@@ -339,10 +347,84 @@
     }
     
     /**********************
-     *  Event Listenery z HOVER EFFECTS
+     *  POPRAWIONY DRAG & DROP (szybki i responsywny)
      **********************/
+    let isDraggingIcon = false;
+    let dragStartX = 0, dragStartY = 0;
+    let startIconX = 0, startIconY = 0;
     
-    // Hover effects dla ikony
+    // Optymalny drag & drop
+    const handleIconMouseDown = (e) => {
+        if (e.button !== 0) return;
+        
+        isDraggingIcon = true;
+        dragStartX = e.clientX;
+        dragStartY = e.clientY;
+        startIconX = parseInt(icon.style.left) || 20;
+        startIconY = parseInt(icon.style.top) || 20;
+        
+        icon.style.transition = 'none'; // Wyłącz animacje podczas drag
+        icon.style.opacity = '0.9';
+        e.preventDefault();
+    };
+    
+    const handleIconMouseMove = (e) => {
+        if (!isDraggingIcon) return;
+        
+        const deltaX = e.clientX - dragStartX;
+        const deltaY = e.clientY - dragStartY;
+        
+        const newX = Math.max(5, Math.min(window.innerWidth - icon.offsetWidth - 5, startIconX + deltaX));
+        const newY = Math.max(5, Math.min(window.innerHeight - icon.offsetHeight - 5, startIconY + deltaY));
+        
+        icon.style.left = newX + 'px';
+        icon.style.top = newY + 'px';
+    };
+    
+    const handleIconMouseUp = () => {
+        if (!isDraggingIcon) return;
+        
+        isDraggingIcon = false;
+        icon.style.transition = 'all 0.3s ease'; // Włącz animacje z powrotem
+        icon.style.opacity = '1';
+        
+        window.inwazjaConfig.iconPos = {
+            left: parseInt(icon.style.left),
+            top: parseInt(icon.style.top)
+        };
+        window.inwazjaSaveConfig(window.inwazjaConfig);
+    };
+    
+    // Event listeners dla drag & drop
+    icon.addEventListener('mousedown', handleIconMouseDown);
+    document.addEventListener('mousemove', handleIconMouseMove);
+    document.addEventListener('mouseup', handleIconMouseUp);
+    
+    /**********************
+     *  SCROLL (działa z kółkiem myszy)
+     **********************/
+    function enableScrolling() {
+        const content = document.getElementById('inwazja-content');
+        const tiles = document.getElementById('inwazja-tiles');
+        
+        if (content) {
+            content.addEventListener('wheel', (e) => {
+                e.preventDefault();
+                content.scrollTop += e.deltaY;
+            }, { passive: false });
+        }
+        
+        if (tiles) {
+            tiles.addEventListener('wheel', (e) => {
+                e.preventDefault();
+                tiles.scrollTop += e.deltaY;
+            }, { passive: false });
+        }
+    }
+    
+    /**********************
+     *  Hover effects
+     **********************/
     icon.addEventListener('mouseenter', function() {
         this.style.background = 'linear-gradient(135deg, #00ffaa, #00e0ff)';
         this.style.transform = 'translateY(-2px)';
@@ -350,12 +432,12 @@
     });
     
     icon.addEventListener('mouseleave', function() {
+        if (isDraggingIcon) return;
         this.style.background = 'linear-gradient(135deg, #00ff88, #00ccff)';
         this.style.transform = 'translateY(0px)';
         this.style.boxShadow = '0 4px 15px rgba(0,255,136,0.3)';
     });
     
-    // Hover effects dla kafelków
     document.querySelectorAll('.inwazja-tile').forEach(tile => {
         tile.addEventListener('mouseenter', function() {
             this.style.background = 'rgba(0,255,136,0.2)';
@@ -370,7 +452,6 @@
         });
     });
     
-    // Hover effects dla przycisków
     document.querySelectorAll('.ia-btn').forEach(btn => {
         btn.addEventListener('mouseenter', function() {
             this.style.transform = 'scale(1.1)';
@@ -384,52 +465,6 @@
     });
     
     /**********************
-     *  Drag & Drop
-     **********************/
-    let isDraggingIcon = false;
-    let dragStartX = 0, dragStartY = 0;
-    let startIconX = 0, startIconY = 0;
-    
-    icon.addEventListener('pointerdown', function(e) {
-        if (e.button !== 0) return;
-        
-        isDraggingIcon = true;
-        dragStartX = e.clientX;
-        dragStartY = e.clientY;
-        startIconX = parseInt(icon.style.left) || 20;
-        startIconY = parseInt(icon.style.top) || 20;
-        
-        icon.style.opacity = '0.8';
-        e.preventDefault();
-    });
-    
-    document.addEventListener('pointermove', function(e) {
-        if (!isDraggingIcon) return;
-        
-        const deltaX = e.clientX - dragStartX;
-        const deltaY = e.clientY - dragStartY;
-        
-        const newX = Math.max(10, Math.min(window.innerWidth - icon.offsetWidth - 10, startIconX + deltaX));
-        const newY = Math.max(10, Math.min(window.innerHeight - icon.offsetHeight - 10, startIconY + deltaY));
-        
-        icon.style.left = newX + 'px';
-        icon.style.top = newY + 'px';
-    });
-    
-    document.addEventListener('pointerup', function() {
-        if (!isDraggingIcon) return;
-        
-        isDraggingIcon = false;
-        icon.style.opacity = '1';
-        
-        window.inwazjaConfig.iconPos = {
-            left: parseInt(icon.style.left),
-            top: parseInt(icon.style.top)
-        };
-        window.inwazjaSaveConfig(window.inwazjaConfig);
-    });
-    
-    /**********************
      *  Podstawowe eventy
      **********************/
     icon.addEventListener('click', function(e) {
@@ -439,7 +474,10 @@
             panel.style.display = 'none';
         } else {
             panel.style.display = 'flex';
-            showDashboard();
+            setTimeout(() => {
+                showDashboard();
+                enableScrolling(); // Włącz scroll po otwarciu
+            }, 50);
         }
     });
     
