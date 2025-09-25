@@ -106,8 +106,10 @@
     #inwazja-panel {
         position: fixed;
         z-index: 2147483004;
-        min-width: 600px;
-        min-height: 400px;
+        min-width: 400px;
+        min-height: 300px;
+        max-width: 95vw;
+        max-height: 95vh;
         width: ${window.inwazjaConfig.size?.width || 800}px;
         height: ${window.inwazjaConfig.size?.height || 600}px;
         border-radius: 10px;
@@ -125,8 +127,85 @@
         pointer-events: auto;
         border: 1px solid rgba(255,255,255,0.03);
         box-sizing: border-box;
+        resize: both;
+        overflow: auto;
     }
-    #inwazja-panel.ia-visible { display:flex; opacity: 1; transform: translate(0, 0) scale(1); }
+    #inwazja-panel.ia-visible { 
+        display: flex; 
+        opacity: 1; 
+        transform: translate(0, 0) scale(1); 
+    }
+
+    /* Nowe style dla resizable corners */
+    .resizable-handle {
+        position: absolute;
+        background: transparent;
+        z-index: 10;
+    }
+    
+    .resizable-handle-n {
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 8px;
+        cursor: n-resize;
+    }
+    
+    .resizable-handle-s {
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 8px;
+        cursor: s-resize;
+    }
+    
+    .resizable-handle-e {
+        top: 0;
+        right: 0;
+        bottom: 0;
+        width: 8px;
+        cursor: e-resize;
+    }
+    
+    .resizable-handle-w {
+        top: 0;
+        left: 0;
+        bottom: 0;
+        width: 8px;
+        cursor: w-resize;
+    }
+    
+    .resizable-handle-ne {
+        top: 0;
+        right: 0;
+        width: 12px;
+        height: 12px;
+        cursor: ne-resize;
+    }
+    
+    .resizable-handle-nw {
+        top: 0;
+        left: 0;
+        width: 12px;
+        height: 12px;
+        cursor: nw-resize;
+    }
+    
+    .resizable-handle-se {
+        bottom: 0;
+        right: 0;
+        width: 12px;
+        height: 12px;
+        cursor: se-resize;
+    }
+    
+    .resizable-handle-sw {
+        bottom: 0;
+        left: 0;
+        width: 12px;
+        height: 12px;
+        cursor: sw-resize;
+    }
 
     /* header */
     #inwazja-header {
@@ -273,6 +352,7 @@
         border-radius:6px;
         overflow-x: hidden;
         max-height: 100%;
+        min-height: 200px;
     }
 
     /* footer */
@@ -288,107 +368,22 @@
         background: rgba(0,0,0,0.06);
     }
 
-    /* resizer */
-    #inwazja-resizer {
-        position:absolute;
-        right:6px;
-        bottom:6px;
-        width:14px;
-        height:14px;
-        cursor: se-resize;
-        border-radius:2px;
-        z-index:2147483010;
-        background: linear-gradient(135deg, transparent 50%, rgba(255,255,255,0.3) 50%);
-        border: 1px solid rgba(255,255,255,0.1);
-        transition: all 0.2s ease;
-    }
-    #inwazja-resizer:hover {
-        background: linear-gradient(135deg, transparent 50%, rgba(255,255,255,0.5) 50%);
-        border-color: rgba(255,255,255,0.3);
-    }
-
-    /* --- DASHBOARD STYLES --- */
-    .dashboard-container {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        padding: 40px 20px;
-        text-align: center;
-        height: 100%;
-    }
-
-    .dashboard-title {
-        font-size: 28px;
-        font-weight: 800;
-        margin-bottom: 10px;
-        background: linear-gradient(135deg, #00ff88, #00ccff);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-    }
-
-    .dashboard-subtitle {
-        font-size: 14px;
-        opacity: 0.8;
-        margin-bottom: 30px;
-        max-width: 400px;
-        line-height: 1.5;
-    }
-
-    .dashboard-version {
-        font-size: 12px;
-        opacity: 0.6;
-        margin-bottom: 40px;
-        padding: 8px 16px;
-        background: rgba(255,255,255,0.05);
-        border-radius: 20px;
-        border: 1px solid rgba(255,255,255,0.1);
-    }
-
-    .dashboard-stats {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 15px;
-        width: 100%;
-        max-width: 400px;
-        margin-top: 20px;
-    }
-
-    .dashboard-stat {
-        padding: 15px;
-        background: rgba(255,255,255,0.03);
-        border-radius: 8px;
-        border: 1px solid rgba(255,255,255,0.05);
-    }
-
-    .dashboard-stat-value {
-        font-size: 24px;
-        font-weight: 700;
-        margin-bottom: 5px;
-    }
-
-    .dashboard-stat-label {
-        font-size: 11px;
-        opacity: 0.7;
-    }
-
     /* SCROLLBARY */
     #inwazja-tiles::-webkit-scrollbar,
     #inwazja-content::-webkit-scrollbar {
-        width: 6px;
+        width: 8px;
     }
 
     #inwazja-tiles::-webkit-scrollbar-track,
     #inwazja-content::-webkit-scrollbar-track {
         background: rgba(255,255,255,0.02);
-        border-radius: 3px;
+        border-radius: 4px;
     }
 
     #inwazja-tiles::-webkit-scrollbar-thumb,
     #inwazja-content::-webkit-scrollbar-thumb {
         background: rgba(255,255,255,0.15);
-        border-radius: 3px;
+        border-radius: 4px;
         transition: background 0.2s ease;
     }
 
@@ -441,6 +436,15 @@
     const panel = document.createElement('div');
     panel.id = 'inwazja-panel';
     panel.innerHTML = `
+        <div class="resizable-handle resizable-handle-n"></div>
+        <div class="resizable-handle resizable-handle-s"></div>
+        <div class="resizable-handle resizable-handle-e"></div>
+        <div class="resizable-handle resizable-handle-w"></div>
+        <div class="resizable-handle resizable-handle-ne"></div>
+        <div class="resizable-handle resizable-handle-nw"></div>
+        <div class="resizable-handle resizable-handle-se"></div>
+        <div class="resizable-handle resizable-handle-sw"></div>
+        
         <div id="inwazja-header">
             <div class="title">
                 Inwazja Add-on
@@ -457,7 +461,6 @@
             <div id="inwazja-content"><div style="opacity:.9">Wersja: modułowa 2.0.0. <strong id="inwazja-activeTitle"></strong></div></div>
         </div>
         <div id="inwazja-footer">Modułowy UI | Inwazja Add-on v2.0.0</div>
-        <div id="inwazja-resizer" aria-hidden="true" title="Zmień rozmiar okna"></div>
     `;
     document.body.appendChild(panel);
     
@@ -514,6 +517,100 @@
         }, { passive: false });
     }
     
+    /**********************
+     *  Rozszerzona funkcjonalność Resize
+     **********************/
+    function initResizable() {
+        const handles = panel.querySelectorAll('.resizable-handle');
+        let currentHandle = null;
+        let startX, startY, startWidth, startHeight, startLeft, startTop;
+
+        handles.forEach(handle => {
+            handle.addEventListener('mousedown', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                currentHandle = this;
+                startX = e.clientX;
+                startY = e.clientY;
+                startWidth = parseInt(document.defaultView.getComputedStyle(panel).width, 10);
+                startHeight = parseInt(document.defaultView.getComputedStyle(panel).height, 10);
+                startLeft = parseInt(document.defaultView.getComputedStyle(panel).left, 10);
+                startTop = parseInt(document.defaultView.getComputedStyle(panel).top, 10);
+                
+                document.addEventListener('mousemove', resize);
+                document.addEventListener('mouseup', stopResize);
+            });
+        });
+
+        function resize(e) {
+            if (!currentHandle) return;
+            
+            const dx = e.clientX - startX;
+            const dy = e.clientY - startY;
+            
+            let newWidth = startWidth;
+            let newHeight = startHeight;
+            let newLeft = startLeft;
+            let newTop = startTop;
+
+            // Obsługa różnych kierunków resize
+            if (currentHandle.classList.contains('resizable-handle-e') || 
+                currentHandle.classList.contains('resizable-handle-ne') || 
+                currentHandle.classList.contains('resizable-handle-se')) {
+                newWidth = Math.max(400, startWidth + dx);
+            }
+            
+            if (currentHandle.classList.contains('resizable-handle-w') || 
+                currentHandle.classList.contains('resizable-handle-nw') || 
+                currentHandle.classList.contains('resizable-handle-sw')) {
+                newWidth = Math.max(400, startWidth - dx);
+                newLeft = startLeft + dx;
+            }
+            
+            if (currentHandle.classList.contains('resizable-handle-s') || 
+                currentHandle.classList.contains('resizable-handle-se') || 
+                currentHandle.classList.contains('resizable-handle-sw')) {
+                newHeight = Math.max(300, startHeight + dy);
+            }
+            
+            if (currentHandle.classList.contains('resizable-handle-n') || 
+                currentHandle.classList.contains('resizable-handle-ne') || 
+                currentHandle.classList.contains('resizable-handle-nw')) {
+                newHeight = Math.max(300, startHeight - dy);
+                newTop = startTop + dy;
+            }
+
+            // Ograniczenia rozmiaru
+            newWidth = Math.min(newWidth, window.innerWidth - 20);
+            newHeight = Math.min(newHeight, window.innerHeight - 20);
+            
+            // Aktualizacja pozycji i rozmiaru
+            panel.style.width = newWidth + 'px';
+            panel.style.height = newHeight + 'px';
+            
+            if (newLeft !== startLeft) panel.style.left = newLeft + 'px';
+            if (newTop !== startTop) panel.style.top = newTop + 'px';
+        }
+
+        function stopResize() {
+            currentHandle = null;
+            document.removeEventListener('mousemove', resize);
+            document.removeEventListener('mouseup', stopResize);
+            
+            // Zapisz nowy rozmiar i pozycję
+            window.inwazjaConfig.size = { 
+                width: parseInt(panel.style.width), 
+                height: parseInt(panel.style.height) 
+            };
+            window.inwazjaConfig.pos = { 
+                left: parseInt(panel.style.left), 
+                top: parseInt(panel.style.top) 
+            };
+            window.inwazjaSaveConfig(window.inwazjaConfig);
+        }
+    }
+
     /**********************
      *  Funkcja Dashboard
      **********************/
@@ -747,38 +844,8 @@
         });
     })();
     
-    // Resizer
-    (function resizerInit(){
-        const resizer = document.getElementById('inwazja-resizer');
-        if (!resizer) return;
-        
-        let resizing = false, startX=0, startY=0, startW=0, startH=0;
-        resizer.addEventListener('pointerdown', (e) => {
-            if (e.button !== 0) return;
-            resizing = true;
-            startX = e.clientX; startY = e.clientY;
-            startW = panel.offsetWidth; startH = panel.offsetHeight;
-            document.body.style.userSelect = 'none';
-            e.preventDefault();
-        });
-        
-        window.addEventListener('pointermove', (e) => {
-            if (!resizing) return;
-            const dx = e.clientX - startX, dy = e.clientY - startY;
-            const newW = Math.max(600, Math.min(startW + dx, window.innerWidth - 40));
-            const newH = Math.max(400, Math.min(startH + dy, window.innerHeight - 40));
-            panel.style.width = newW + 'px';
-            panel.style.height = newH + 'px';
-        });
-        
-        window.addEventListener('pointerup', () => {
-            if (!resizing) return;
-            resizing = false;
-            document.body.style.userSelect = '';
-            cfg.size = { width: panel.offsetWidth, height: panel.offsetHeight };
-            saveConfig(cfg);
-        });
-    })();
+    // Inicjalizacja funkcjonalności resize
+    initResizable();
     
     // Obsługa resize okna
     window.addEventListener('resize', () => {
@@ -819,7 +886,7 @@
     });
     
     /**********************
-     *  Inicjalizacja Dashboard
+     *  Inicjalizacja Dashboard i Scroll
      **********************/
     // Inicjalizacja scrolla
     setTimeout(() => {
@@ -841,5 +908,5 @@
         }
     }
     
-    console.log('✅ Inwazja Add-on: Core UI załadowany z Dashboardem');
+    console.log('✅ Inwazja Add-on: Core UI załadowany z pełnym resize i scroll');
 })();
