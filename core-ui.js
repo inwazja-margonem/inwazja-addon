@@ -72,35 +72,36 @@
      *  CSS (stylowanie)
      **********************/
     const css = `
-    /* --- ikona --- */
-    #inwazja-icon {
-        position: fixed;
-        left: 20px; top: 20px;
-        width: 130px;
-        height: 36px;
-        padding: 6px 10px;
-        background: rgba(12,12,12,0.95);
-        border: 2px solid rgba(255,255,255,0.06);
-        border-radius: 8px;
-        color: #fff;
-        font-weight: 700;
-        font-size: 13px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap:8px;
-        cursor: pointer;
-        z-index: 2147483005;
-        user-select: none;
-        transition: transform 0.12s ease, box-shadow .12s ease, border-color .16s ease;
-        box-sizing: border-box;
-    }
-    #inwazja-icon.dragging { transform: none !important; transition: none !important; }
+/* --- ikona --- */
+#inwazja-icon {
+    position: fixed;
+    left: 20px; top: 20px;
+    width: 140px;
+    height: 36px;
+    padding: 6px 12px;
+    background: rgba(12,12,12,0.95);
+    border: 2px solid rgba(255,255,255,0.06);
+    border-radius: 8px;
+    color: #fff;
+    font-weight: 700;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    z-index: 2147483005;
+    user-select: none;
+    transition: transform 0.12s ease, box-shadow .12s ease, border-color .16s ease;
+    box-sizing: border-box;
+    white-space: nowrap;
+}
+#inwazja-icon.dragging { transform: none !important; transition: none !important; }
 
-    #inwazja-icon:hover {
-        transform: translateY(-3px) scale(1.02);
-        box-shadow: 0 10px 22px rgba(0,0,0,0.6);
-    }
+#inwazja-icon:hover {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 10px 22px rgba(0,0,0,0.6);
+}
 
     /* --- okno (panel) --- */
     #inwazja-panel {
@@ -693,6 +694,64 @@ function initializeEventListeners() {
         }
     }
 }
+
+    // Drag & drop ikony
+(function iconClickDrag() {
+    let down = false, moved = false;
+    let startX = 0, startY = 0;
+    const THRESHOLD = 6;
+    
+    icon.addEventListener('pointerdown', (e) => {
+        if (e.button !== 0) return;
+        down = true; moved = false;
+        startX = e.clientX; startY = e.clientY;
+        icon.classList.add('dragging');
+        e.preventDefault();
+    });
+    
+    window.addEventListener('pointermove', (e) => {
+        if (!down) return;
+        const dx = e.clientX - startX, dy = e.clientY - startY;
+        if (!moved && Math.abs(dx) < THRESHOLD && Math.abs(dy) < THRESHOLD) return;
+        moved = true;
+        const left = Math.max(6, Math.min(window.innerWidth - icon.offsetWidth - 6, e.clientX - (icon.offsetWidth/2)));
+        const top  = Math.max(6, Math.min(window.innerHeight - icon.offsetHeight - 6, e.clientY - (icon.offsetHeight/2)));
+        icon.style.left = left + 'px';
+        icon.style.top  = top  + 'px';
+    });
+    
+    window.addEventListener('pointerup', (e) => {
+        if (!down) return;
+        down = false;
+        icon.classList.remove('dragging');
+        if (moved) {
+            cfg.iconPos = { left: parseInt(icon.style.left), top: parseInt(icon.style.top) };
+            saveConfig(cfg);
+            return;
+        }
+        
+        if (panel.classList.contains('ia-visible')) {
+            panel.classList.remove('ia-visible');
+        } else {
+            panel.classList.add('ia-visible');
+            if (cfg.pos && typeof cfg.pos.left === 'number') {
+                panel.style.transform = 'translate(0,0)';
+            } else {
+                panel.style.transform = 'translate(-50%,-50%) scale(.98)';
+            }
+            
+            // AUTOMATYCZNIE PRZEJDŹ NA DASHBOARD PO OTWARCIU
+            setTimeout(() => {
+                showDashboard();
+                window.inwazjaConfig.activeTab = 'dashboard';
+                window.inwazjaSaveConfig(window.inwazjaConfig);
+                
+                enableMouseWheelScroll(document.getElementById('inwazja-tiles'));
+                enableMouseWheelScroll(document.getElementById('inwazja-content'));
+            }, 100);
+        }
+    });
+})();
 // WYWOŁAJ INICJALIZACJĘ NA KONIEC SKRYPTU - DODAJ TO:
 setTimeout(() => {
     initializeEventListeners();
