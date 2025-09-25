@@ -56,9 +56,9 @@
         position: fixed;
         left: 20px; 
         top: 20px;
-        width: 150px; /* ZWIĘKSZONE dla lepszego wyświetlania */
+        width: 160px; /* ZWIĘKSZONE do 160px */
         height: 36px;
-        padding: 8px 14px; /* ZWIĘKSZONE paddingi */
+        padding: 8px 12px;
         background: rgba(12,12,12,0.95);
         border: 2px solid rgba(255,255,255,0.06);
         border-radius: 8px;
@@ -74,7 +74,7 @@
         white-space: nowrap;
         box-sizing: border-box;
         font-family: Arial, sans-serif;
-        letter-spacing: 0.2px; /* Lepsze odstępy między literami */
+        letter-spacing: 0.2px;
     }
     
     #inwazja-icon:hover {
