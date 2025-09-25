@@ -1,11 +1,11 @@
-// core-ui.js
+// core-ui.js - POPRAWIONA WERSJA
 (function() {
     'use strict';
     
     if (window.inwazjaCoreLoaded) return;
     window.inwazjaCoreLoaded = true;
     
-    console.log('🎨 Inwazja Core UI: ładowanie stylowego interfejsu...');
+    console.log('🎨 Inwazja Core UI: ładowanie...');
     
     /**********************
      *  Konfiguracja
@@ -13,7 +13,7 @@
     const STORAGE_KEY = 'inwazjaAddonConfig_v2_1';
     const DEFAULT_CFG = {
         pos: null,
-        size: { width: 850, height: 650 },
+        size: { width: 800, height: 600 },
         iconPos: null,
         opacity: 0.98,
         autoMessages: ["", "", "", "", ""],
@@ -24,8 +24,7 @@
         scheduleStart: "08:00",
         scheduleEnd: "22:00",
         ignoredPlayers: [],
-        activeTab: 'dashboard',
-        theme: 'green-blue'
+        activeTab: 'dashboard'
     };
     
     function loadConfig() {
@@ -50,80 +49,31 @@
     window.inwazjaSaveConfig = saveConfig;
     
     /**********************
-     *  CSS - ZIELONO-NIEBIESKI GRADIENT
+     *  Tworzenie DOM z INLINE STYLES
      **********************/
-    const css = `
-    @keyframes slideInDown {
-        from {
-            opacity: 0;
-            transform: translateY(-30px) scale(0.95);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0) scale(1);
-        }
-    }
+    // Usuń stare elementy
+    document.getElementById('inwazja-icon')?.remove();
+    document.getElementById('inwazja-panel')?.remove();
     
-    @keyframes slideInUp {
-        from {
-            opacity: 0;
-            transform: translateY(30px) scale(0.95);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0) scale(1);
-        }
-    }
+    // Ikona z INLINE STYLES
+    const icon = document.createElement('div');
+    icon.id = 'inwazja-icon';
+    icon.textContent = 'Inwazja Add-on';
+    icon.title = 'Inwazja Add-on - Kliknij aby otworzyć';
     
-    @keyframes pulseGlow {
-        0% {
-            box-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
-        }
-        50% {
-            box-shadow: 0 0 30px rgba(0, 204, 255, 0.5);
-        }
-        100% {
-            box-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
-        }
-    }
-    
-    @keyframes floatIcon {
-        0%, 100% {
-            transform: translateY(0px);
-        }
-        50% {
-            transform: translateY(-5px);
-        }
-    }
-    
-    @keyframes gradientShift {
-        0% {
-            background-position: 0% 50%;
-        }
-        50% {
-            background-position: 100% 50%;
-        }
-        100% {
-            background-position: 0% 50%;
-        }
-    }
-    
-    #inwazja-icon {
+    // STYLE IKONY - INLINE
+    icon.style.cssText = `
         position: fixed;
-        left: 25px;
-        top: 25px;
-        min-width: 150px;
-        height: 42px;
-        padding: 10px 20px;
-        background: linear-gradient(135deg, 
-            rgba(0, 255, 136, 0.9) 0%, 
-            rgba(0, 204, 255, 0.9) 50%, 
-            rgba(0, 255, 200, 0.9) 100%);
-        background-size: 200% 200%;
-        border: 2px solid rgba(255, 255, 255, 0.3);
-        border-radius: 12px;
-        color: #001a33;
-        font-weight: 800;
+        left: 20px;
+        top: 20px;
+        width: 150px;
+        height: 40px;
+        padding: 10px 15px;
+        background: linear-gradient(135deg, #00ff88, #00ccff);
+        border: 2px solid rgba(255,255,255,0.3);
+        border-radius: 10px;
+        color: #002b33;
+        font-weight: bold;
         font-size: 14px;
         display: flex;
         align-items: center;
@@ -133,408 +83,172 @@
         user-select: none;
         white-space: nowrap;
         box-sizing: border-box;
-        font-family: 'Segoe UI', system-ui, sans-serif;
-        backdrop-filter: blur(20px);
-        transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-        animation: floatIcon 6s ease-in-out infinite, pulseGlow 4s ease-in-out infinite;
-        letter-spacing: 0.5px;
-        text-shadow: 0 1px 2px rgba(255, 255, 255, 0.5);
-    }
+        font-family: Arial, sans-serif;
+        text-align: center;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(0,255,136,0.3);
+    `;
     
-    #inwazja-icon:hover {
-        animation: pulseGlow 2s ease-in-out infinite, gradientShift 3s ease infinite;
-        transform: translateY(-2px) scale(1.05);
-        background: linear-gradient(135deg, 
-            rgba(0, 255, 150, 1) 0%, 
-            rgba(0, 230, 255, 1) 50%, 
-            rgba(0, 255, 220, 1) 100%);
-        background-size: 200% 200%;
-        border-color: rgba(255, 255, 255, 0.6);
-        box-shadow: 0 10px 30px rgba(0, 255, 136, 0.4);
-    }
+    document.body.appendChild(icon);
     
-    #inwazja-icon.dragging {
-        animation: none;
-        transform: scale(0.95);
-        opacity: 0.9;
-    }
-
-    #inwazja-panel {
+    // Panel
+    const panel = document.createElement('div');
+    panel.id = 'inwazja-panel';
+    
+    // STYLE PANELU - INLINE
+    panel.style.cssText = `
         position: fixed;
         z-index: 9999;
-        width: 850px;
-        height: 650px;
-        border-radius: 20px;
+        width: 800px;
+        height: 600px;
+        border-radius: 15px;
         overflow: hidden;
         display: none;
         flex-direction: column;
-        background: linear-gradient(135deg, 
-            rgba(10, 25, 47, 0.95) 0%, 
-            rgba(15, 35, 60, 0.95) 50%, 
-            rgba(20, 45, 70, 0.95) 100%);
+        background: rgba(20,30,40,0.95);
         color: #e0f7ff;
-        font-family: 'Segoe UI', system-ui, sans-serif;
-        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+        font-family: Arial, sans-serif;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.5);
         user-select: none;
-        border: 1px solid rgba(0, 255, 136, 0.3);
-        backdrop-filter: blur(30px);
-        opacity: 0;
-        transform: scale(0.8) translateY(50px);
-        transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-    }
-    
-    #inwazja-panel.visible { 
-        display: flex;
-        opacity: 1;
-        transform: scale(1) translateY(0);
-        animation: slideInUp 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
-    }
-    
-    #inwazja-header {
-        height: 50px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 0 25px;
-        background: linear-gradient(135deg, 
-            rgba(0, 40, 80, 0.8) 0%, 
-            rgba(0, 60, 100, 0.8) 100%);
-        border-bottom: 1px solid rgba(0, 255, 136, 0.2);
-        cursor: move;
-        font-size: 15px;
-        font-weight: 700;
-        position: relative;
-        overflow: hidden;
-    }
-    
-    #inwazja-header::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(90deg, 
-            transparent, 
-            rgba(0, 255, 136, 0.1), 
-            transparent);
-        transition: left 0.6s ease;
-    }
-    
-    #inwazja-header:hover::before {
-        left: 100%;
-    }
-    
-    #inwazja-controls { 
-        display: flex; 
-        align-items: center; 
-        gap: 12px; 
-    }
-    
-    .ia-btn { 
-        background: linear-gradient(135deg, 
-            rgba(0, 255, 136, 0.2) 0%, 
-            rgba(0, 204, 255, 0.2) 100%);
-        border: 1px solid rgba(0, 255, 136, 0.3);
-        color: #a0f0ff; 
-        padding: 8px 14px; 
-        cursor: pointer;
-        border-radius: 8px;
-        font-size: 16px;
-        transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        border: 1px solid rgba(0,255,136,0.3);
         backdrop-filter: blur(10px);
-    }
-    
-    .ia-btn:hover {
-        background: linear-gradient(135deg, 
-            rgba(0, 255, 136, 0.4) 0%, 
-            rgba(0, 204, 255, 0.4) 100%);
-        border-color: rgba(0, 255, 136, 0.6);
-        transform: translateY(-2px) scale(1.1);
-        box-shadow: 0 5px 15px rgba(0, 255, 136, 0.3);
-        color: #00ffcc;
-    }
-    
-    #inwazja-body {
-        display: flex;
-        flex: 1;
-        gap: 25px;
-        padding: 25px;
-        height: calc(100% - 80px);
-        background: linear-gradient(135deg, 
-            rgba(5, 20, 40, 0.6) 0%, 
-            rgba(10, 30, 50, 0.6) 100%);
-    }
-    
-    #inwazja-tiles {
-        width: 240px;
-        display: flex;
-        flex-direction: column;
-        gap: 15px;
-        flex-shrink: 0;
-    }
-    
-    .inwazja-tile {
-        padding: 18px;
-        background: linear-gradient(135deg, 
-            rgba(0, 255, 136, 0.1) 0%, 
-            rgba(0, 204, 255, 0.1) 100%);
-        border: 1px solid rgba(0, 255, 136, 0.2);
-        border-radius: 12px;
-        cursor: pointer;
-        transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-        position: relative;
-        overflow: hidden;
-    }
-    
-    .inwazja-tile::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(90deg, 
-            transparent, 
-            rgba(0, 255, 136, 0.2), 
-            transparent);
-        transition: left 0.6s ease;
-    }
-    
-    .inwazja-tile:hover {
-        background: linear-gradient(135deg, 
-            rgba(0, 255, 136, 0.2) 0%, 
-            rgba(0, 204, 255, 0.2) 100%);
-        border-color: rgba(0, 255, 136, 0.4);
-        transform: translateY(-5px) scale(1.02);
-        box-shadow: 0 10px 25px rgba(0, 255, 136, 0.3);
-        animation: pulseGlow 2s ease-in-out infinite;
-    }
-    
-    .inwazja-tile:hover::before {
-        left: 100%;
-    }
-    
-    #inwazja-content {
-        flex: 1;
-        padding: 25px;
-        overflow: auto;
-        background: linear-gradient(135deg, 
-            rgba(0, 30, 60, 0.3) 0%, 
-            rgba(0, 40, 80, 0.3) 100%);
-        border-radius: 15px;
-        border: 1px solid rgba(0, 255, 136, 0.2);
-        animation: slideInUp 0.5s ease-out;
-    }
-    
-    .dashboard-container {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        height: 100%;
-        text-align: center;
-        padding: 50px 40px;
-        animation: slideInDown 0.6s ease-out;
-    }
-    
-    .dashboard-title {
-        font-size: 42px;
-        font-weight: 900;
-        margin-bottom: 20px;
-        background: linear-gradient(135deg, #00ff88, #00ccff, #00ffcc);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-        text-shadow: 0 4px 20px rgba(0, 255, 136, 0.5);
-        animation: gradientShift 4s ease infinite;
-        background-size: 200% 200%;
-    }
-    
-    .dashboard-subtitle {
-        font-size: 17px;
-        opacity: 0.9;
-        margin-bottom: 40px;
-        max-width: 550px;
-        line-height: 1.6;
-        background: linear-gradient(135deg, #a0f0ff, #80e0ff);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-    }
-    
-    .dashboard-stats {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 20px;
-        width: 100%;
-        max-width: 500px;
-        margin: 30px 0;
-    }
-    
-    .dashboard-stat {
-        padding: 20px;
-        background: linear-gradient(135deg, 
-            rgba(0, 255, 136, 0.1) 0%, 
-            rgba(0, 204, 255, 0.1) 100%);
-        border-radius: 15px;
-        border: 1px solid rgba(0, 255, 136, 0.3);
-        transition: all 0.4s ease;
-        position: relative;
-        overflow: hidden;
-    }
-    
-    .dashboard-stat::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(90deg, 
-            transparent, 
-            rgba(0, 255, 136, 0.1), 
-            transparent);
-        transition: left 0.6s ease;
-    }
-    
-    .dashboard-stat:hover {
-        transform: translateY(-5px) scale(1.05);
-        border-color: rgba(0, 255, 136, 0.6);
-        box-shadow: 0 10px 25px rgba(0, 255, 136, 0.2);
-    }
-    
-    .dashboard-stat:hover::before {
-        left: 100%;
-    }
-    
-    .dashboard-stat-value {
-        font-size: 32px;
-        font-weight: 800;
-        margin-bottom: 8px;
-        background: linear-gradient(135deg, #00ff88, #00ccff);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-    }
-    
-    .dashboard-stat-label {
-        font-size: 12px;
-        opacity: 0.8;
-        text-transform: uppercase;
-        letter-spacing: 1.5px;
-        color: #80e0ff;
-    }
-    
-    .dashboard-version {
-        font-size: 14px;
-        opacity: 0.7;
-        padding: 12px 24px;
-        background: linear-gradient(135deg, 
-            rgba(0, 255, 136, 0.1) 0%, 
-            rgba(0, 204, 255, 0.1) 100%);
-        border-radius: 25px;
-        border: 1px solid rgba(0, 255, 136, 0.3);
-        margin-top: 30px;
-        backdrop-filter: blur(10px);
-    }
-    
-    /* Scrollbar styling */
-    #inwazja-content::-webkit-scrollbar {
-        width: 8px;
-    }
-    
-    #inwazja-content::-webkit-scrollbar-track {
-        background: rgba(0, 255, 136, 0.1);
-        border-radius: 4px;
-    }
-    
-    #inwazja-content::-webkit-scrollbar-thumb {
-        background: linear-gradient(135deg, #00ff88, #00ccff);
-        border-radius: 4px;
-    }
-    
-    #inwazja-content::-webkit-scrollbar-thumb:hover {
-        background: linear-gradient(135deg, #00ffaa, #00e0ff);
-    }
-    
-    /* Responsywność */
-    @media (max-width: 900px) {
-        #inwazja-panel {
-            width: 95vw;
-            height: 90vh;
-            border-radius: 15px;
-        }
-        
-        #inwazja-tiles {
-            width: 200px;
-        }
-    }
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
     `;
     
-    const style = document.createElement('style');
-    style.textContent = css;
-    document.head.appendChild(style);
-    
-    /**********************
-     *  Tworzenie DOM
-     **********************/
-    document.getElementById('inwazja-icon')?.remove();
-    document.getElementById('inwazja-panel')?.remove();
-    
-    const icon = document.createElement('div');
-    icon.id = 'inwazja-icon';
-    icon.textContent = 'Inwazja Add-on';
-    icon.title = 'Inwazja Add-on - Kliknij aby otworzyć';
-    document.body.appendChild(icon);
-    
-    const panel = document.createElement('div');
-    panel.id = 'inwazja-panel';
     panel.innerHTML = `
-        <div id="inwazja-header">
-            <div style="display: flex; align-items: center; gap: 10px;">
-                <span>🌊</span>
-                <span>Inwazja Add-on | v.2.1</span>
-            </div>
-            <div id="inwazja-controls">
-                <button id="inwazja-dashboard" class="ia-btn" title="Dashboard">🏠</button>
-                <button id="inwazja-close" class="ia-btn" title="Zamknij">✖</button>
+        <div id="inwazja-header" style="
+            height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            background: rgba(0,40,80,0.8);
+            border-bottom: 1px solid rgba(0,255,136,0.2);
+            cursor: move;
+            font-size: 14px;
+            font-weight: bold;
+        ">
+            <div>Inwazja Add-on | v.2.1</div>
+            <div id="inwazja-controls" style="display: flex; align-items: center; gap: 10px;">
+                <button id="inwazja-dashboard" class="ia-btn" title="Dashboard" style="
+                    background: rgba(0,255,136,0.2);
+                    border: 1px solid rgba(0,255,136,0.3);
+                    color: #a0f0ff;
+                    padding: 6px 10px;
+                    cursor: pointer;
+                    border-radius: 5px;
+                    font-size: 16px;
+                ">🏠</button>
+                <button id="inwazja-close" class="ia-btn" title="Zamknij" style="
+                    background: rgba(255,100,100,0.2);
+                    border: 1px solid rgba(255,100,100,0.3);
+                    color: #ffa0a0;
+                    padding: 6px 10px;
+                    cursor: pointer;
+                    border-radius: 5px;
+                    font-size: 16px;
+                ">✖</button>
             </div>
         </div>
-        <div id="inwazja-body">
-            <div id="inwazja-tiles">
-                <div class="inwazja-tile" data-id="auto-message">
-                    <div style="font-weight:800; font-size:15px;">💬 Auto-message</div>
-                    <div style="opacity:.9; font-size:12px; margin-top:8px;">Automatyczne odpisywanie graczom</div>
+        <div id="inwazja-body" style="
+            display: flex;
+            flex: 1;
+            gap: 20px;
+            padding: 20px;
+            height: calc(100% - 65px);
+            background: rgba(0,0,0,0.2);
+        ">
+            <div id="inwazja-tiles" style="
+                width: 200px;
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+                flex-shrink: 0;
+            ">
+                <div class="inwazja-tile" data-id="auto-message" style="
+                    padding: 15px;
+                    background: rgba(0,255,136,0.1);
+                    border: 1px solid rgba(0,255,136,0.2);
+                    border-radius: 8px;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                ">
+                    <div style="font-weight:bold; font-size:14px; color:#00ffcc;">Auto-message</div>
+                    <div style="opacity:0.8; font-size:12px; margin-top:5px; color:#a0f0ff;">Automatyczne odpisywanie</div>
                 </div>
-                <div class="inwazja-tile" data-id="inventory">
-                    <div style="font-weight:800; font-size:15px;">🎒 Ekwipunek</div>
-                    <div style="opacity:.9; font-size:12px; margin-top:8px;">Przegląd przedmiotów</div>
+                <div class="inwazja-tile" data-id="inventory" style="
+                    padding: 15px;
+                    background: rgba(0,255,136,0.1);
+                    border: 1px solid rgba(0,255,136,0.2);
+                    border-radius: 8px;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                ">
+                    <div style="font-weight:bold; font-size:14px; color:#00ffcc;">Ekwipunek</div>
+                    <div style="opacity:0.8; font-size:12px; margin-top:5px; color:#a0f0ff;">Przegląd przedmiotów</div>
                 </div>
-                <div class="inwazja-tile" data-id="clan">
-                    <div style="font-weight:800; font-size:15px;">⚔️ Klan</div>
-                    <div style="opacity:.9; font-size:12px; margin-top:8px;">Lista członków i statusy</div>
+                <div class="inwazja-tile" data-id="clan" style="
+                    padding: 15px;
+                    background: rgba(0,255,136,0.1);
+                    border: 1px solid rgba(0,255,136,0.2);
+                    border-radius: 8px;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                ">
+                    <div style="font-weight:bold; font-size:14px; color:#00ffcc;">Klan</div>
+                    <div style="opacity:0.8; font-size:12px; margin-top:5px; color:#a0f0ff;">Lista członków</div>
                 </div>
-                <div class="inwazja-tile" data-id="skills">
-                    <div style="font-weight:800; font-size:15px;">✨ Umiejętności</div>
-                    <div style="opacity:.9; font-size:12px; margin-top:8px;">Tooltipy i cooldowny</div>
+                <div class="inwazja-tile" data-id="skills" style="
+                    padding: 15px;
+                    background: rgba(0,255,136,0.1);
+                    border: 1px solid rgba(0,255,136,0.2);
+                    border-radius: 8px;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                ">
+                    <div style="font-weight:bold; font-size:14px; color:#00ffcc;">Umiejętności</div>
+                    <div style="opacity:0.8; font-size:12px; margin-top:5px; color:#a0f0ff;">Tooltipy i cooldowny</div>
                 </div>
-                <div class="inwazja-tile" data-id="quests">
-                    <div style="font-weight:800; font-size:15px;">📜 Zadania</div>
-                    <div style="opacity:.9; font-size:12px; margin-top:8px;">Postępy i nagrody</div>
+                <div class="inwazja-tile" data-id="quests" style="
+                    padding: 15px;
+                    background: rgba(0,255,136,0.1);
+                    border: 1px solid rgba(0,255,136,0.2);
+                    border-radius: 8px;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                ">
+                    <div style="font-weight:bold; font-size:14px; color:#00ffcc;">Zadania</div>
+                    <div style="opacity:0.8; font-size:12px; margin-top:5px; color:#a0f0ff;">Postępy i nagrody</div>
                 </div>
-                <div class="inwazja-tile" data-id="settings">
-                    <div style="font-weight:800; font-size:15px;">⚙️ Ustawienia</div>
-                    <div style="opacity:.9; font-size:12px; margin-top:8px;">Preferencje GUI</div>
+                <div class="inwazja-tile" data-id="settings" style="
+                    padding: 15px;
+                    background: rgba(0,255,136,0.1);
+                    border: 1px solid rgba(0,255,136,0.2);
+                    border-radius: 8px;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                ">
+                    <div style="font-weight:bold; font-size:14px; color:#00ffcc;">Ustawienia</div>
+                    <div style="opacity:0.8; font-size:12px; margin-top:5px; color:#a0f0ff;">Preferencje GUI</div>
                 </div>
             </div>
-            <div id="inwazja-content">
-                <div style="display:flex; align-items:center; justify-content:center; height:100%; opacity:0.7; font-size:16px;">
-                    🎨 Ładowanie stylowego interfejsu...
+            <div id="inwazja-content" style="
+                flex: 1;
+                padding: 20px;
+                overflow: auto;
+                background: rgba(0,20,40,0.3);
+                border-radius: 10px;
+                border: 1px solid rgba(0,255,136,0.1);
+            ">
+                <div style="display:flex; align-items:center; justify-content:center; height:100%; opacity:0.7;">
+                    Ładowanie dashboardu...
                 </div>
             </div>
         </div>
     `;
+    
     document.body.appendChild(panel);
     
     /**********************
@@ -550,39 +264,124 @@
         const scheduleEnabled = window.inwazjaConfig.scheduleEnabled ? 'Tak' : 'Nie';
         
         content.innerHTML = `
-            <div class="dashboard-container">
-                <div class="dashboard-title">Inwazja Add-on</div>
-                <div class="dashboard-subtitle">
-                    Zaawansowany dodatek do Margonem z funkcją automatycznego odpowiadania na wiadomości i wieloma innymi modułami
+            <div style="
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                height: 100%;
+                text-align: center;
+                padding: 40px 30px;
+            ">
+                <div style="
+                    font-size: 32px;
+                    font-weight: bold;
+                    margin-bottom: 15px;
+                    background: linear-gradient(135deg, #00ff88, #00ccff);
+                    -webkit-background-clip: text;
+                    -webkit-text-fill-color: transparent;
+                    background-clip: text;
+                ">Inwazja Add-on</div>
+                
+                <div style="
+                    font-size: 15px;
+                    opacity: 0.9;
+                    margin-bottom: 30px;
+                    max-width: 500px;
+                    line-height: 1.5;
+                    color: #a0f0ff;
+                ">
+                    Zaawansowany dodatek do Margonem z funkcją automatycznego odpowiadania na wiadomości
                 </div>
                 
-                <div class="dashboard-stats">
-                    <div class="dashboard-stat">
-                        <div class="dashboard-stat-value">${totalMessages}/5</div>
-                        <div class="dashboard-stat-label">Aktywne wiadomości</div>
+                <div style="
+                    display: grid;
+                    grid-template-columns: repeat(2, 1fr);
+                    gap: 15px;
+                    width: 100%;
+                    max-width: 400px;
+                    margin: 25px 0;
+                ">
+                    <div style="padding: 15px; background: rgba(0,255,136,0.1); border-radius: 8px; border: 1px solid rgba(0,255,136,0.3);">
+                        <div style="font-size: 24px; font-weight: bold; margin-bottom: 5px; color: #00ff88;">${totalMessages}/5</div>
+                        <div style="font-size: 11px; opacity: 0.8; color: #80e0ff;">Aktywne wiadomości</div>
                     </div>
-                    <div class="dashboard-stat">
-                        <div class="dashboard-stat-value">${ignoredPlayers}/5</div>
-                        <div class="dashboard-stat-label">Ignorowani gracze</div>
+                    <div style="padding: 15px; background: rgba(0,255,136,0.1); border-radius: 8px; border: 1px solid rgba(0,255,136,0.3);">
+                        <div style="font-size: 24px; font-weight: bold; margin-bottom: 5px; color: #00ff88;">${ignoredPlayers}/5</div>
+                        <div style="font-size: 11px; opacity: 0.8; color: #80e0ff;">Ignorowani gracze</div>
                     </div>
-                    <div class="dashboard-stat">
-                        <div class="dashboard-stat-value">${autoEnabled}</div>
-                        <div class="dashboard-stat-label">Auto-odpowiadanie</div>
+                    <div style="padding: 15px; background: rgba(0,255,136,0.1); border-radius: 8px; border: 1px solid rgba(0,255,136,0.3);">
+                        <div style="font-size: 24px; font-weight: bold; margin-bottom: 5px; color: #00ff88;">${autoEnabled}</div>
+                        <div style="font-size: 11px; opacity: 0.8; color: #80e0ff;">Auto-odpowiadanie</div>
                     </div>
-                    <div class="dashboard-stat">
-                        <div class="dashboard-stat-value">${scheduleEnabled}</div>
-                        <div class="dashboard-stat-label">Harmonogram</div>
+                    <div style="padding: 15px; background: rgba(0,255,136,0.1); border-radius: 8px; border: 1px solid rgba(0,255,136,0.3);">
+                        <div style="font-size: 24px; font-weight: bold; margin-bottom: 5px; color: #00ff88;">${scheduleEnabled}</div>
+                        <div style="font-size: 11px; opacity: 0.8; color: #80e0ff;">Harmonogram</div>
                     </div>
                 </div>
                 
-                <div class="dashboard-version">Wersja 2.1 | Stylowy Interfejs</div>
+                <div style="
+                    font-size: 12px;
+                    opacity: 0.7;
+                    padding: 8px 16px;
+                    background: rgba(255,255,255,0.05);
+                    border-radius: 20px;
+                    border: 1px solid rgba(255,255,255,0.1);
+                    margin-top: 20px;
+                    color: #a0f0ff;
+                ">Wersja 2.1 | Działający Interfejs</div>
                 
-                <div style="margin-top: 40px; font-size: 13px; opacity: 0.6;">
-                    ✨ Kliknij w kafelek po lewej stronie, aby przejść do konkretnego modułu
+                <div style="margin-top: 30px; font-size: 11px; opacity: 0.6; color: #80e0ff;">
+                    Kliknij w kafelek po lewej stronie, aby przejść do konkretnego modułu
                 </div>
             </div>
         `;
     }
+    
+    /**********************
+     *  Event Listenery z HOVER EFFECTS
+     **********************/
+    
+    // Hover effects dla ikony
+    icon.addEventListener('mouseenter', function() {
+        this.style.background = 'linear-gradient(135deg, #00ffaa, #00e0ff)';
+        this.style.transform = 'translateY(-2px)';
+        this.style.boxShadow = '0 6px 20px rgba(0,255,136,0.4)';
+    });
+    
+    icon.addEventListener('mouseleave', function() {
+        this.style.background = 'linear-gradient(135deg, #00ff88, #00ccff)';
+        this.style.transform = 'translateY(0px)';
+        this.style.boxShadow = '0 4px 15px rgba(0,255,136,0.3)';
+    });
+    
+    // Hover effects dla kafelków
+    document.querySelectorAll('.inwazja-tile').forEach(tile => {
+        tile.addEventListener('mouseenter', function() {
+            this.style.background = 'rgba(0,255,136,0.2)';
+            this.style.borderColor = 'rgba(0,255,136,0.4)';
+            this.style.transform = 'translateY(-3px)';
+        });
+        
+        tile.addEventListener('mouseleave', function() {
+            this.style.background = 'rgba(0,255,136,0.1)';
+            this.style.borderColor = 'rgba(0,255,136,0.2)';
+            this.style.transform = 'translateY(0px)';
+        });
+    });
+    
+    // Hover effects dla przycisków
+    document.querySelectorAll('.ia-btn').forEach(btn => {
+        btn.addEventListener('mouseenter', function() {
+            this.style.transform = 'scale(1.1)';
+            this.style.opacity = '1';
+        });
+        
+        btn.addEventListener('mouseleave', function() {
+            this.style.transform = 'scale(1.0)';
+            this.style.opacity = '0.9';
+        });
+    });
     
     /**********************
      *  Drag & Drop
@@ -597,10 +396,10 @@
         isDraggingIcon = true;
         dragStartX = e.clientX;
         dragStartY = e.clientY;
-        startIconX = parseInt(icon.style.left) || 25;
-        startIconY = parseInt(icon.style.top) || 25;
+        startIconX = parseInt(icon.style.left) || 20;
+        startIconY = parseInt(icon.style.top) || 20;
         
-        icon.classList.add('dragging');
+        icon.style.opacity = '0.8';
         e.preventDefault();
     });
     
@@ -621,7 +420,7 @@
         if (!isDraggingIcon) return;
         
         isDraggingIcon = false;
-        icon.classList.remove('dragging');
+        icon.style.opacity = '1';
         
         window.inwazjaConfig.iconPos = {
             left: parseInt(icon.style.left),
@@ -631,31 +430,23 @@
     });
     
     /**********************
-     *  Event Listenery
+     *  Podstawowe eventy
      **********************/
     icon.addEventListener('click', function(e) {
         if (isDraggingIcon) return;
         
-        if (panel.classList.contains('visible')) {
-            panel.classList.remove('visible');
+        if (panel.style.display === 'flex') {
+            panel.style.display = 'none';
         } else {
-            panel.classList.add('visible');
-            if (!window.inwazjaConfig.pos) {
-                panel.style.left = '50%';
-                panel.style.top = '50%';
-                panel.style.transform = 'translate(-50%, -50%) scale(0.8)';
-                setTimeout(() => {
-                    panel.style.transform = 'translate(-50%, -50%) scale(1)';
-                }, 10);
-            }
-            setTimeout(showDashboard, 100);
+            panel.style.display = 'flex';
+            showDashboard();
         }
     });
     
     document.getElementById('inwazja-dashboard').addEventListener('click', showDashboard);
     
     document.getElementById('inwazja-close').addEventListener('click', function() {
-        panel.classList.remove('visible');
+        panel.style.display = 'none';
     });
     
     document.querySelectorAll('.inwazja-tile').forEach(tile => {
@@ -672,12 +463,11 @@
             } else {
                 const content = document.getElementById('inwazja-content');
                 content.innerHTML = `
-                    <div style="padding:40px; text-align:center;">
-                        <div style="font-size:48px; margin-bottom:20px;">✨</div>
-                        <h3 style="margin-top:0; color:#00ffcc; font-size:28px;">${this.querySelector('div').textContent}</h3>
-                        <div style="opacity:0.9; margin-bottom:30px; font-size:18px; background:linear-gradient(135deg, #a0f0ff, #80e0ff); -webkit-background-clip:text; -webkit-text-fill-color:transparent;">Moduł w budowie</div>
-                        <div style="font-size:14px; opacity:0.7;">
-                            🎨 Ta funkcjonalność będzie dostępna w przyszłych aktualizacjach
+                    <div style="padding:30px; text-align:center;">
+                        <h3 style="margin-top:0; color:#00ffcc; font-size:24px;">${this.querySelector('div').textContent}</h3>
+                        <div style="opacity:0.8; margin-bottom:20px; font-size:16px; color:#a0f0ff;">Moduł w budowie</div>
+                        <div style="font-size:14px; opacity:0.6; color:#80e0ff;">
+                            Ta funkcjonalność będzie dostępna w przyszłych aktualizacjach.
                         </div>
                     </div>
                 `;
@@ -699,6 +489,6 @@
         panel.style.transform = 'none';
     }
     
-    console.log('✅ Inwazja Core UI: stylowy interfejs załadowany');
+    console.log('✅ Inwazja Core UI: POPRAWIONY interfejs załadowany');
     
 })();
