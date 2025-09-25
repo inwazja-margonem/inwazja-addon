@@ -51,44 +51,53 @@
     /**********************
      *  CSS
      **********************/
-  const css = `
-#inwazja-icon {
-    position: fixed !important;
-    left: 20px !important;
-    top: 20px !important;
-    width: 180px !important;
-    height: 40px !important;
-    padding: 10px 15px !important;
-    background: rgba(12,12,12,0.95) !important;
-    border: 2px solid rgba(255,255,255,0.06) !important;
-    border-radius: 8px !important;
-    color: #fff !important;
-    font-weight: 700 !important;
-    font-size: 14px !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    cursor: pointer !important;
-    z-index: 2147483005 !important;
-    user-select: none !important;
-    white-space: nowrap !important;
-    box-sizing: border-box !important;
-    font-family: Arial, sans-serif !important;
-    letter-spacing: 0.3px !important;
-    text-align: center !important;
-}
+    const css = `
+    #inwazja-icon {
+        position: fixed;
+        left: 20px; 
+        top: 20px;
+        width: 160px; /* ZWIĘKSZONE do 160px */
+        height: 36px;
+        padding: 8px 12px;
+        background: rgba(12,12,12,0.95);
+        border: 2px solid rgba(255,255,255,0.06);
+        border-radius: 8px;
+        color: #fff;
+        font-weight: 700;
+        font-size: 13px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        z-index: 2147483005;
+        user-select: none;
+        white-space: nowrap;
+        box-sizing: border-box;
+        font-family: Arial, sans-serif;
+        letter-spacing: 0.2px;
+    }
+    
+    #inwazja-icon:hover {
+        background: rgba(20,20,20,0.95);
+        transform: translateY(-1px);
+        transition: all 0.2s ease;
+    }
 
-#inwazja-icon:hover {
-    background: rgba(20,20,20,0.95) !important;
-    transform: translateY(-1px) !important;
-    transition: all 0.2s ease !important;
-}
-
-   #inwazja-panel {
-    position: fixed !important;
-    z-index: 2147483004 !important;
-    width: 800px !important;
-    height: 600px !important;
+    #inwazja-panel {
+        position: fixed;
+        z-index: 2147483004;
+        width: 800px;
+        height: 600px;
+        border-radius: 10px;
+        overflow: hidden;
+        display: none;
+        flex-direction: column;
+        background: rgba(36,36,36,0.95);
+        color: #eaeff5;
+        font-family: Arial, sans-serif;
+        box-shadow: 0 36px 80px rgba(0,0,0,0.6);
+        user-select: none;
+        border: 1px solid rgba(255,255,255,0.1);
     }
     
     #inwazja-panel.visible { 
