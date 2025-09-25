@@ -56,7 +56,7 @@
         position: fixed;
         left: 20px; 
         top: 20px;
-        width: 100px; /* ZWIĘKSZONE do 160px */
+        width: 400px; /* ZWIĘKSZONE do 160px */
         height: 36px;
         padding: 8px 12px;
         background: rgba(12,12,12,0.95);
