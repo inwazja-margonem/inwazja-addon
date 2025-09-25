@@ -5,17 +5,17 @@
     if (window.inwazjaCoreLoaded) return;
     window.inwazjaCoreLoaded = true;
     
-    /**********************
-     *  Ustawienia i storage
-     **********************/
-    const STORAGE_KEY = 'inwazjaAddonConfig_v2_0';
+    console.log('🎨 Inwazja Core UI: ładowanie stylowego interfejsu...');
     
-    // Domyślne ustawienia
+    /**********************
+     *  Konfiguracja
+     **********************/
+    const STORAGE_KEY = 'inwazjaAddonConfig_v2_1';
     const DEFAULT_CFG = {
         pos: null,
-        size: { width: 800, height: 600 },
+        size: { width: 850, height: 650 },
         iconPos: null,
-        opacity: 1.0,
+        opacity: 0.98,
         autoMessages: ["", "", "", "", ""],
         currentMessageTab: 0,
         autoEnabled: false,
@@ -24,28 +24,17 @@
         scheduleStart: "08:00",
         scheduleEnd: "22:00",
         ignoredPlayers: [],
-        activeTab: null,
-        firstRun: true
+        activeTab: 'dashboard',
+        theme: 'green-blue'
     };
     
     function loadConfig() {
         try {
             const raw = localStorage.getItem(STORAGE_KEY);
-            if (!raw) return Object.assign({}, DEFAULT_CFG);
-            const loaded = Object.assign({}, DEFAULT_CFG, JSON.parse(raw || '{}'));
-            
-            if (!loaded.autoMessages || loaded.autoMessages.length !== 5) {
-                loaded.autoMessages = ["", "", "", "", ""];
-            }
-            
-            if (!Array.isArray(loaded.ignoredPlayers)) {
-                loaded.ignoredPlayers = [];
-            }
-            
-            return loaded;
+            return raw ? {...DEFAULT_CFG, ...JSON.parse(raw)} : {...DEFAULT_CFG};
         } catch (e) {
-            console.warn('Inwazja: błąd wczytywania configu', e);
-            return Object.assign({}, DEFAULT_CFG);
+            console.warn('Błąd wczytywania configu', e);
+            return {...DEFAULT_CFG};
         }
     }
     
@@ -53,403 +42,348 @@
         try {
             localStorage.setItem(STORAGE_KEY, JSON.stringify(cfg));
         } catch (e) {
-            console.warn('Inwazja: błąd zapisu configu', e);
+            console.warn('Błąd zapisu configu', e);
         }
     }
     
-    // Globalny config dostępny dla wszystkich modułów
     window.inwazjaConfig = loadConfig();
     window.inwazjaSaveConfig = saveConfig;
     
     /**********************
-     *  Stałe kolory
-     **********************/
-    const DEFAULT_COLOR = { r: 36, g: 36, b: 36 };
-    const DEFAULT_GLOW = 'rgba(120, 120, 120, 0.6)';
-    let currentOpacity = typeof window.inwazjaConfig.opacity === 'number' ? window.inwazjaConfig.opacity : 1.0;
-    
-    /**********************
-     *  CSS (stylowanie)
+     *  CSS - ZIELONO-NIEBIESKI GRADIENT
      **********************/
     const css = `
-    /* --- ikona --- */
+    @keyframes slideInDown {
+        from {
+            opacity: 0;
+            transform: translateY(-30px) scale(0.95);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+    
+    @keyframes slideInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px) scale(0.95);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+    
+    @keyframes pulseGlow {
+        0% {
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
+        }
+        50% {
+            box-shadow: 0 0 30px rgba(0, 204, 255, 0.5);
+        }
+        100% {
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
+        }
+    }
+    
+    @keyframes floatIcon {
+        0%, 100% {
+            transform: translateY(0px);
+        }
+        50% {
+            transform: translateY(-5px);
+        }
+    }
+    
+    @keyframes gradientShift {
+        0% {
+            background-position: 0% 50%;
+        }
+        50% {
+            background-position: 100% 50%;
+        }
+        100% {
+            background-position: 0% 50%;
+        }
+    }
+    
     #inwazja-icon {
         position: fixed;
-        left: 20px; top: 20px;
-        width: 130px;
-        height: 36px;
-        padding: 6px 10px;
-        background: rgba(12,12,12,0.95);
-        border: 2px solid rgba(255,255,255,0.06);
-        border-radius: 8px;
-        color: #fff;
-        font-weight: 700;
-        font-size: 13px;
+        left: 25px;
+        top: 25px;
+        min-width: 150px;
+        height: 42px;
+        padding: 10px 20px;
+        background: linear-gradient(135deg, 
+            rgba(0, 255, 136, 0.9) 0%, 
+            rgba(0, 204, 255, 0.9) 50%, 
+            rgba(0, 255, 200, 0.9) 100%);
+        background-size: 200% 200%;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-radius: 12px;
+        color: #001a33;
+        font-weight: 800;
+        font-size: 14px;
         display: flex;
         align-items: center;
         justify-content: center;
-        gap:8px;
         cursor: pointer;
-        z-index: 2147483005;
+        z-index: 10000;
         user-select: none;
-        transition: transform 0.12s ease, box-shadow .12s ease, border-color .16s ease;
+        white-space: nowrap;
         box-sizing: border-box;
+        font-family: 'Segoe UI', system-ui, sans-serif;
+        backdrop-filter: blur(20px);
+        transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        animation: floatIcon 6s ease-in-out infinite, pulseGlow 4s ease-in-out infinite;
+        letter-spacing: 0.5px;
+        text-shadow: 0 1px 2px rgba(255, 255, 255, 0.5);
     }
-    #inwazja-icon.dragging { transform: none !important; transition: none !important; }
-
+    
     #inwazja-icon:hover {
-        transform: translateY(-3px) scale(1.02);
-        box-shadow: 0 10px 22px rgba(0,0,0,0.6);
+        animation: pulseGlow 2s ease-in-out infinite, gradientShift 3s ease infinite;
+        transform: translateY(-2px) scale(1.05);
+        background: linear-gradient(135deg, 
+            rgba(0, 255, 150, 1) 0%, 
+            rgba(0, 230, 255, 1) 50%, 
+            rgba(0, 255, 220, 1) 100%);
+        background-size: 200% 200%;
+        border-color: rgba(255, 255, 255, 0.6);
+        box-shadow: 0 10px 30px rgba(0, 255, 136, 0.4);
+    }
+    
+    #inwazja-icon.dragging {
+        animation: none;
+        transform: scale(0.95);
+        opacity: 0.9;
     }
 
-    /* --- okno (panel) --- */
     #inwazja-panel {
         position: fixed;
-        z-index: 2147483004;
-        min-width: 400px;
-        min-height: 300px;
-        max-width: 95vw;
-        max-height: 95vh;
-        width: ${window.inwazjaConfig.size?.width || 800}px;
-        height: ${window.inwazjaConfig.size?.height || 600}px;
-        border-radius: 10px;
+        z-index: 9999;
+        width: 850px;
+        height: 650px;
+        border-radius: 20px;
         overflow: hidden;
         display: none;
         flex-direction: column;
-        color: #eaeff5;
-        font-family: Inter, "Segoe UI", Roboto, Arial, sans-serif;
-        box-shadow: 0 36px 80px rgba(0,0,0,0.6);
-        -webkit-user-select: none;
+        background: linear-gradient(135deg, 
+            rgba(10, 25, 47, 0.95) 0%, 
+            rgba(15, 35, 60, 0.95) 50%, 
+            rgba(20, 45, 70, 0.95) 100%);
+        color: #e0f7ff;
+        font-family: 'Segoe UI', system-ui, sans-serif;
+        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
         user-select: none;
+        border: 1px solid rgba(0, 255, 136, 0.3);
+        backdrop-filter: blur(30px);
         opacity: 0;
-        transform: translate(-50%, -50%) scale(.98);
-        transition: opacity .22s ease, transform .22s ease;
-        pointer-events: auto;
-        border: 1px solid rgba(255,255,255,0.03);
-        box-sizing: border-box;
-        resize: both;
-        overflow: auto;
-    }
-    #inwazja-panel.ia-visible { 
-        display: flex; 
-        opacity: 1; 
-        transform: translate(0, 0) scale(1); 
-    }
-
-    /* Nowe style dla resizable corners */
-    .resizable-handle {
-        position: absolute;
-        background: transparent;
-        z-index: 10;
+        transform: scale(0.8) translateY(50px);
+        transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
     
-    .resizable-handle-n {
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 8px;
-        cursor: n-resize;
+    #inwazja-panel.visible { 
+        display: flex;
+        opacity: 1;
+        transform: scale(1) translateY(0);
+        animation: slideInUp 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
     
-    .resizable-handle-s {
-        bottom: 0;
-        left: 0;
-        right: 0;
-        height: 8px;
-        cursor: s-resize;
-    }
-    
-    .resizable-handle-e {
-        top: 0;
-        right: 0;
-        bottom: 0;
-        width: 8px;
-        cursor: e-resize;
-    }
-    
-    .resizable-handle-w {
-        top: 0;
-        left: 0;
-        bottom: 0;
-        width: 8px;
-        cursor: w-resize;
-    }
-    
-    .resizable-handle-ne {
-        top: 0;
-        right: 0;
-        width: 12px;
-        height: 12px;
-        cursor: ne-resize;
-    }
-    
-    .resizable-handle-nw {
-        top: 0;
-        left: 0;
-        width: 12px;
-        height: 12px;
-        cursor: nw-resize;
-    }
-    
-    .resizable-handle-se {
-        bottom: 0;
-        right: 0;
-        width: 12px;
-        height: 12px;
-        cursor: se-resize;
-    }
-    
-    .resizable-handle-sw {
-        bottom: 0;
-        left: 0;
-        width: 12px;
-        height: 12px;
-        cursor: sw-resize;
-    }
-
-    /* header */
     #inwazja-header {
-        height: 40px;
-        display:flex;
-        align-items:center;
-        justify-content:space-between;
-        padding: 0 10px;
-        gap:8px;
+        height: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 25px;
+        background: linear-gradient(135deg, 
+            rgba(0, 40, 80, 0.8) 0%, 
+            rgba(0, 60, 100, 0.8) 100%);
+        border-bottom: 1px solid rgba(0, 255, 136, 0.2);
         cursor: move;
-        background: rgba(0,0,0,0.18);
-        border-bottom: 1px solid rgba(255,255,255,0.02);
-    }
-    #inwazja-header .title {
-        font-weight:800;
-        font-size:13px;
-        display:flex;
-        align-items:center;
-        gap:8px;
-    }
-    #inwazja-header .version {
-        opacity: 0.7;
-        font-size: 11px;
-        margin-left: 8px;
-        padding-left: 8px;
-        border-left: 1px solid rgba(255,255,255,0.2);
-    }
-    #inwazja-controls { display:flex; align-items:center; gap:6px; }
-
-    .ia-btn { background:transparent; border:none; color:inherit; padding:4px 6px; border-radius:4px; cursor:pointer; font-size:13px; transition: background 0.2s ease; }
-    .ia-btn:hover { background: rgba(255,255,255,0.02); }
-    .ia-btn.active { background: rgba(100, 200, 255, 0.2); }
-
-    #inwazja-close {
-        color: #d6d6d6;
-        border:1px solid rgba(255,255,255,0.03);
-        padding:4px 6px;
-        border-radius:4px;
-        transition: all 0.2s ease;
-    }
-    #inwazja-close:hover {
-        color:#ff6b6b;
-        background: rgba(255,107,107,0.1);
-        border-color: rgba(255,107,107,0.3);
-    }
-
-    /* --- SUWAK PRZEZROCZYSTOŚCI --- */
-    #inwazja-opacity {
-        width: 80px;
-        height: 5px;
-        background: rgba(255,255,255,0.1);
-        border-radius: 3px;
-        outline: none;
-        cursor: pointer;
-        -webkit-appearance: none;
-        margin: 0;
-        padding: 0;
-    }
-
-    #inwazja-opacity::-webkit-slider-runnable-track {
-        width: 100%;
-        height: 5px;
-        background: rgba(255,255,255,0.1);
-        border-radius: 3px;
-        border: none;
-    }
-
-    #inwazja-opacity::-webkit-slider-thumb {
-        -webkit-appearance: none;
-        width: 14px;
-        height: 14px;
-        background: #000000;
-        border-radius: 50%;
-        border: 2px solid rgba(255,255,255,0.3);
-        cursor: pointer;
-        margin-top: -4.5px;
-    }
-
-    #inwazja-opacity::-moz-range-track {
-        width: 100%;
-        height: 5px;
-        background: rgba(255,255,255,0.1);
-        border-radius: 3px;
-        border: none;
-    }
-
-    #inwazja-opacity::-moz-range-thumb {
-        width: 14px;
-        height: 14px;
-        background: #000000;
-        border-radius: 50%;
-        border: 2px solid rgba(255,255,255,0.3);
-        cursor: pointer;
-    }
-
-    /* body: kafelki + content */
-    #inwazja-body {
-        display:flex;
-        flex:1;
-        gap:12px;
-        padding:10px;
-        box-sizing:border-box;
+        font-size: 15px;
+        font-weight: 700;
+        position: relative;
         overflow: hidden;
-        height: calc(100% - 70px);
     }
-
+    
+    #inwazja-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, 
+            transparent, 
+            rgba(0, 255, 136, 0.1), 
+            transparent);
+        transition: left 0.6s ease;
+    }
+    
+    #inwazja-header:hover::before {
+        left: 100%;
+    }
+    
+    #inwazja-controls { 
+        display: flex; 
+        align-items: center; 
+        gap: 12px; 
+    }
+    
+    .ia-btn { 
+        background: linear-gradient(135deg, 
+            rgba(0, 255, 136, 0.2) 0%, 
+            rgba(0, 204, 255, 0.2) 100%);
+        border: 1px solid rgba(0, 255, 136, 0.3);
+        color: #a0f0ff; 
+        padding: 8px 14px; 
+        cursor: pointer;
+        border-radius: 8px;
+        font-size: 16px;
+        transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        backdrop-filter: blur(10px);
+    }
+    
+    .ia-btn:hover {
+        background: linear-gradient(135deg, 
+            rgba(0, 255, 136, 0.4) 0%, 
+            rgba(0, 204, 255, 0.4) 100%);
+        border-color: rgba(0, 255, 136, 0.6);
+        transform: translateY(-2px) scale(1.1);
+        box-shadow: 0 5px 15px rgba(0, 255, 136, 0.3);
+        color: #00ffcc;
+    }
+    
+    #inwazja-body {
+        display: flex;
+        flex: 1;
+        gap: 25px;
+        padding: 25px;
+        height: calc(100% - 80px);
+        background: linear-gradient(135deg, 
+            rgba(5, 20, 40, 0.6) 0%, 
+            rgba(10, 30, 50, 0.6) 100%);
+    }
+    
     #inwazja-tiles {
-        width: 200px;
-        flex-shrink:0;
-        display:grid;
-        grid-template-columns: 1fr;
-        gap:8px;
-        overflow-y: auto;
-        overflow-x: hidden;
-        max-height: 100%;
+        width: 240px;
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        flex-shrink: 0;
     }
-
+    
     .inwazja-tile {
-        border-radius:8px;
-        padding:8px 10px;
-        min-height: 50px;
-        height: auto;
-        display:flex;
-        flex-direction:column;
-        justify-content:center;
-        background: linear-gradient(180deg, rgba(255,255,255,0.015), rgba(0,0,0,0.05));
-        border:1px solid rgba(255,255,255,0.02);
-        transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
-        position:relative;
-        overflow:hidden;
-        cursor:pointer;
+        padding: 18px;
+        background: linear-gradient(135deg, 
+            rgba(0, 255, 136, 0.1) 0%, 
+            rgba(0, 204, 255, 0.1) 100%);
+        border: 1px solid rgba(0, 255, 136, 0.2);
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        position: relative;
+        overflow: hidden;
     }
-
+    
+    .inwazja-tile::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, 
+            transparent, 
+            rgba(0, 255, 136, 0.2), 
+            transparent);
+        transition: left 0.6s ease;
+    }
+    
     .inwazja-tile:hover {
-        transform: translateY(-1px) scale(1.005);
-        box-shadow: 0 4px 10px var(--inwazja-glow, rgba(255,255,255,0.03));
-        border-color: color-mix(in srgb, var(--inwazja-glow, rgba(255,255,255,0.06)) 20%, rgba(255,255,255,0.02));
+        background: linear-gradient(135deg, 
+            rgba(0, 255, 136, 0.2) 0%, 
+            rgba(0, 204, 255, 0.2) 100%);
+        border-color: rgba(0, 255, 136, 0.4);
+        transform: translateY(-5px) scale(1.02);
+        box-shadow: 0 10px 25px rgba(0, 255, 136, 0.3);
+        animation: pulseGlow 2s ease-in-out infinite;
     }
-
+    
+    .inwazja-tile:hover::before {
+        left: 100%;
+    }
+    
     #inwazja-content {
-        flex:1;
-        padding:8px;
+        flex: 1;
+        padding: 25px;
         overflow: auto;
-        border-radius:6px;
-        overflow-x: hidden;
-        max-height: 100%;
-        min-height: 200px;
+        background: linear-gradient(135deg, 
+            rgba(0, 30, 60, 0.3) 0%, 
+            rgba(0, 40, 80, 0.3) 100%);
+        border-radius: 15px;
+        border: 1px solid rgba(0, 255, 136, 0.2);
+        animation: slideInUp 0.5s ease-out;
     }
-
-    /* footer */
-    #inwazja-footer {
-        height:30px;
-        display:flex;
-        align-items:center;
-        justify-content:center;
-        padding:4px 8px;
-        border-top:1px solid rgba(255,255,255,0.02);
-        font-size:11px;
-        opacity:0.95;
-        background: rgba(0,0,0,0.06);
-    }
-
-    /* --- DASHBOARD STYLES --- */
+    
     .dashboard-container {
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        padding: 40px 20px;
-        text-align: center;
         height: 100%;
+        text-align: center;
+        padding: 50px 40px;
+        animation: slideInDown 0.6s ease-out;
     }
-
+    
     .dashboard-title {
-        font-size: 32px;
-        font-weight: 800;
-        margin-bottom: 16px;
-        background: linear-gradient(135deg, #00ff88 0%, #00ccff 50%, #667eea 100%);
+        font-size: 42px;
+        font-weight: 900;
+        margin-bottom: 20px;
+        background: linear-gradient(135deg, #00ff88, #00ccff, #00ffcc);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;
-        text-shadow: 0 4px 20px rgba(0, 204, 255, 0.3);
-        letter-spacing: -0.5px;
-        line-height: 1.1;
-        position: relative;
-        padding-bottom: 12px;
+        text-shadow: 0 4px 20px rgba(0, 255, 136, 0.5);
+        animation: gradientShift 4s ease infinite;
+        background-size: 200% 200%;
     }
-
-    .dashboard-title::after {
-        content: '';
-        position: absolute;
-        bottom: 0;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 80px;
-        height: 3px;
-        background: linear-gradient(90deg, transparent, #00ff88, #00ccff, transparent);
-        border-radius: 2px;
-    }
-
+    
     .dashboard-subtitle {
-        font-size: 15px;
-        opacity: 0.85;
-        margin-bottom: 30px;
-        max-width: 500px;
-        line-height: 1.6;
-        font-weight: 400;
-        color: #e0e0e0;
-        text-shadow: 0 1px 2px rgba(0,0,0,0.5);
-    }
-
-    .dashboard-version {
-        font-size: 12px;
-        opacity: 0.7;
+        font-size: 17px;
+        opacity: 0.9;
         margin-bottom: 40px;
-        padding: 10px 20px;
-        background: rgba(255,255,255,0.05);
-        border-radius: 12px;
-        border: 1px solid rgba(255,255,255,0.1);
-        backdrop-filter: blur(10px);
-        font-weight: 600;
-        letter-spacing: 0.5px;
+        max-width: 550px;
+        line-height: 1.6;
+        background: linear-gradient(135deg, #a0f0ff, #80e0ff);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
     }
-
+    
     .dashboard-stats {
         display: grid;
         grid-template-columns: repeat(2, 1fr);
         gap: 20px;
         width: 100%;
         max-width: 500px;
-        margin-top: 30px;
+        margin: 30px 0;
     }
-
+    
     .dashboard-stat {
-        padding: 20px 15px;
-        background: rgba(255,255,255,0.04);
-        border-radius: 12px;
-        border: 1px solid rgba(255,255,255,0.08);
-        backdrop-filter: blur(10px);
-        transition: all 0.3s ease;
+        padding: 20px;
+        background: linear-gradient(135deg, 
+            rgba(0, 255, 136, 0.1) 0%, 
+            rgba(0, 204, 255, 0.1) 100%);
+        border-radius: 15px;
+        border: 1px solid rgba(0, 255, 136, 0.3);
+        transition: all 0.4s ease;
         position: relative;
         overflow: hidden;
     }
-
+    
     .dashboard-stat::before {
         content: '';
         position: absolute;
@@ -457,332 +391,159 @@
         left: -100%;
         width: 100%;
         height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
-        transition: left 0.5s ease;
+        background: linear-gradient(90deg, 
+            transparent, 
+            rgba(0, 255, 136, 0.1), 
+            transparent);
+        transition: left 0.6s ease;
     }
-
+    
+    .dashboard-stat:hover {
+        transform: translateY(-5px) scale(1.05);
+        border-color: rgba(0, 255, 136, 0.6);
+        box-shadow: 0 10px 25px rgba(0, 255, 136, 0.2);
+    }
+    
     .dashboard-stat:hover::before {
         left: 100%;
     }
-
-    .dashboard-stat:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(0,0,0,0.3);
-        border-color: rgba(100, 200, 255, 0.3);
-    }
-
+    
     .dashboard-stat-value {
-        font-size: 28px;
-        font-weight: 700;
+        font-size: 32px;
+        font-weight: 800;
         margin-bottom: 8px;
         background: linear-gradient(135deg, #00ff88, #00ccff);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;
     }
-
+    
     .dashboard-stat-label {
         font-size: 12px;
         opacity: 0.8;
-        font-weight: 500;
-        letter-spacing: 0.3px;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        color: #80e0ff;
     }
-
-    .dashboard-hint {
-        margin-top: 40px;
-        font-size: 12px;
-        opacity: 0.6;
-        padding: 12px 20px;
-        background: rgba(255,255,255,0.03);
-        border-radius: 8px;
-        border: 1px solid rgba(255,255,255,0.05);
-        max-width: 400px;
-        line-height: 1.5;
+    
+    .dashboard-version {
+        font-size: 14px;
+        opacity: 0.7;
+        padding: 12px 24px;
+        background: linear-gradient(135deg, 
+            rgba(0, 255, 136, 0.1) 0%, 
+            rgba(0, 204, 255, 0.1) 100%);
+        border-radius: 25px;
+        border: 1px solid rgba(0, 255, 136, 0.3);
+        margin-top: 30px;
+        backdrop-filter: blur(10px);
     }
-
-    /* SCROLLBARY */
-    #inwazja-tiles::-webkit-scrollbar,
+    
+    /* Scrollbar styling */
     #inwazja-content::-webkit-scrollbar {
         width: 8px;
     }
-
-    #inwazja-tiles::-webkit-scrollbar-track,
+    
     #inwazja-content::-webkit-scrollbar-track {
-        background: rgba(255,255,255,0.02);
+        background: rgba(0, 255, 136, 0.1);
         border-radius: 4px;
     }
-
-    #inwazja-tiles::-webkit-scrollbar-thumb,
+    
     #inwazja-content::-webkit-scrollbar-thumb {
-        background: rgba(255,255,255,0.15);
+        background: linear-gradient(135deg, #00ff88, #00ccff);
         border-radius: 4px;
-        transition: background 0.2s ease;
     }
-
-    #inwazja-tiles::-webkit-scrollbar-thumb:hover,
+    
     #inwazja-content::-webkit-scrollbar-thumb:hover {
-        background: rgba(255,255,255,0.25);
+        background: linear-gradient(135deg, #00ffaa, #00e0ff);
     }
-
-    /* RESPONSYWNOŚĆ */
+    
+    /* Responsywność */
     @media (max-width: 900px) {
         #inwazja-panel {
             width: 95vw;
-            height: 80vh;
-            min-width: 400px;
-            min-height: 300px;
-        }
-        #inwazja-tiles { width: 35%; }
-        
-        .dashboard-title {
-            font-size: 28px;
+            height: 90vh;
+            border-radius: 15px;
         }
         
-        .dashboard-subtitle {
-            font-size: 14px;
-            max-width: 400px;
-        }
-        
-        .dashboard-stats {
-            grid-template-columns: 1fr;
-            max-width: 300px;
-        }
-    }
-
-    @media (max-width: 600px) {
-        #inwazja-tiles { width: 100%; grid-template-columns: repeat(2, 1fr); }
-        #inwazja-body { flex-direction: column; }
-        
-        .dashboard-title {
-            font-size: 24px;
-        }
-        
-        .dashboard-subtitle {
-            font-size: 13px;
-            max-width: 300px;
+        #inwazja-tiles {
+            width: 200px;
         }
     }
     `;
     
-    if (typeof GM_addStyle !== 'undefined') {
-        GM_addStyle(css);
-    } else {
-        const style = document.createElement('style');
-        style.textContent = css;
-        document.head.appendChild(style);
-    }
+    const style = document.createElement('style');
+    style.textContent = css;
+    document.head.appendChild(style);
     
     /**********************
-     *  Budowa DOM
+     *  Tworzenie DOM
      **********************/
-    const prevIcon = document.getElementById('inwazja-icon');
-    if (prevIcon) prevIcon.remove();
-    const prevPanel = document.getElementById('inwazja-panel');
-    if (prevPanel) prevPanel.remove();
+    document.getElementById('inwazja-icon')?.remove();
+    document.getElementById('inwazja-panel')?.remove();
     
-    // Ikona
     const icon = document.createElement('div');
     icon.id = 'inwazja-icon';
-    icon.title = 'Inwazja Add-on';
     icon.textContent = 'Inwazja Add-on';
+    icon.title = 'Inwazja Add-on - Kliknij aby otworzyć';
     document.body.appendChild(icon);
     
-    // Panel
     const panel = document.createElement('div');
     panel.id = 'inwazja-panel';
     panel.innerHTML = `
-        <div class="resizable-handle resizable-handle-n"></div>
-        <div class="resizable-handle resizable-handle-s"></div>
-        <div class="resizable-handle resizable-handle-e"></div>
-        <div class="resizable-handle resizable-handle-w"></div>
-        <div class="resizable-handle resizable-handle-ne"></div>
-        <div class="resizable-handle resizable-handle-nw"></div>
-        <div class="resizable-handle resizable-handle-se"></div>
-        <div class="resizable-handle resizable-handle-sw"></div>
-        
         <div id="inwazja-header">
-            <div class="title">
-                Inwazja Add-on
-                <span class="version">| v. 2.0.0</span>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span>🌊</span>
+                <span>Inwazja Add-on | v.2.1</span>
             </div>
             <div id="inwazja-controls">
                 <button id="inwazja-dashboard" class="ia-btn" title="Dashboard">🏠</button>
-                <input id="inwazja-opacity" type="range" min="0.5" max="1" step="0.01" value="${currentOpacity}" title="Przezroczystość">
                 <button id="inwazja-close" class="ia-btn" title="Zamknij">✖</button>
             </div>
         </div>
         <div id="inwazja-body">
-            <div id="inwazja-tiles"></div>
-            <div id="inwazja-content"><div style="opacity:.9">Wersja: modułowa 2.0.0. <strong id="inwazja-activeTitle"></strong></div></div>
+            <div id="inwazja-tiles">
+                <div class="inwazja-tile" data-id="auto-message">
+                    <div style="font-weight:800; font-size:15px;">💬 Auto-message</div>
+                    <div style="opacity:.9; font-size:12px; margin-top:8px;">Automatyczne odpisywanie graczom</div>
+                </div>
+                <div class="inwazja-tile" data-id="inventory">
+                    <div style="font-weight:800; font-size:15px;">🎒 Ekwipunek</div>
+                    <div style="opacity:.9; font-size:12px; margin-top:8px;">Przegląd przedmiotów</div>
+                </div>
+                <div class="inwazja-tile" data-id="clan">
+                    <div style="font-weight:800; font-size:15px;">⚔️ Klan</div>
+                    <div style="opacity:.9; font-size:12px; margin-top:8px;">Lista członków i statusy</div>
+                </div>
+                <div class="inwazja-tile" data-id="skills">
+                    <div style="font-weight:800; font-size:15px;">✨ Umiejętności</div>
+                    <div style="opacity:.9; font-size:12px; margin-top:8px;">Tooltipy i cooldowny</div>
+                </div>
+                <div class="inwazja-tile" data-id="quests">
+                    <div style="font-weight:800; font-size:15px;">📜 Zadania</div>
+                    <div style="opacity:.9; font-size:12px; margin-top:8px;">Postępy i nagrody</div>
+                </div>
+                <div class="inwazja-tile" data-id="settings">
+                    <div style="font-weight:800; font-size:15px;">⚙️ Ustawienia</div>
+                    <div style="opacity:.9; font-size:12px; margin-top:8px;">Preferencje GUI</div>
+                </div>
+            </div>
+            <div id="inwazja-content">
+                <div style="display:flex; align-items:center; justify-content:center; height:100%; opacity:0.7; font-size:16px;">
+                    🎨 Ładowanie stylowego interfejsu...
+                </div>
+            </div>
         </div>
-        <div id="inwazja-footer">Modułowy UI | Inwazja Add-on v2.0.0</div>
     `;
     document.body.appendChild(panel);
     
-    // Kafelki
-    const modulesData = [
-        { id: 'auto-message', title: 'Auto-message', subtitle: 'Skrypt na automatyczne odpisywanie graczom podczas nieobecności.' },
-        { id: 'inventory', title: 'Ekwipunek', subtitle: 'Przegląd przedmiotów' },
-        { id: 'clan', title: 'Klan', subtitle: 'Lista członków i statusy' },
-        { id: 'skills', title: 'Umiejętności', subtitle: 'Tooltipy i cooldowny' },
-        { id: 'quests', title: 'Zadania', subtitle: 'Postępy i nagrody' },
-        { id: 'settings', title: 'Ustawienia', subtitle: 'Preferencje GUI' }
-    ];
-    
-    const tilesContainer = document.getElementById('inwazja-tiles');
-    modulesData.forEach(m => {
-        const t = document.createElement('div');
-        t.className = 'inwazja-tile';
-        t.dataset.id = m.id;
-        t.innerHTML = `<div style="font-weight:700; font-size:12px;">${m.title}</div><div style="opacity:.9;font-size:10px; line-height:1.2;">${m.subtitle}</div>`;
-        t.title = `${m.title}: ${m.subtitle}`;
-        tilesContainer.appendChild(t);
-        
-        t.addEventListener('click', () => {
-            // Usuń aktywność z przycisku dashboard
-            const dashboardBtn = document.getElementById('inwazja-dashboard');
-            if (dashboardBtn) dashboardBtn.classList.remove('active');
-            
-            // Event dla modułów do obsługi
-            const event = new CustomEvent('inwazjaModuleChange', { 
-                detail: { moduleId: m.id, title: m.title, subtitle: m.subtitle }
-            });
-            window.dispatchEvent(event);
-            
-            window.inwazjaConfig.activeTab = m.id;
-            window.inwazjaSaveConfig(window.inwazjaConfig);
-        });
-    });
-    
     /**********************
-     *  Funkcje pomocnicze
-     **********************/
-    function applyTheme() {
-        panel.style.background = `rgba(${DEFAULT_COLOR.r}, ${DEFAULT_COLOR.g}, ${DEFAULT_COLOR.b}, ${currentOpacity})`;
-        panel.style.setProperty('--inwazja-glow', DEFAULT_GLOW);
-    }
-    
-    function enableMouseWheelScroll(element) {
-        if (!element) return;
-        element.addEventListener('wheel', (e) => {
-            if (element.scrollHeight > element.clientHeight) {
-                element.scrollTop += e.deltaY;
-                e.preventDefault();
-            }
-        }, { passive: false });
-    }
-    
-    /**********************
-     *  Rozszerzona funkcjonalność Resize
-     **********************/
-    function initResizable() {
-        const handles = panel.querySelectorAll('.resizable-handle');
-        let currentHandle = null;
-        let startX, startY, startWidth, startHeight, startLeft, startTop;
-
-        handles.forEach(handle => {
-            handle.addEventListener('mousedown', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                
-                currentHandle = this;
-                startX = e.clientX;
-                startY = e.clientY;
-                startWidth = parseInt(document.defaultView.getComputedStyle(panel).width, 10);
-                startHeight = parseInt(document.defaultView.getComputedStyle(panel).height, 10);
-                startLeft = parseInt(document.defaultView.getComputedStyle(panel).left, 10);
-                startTop = parseInt(document.defaultView.getComputedStyle(panel).top, 10);
-                
-                document.addEventListener('mousemove', resize);
-                document.addEventListener('mouseup', stopResize);
-            });
-        });
-
-        function resize(e) {
-            if (!currentHandle) return;
-            
-            const dx = e.clientX - startX;
-            const dy = e.clientY - startY;
-            
-            let newWidth = startWidth;
-            let newHeight = startHeight;
-            let newLeft = startLeft;
-            let newTop = startTop;
-
-            // Obsługa różnych kierunków resize
-            if (currentHandle.classList.contains('resizable-handle-e') || 
-                currentHandle.classList.contains('resizable-handle-ne') || 
-                currentHandle.classList.contains('resizable-handle-se')) {
-                newWidth = Math.max(400, startWidth + dx);
-            }
-            
-            if (currentHandle.classList.contains('resizable-handle-w') || 
-                currentHandle.classList.contains('resizable-handle-nw') || 
-                currentHandle.classList.contains('resizable-handle-sw')) {
-                newWidth = Math.max(400, startWidth - dx);
-                newLeft = startLeft + dx;
-            }
-            
-            if (currentHandle.classList.contains('resizable-handle-s') || 
-                currentHandle.classList.contains('resizable-handle-se') || 
-                currentHandle.classList.contains('resizable-handle-sw')) {
-                newHeight = Math.max(300, startHeight + dy);
-            }
-            
-            if (currentHandle.classList.contains('resizable-handle-n') || 
-                currentHandle.classList.contains('resizable-handle-ne') || 
-                currentHandle.classList.contains('resizable-handle-nw')) {
-                newHeight = Math.max(300, startHeight - dy);
-                newTop = startTop + dy;
-            }
-
-            // Ograniczenia rozmiaru
-            newWidth = Math.min(newWidth, window.innerWidth - 20);
-            newHeight = Math.min(newHeight, window.innerHeight - 20);
-            
-            // Aktualizacja pozycji i rozmiaru
-            panel.style.width = newWidth + 'px';
-            panel.style.height = newHeight + 'px';
-            
-            if (newLeft !== startLeft) panel.style.left = newLeft + 'px';
-            if (newTop !== startTop) panel.style.top = newTop + 'px';
-        }
-
-        function stopResize() {
-            currentHandle = null;
-            document.removeEventListener('mousemove', resize);
-            document.removeEventListener('mouseup', stopResize);
-            
-            // Zapisz nowy rozmiar i pozycję
-            window.inwazjaConfig.size = { 
-                width: parseInt(panel.style.width), 
-                height: parseInt(panel.style.height) 
-            };
-            window.inwazjaConfig.pos = { 
-                left: parseInt(panel.style.left), 
-                top: parseInt(panel.style.top) 
-            };
-            window.inwazjaSaveConfig(window.inwazjaConfig);
-        }
-    }
-
-    /**********************
-     *  Funkcja Dashboard
+     *  Funkcje
      **********************/
     function showDashboard() {
         const content = document.getElementById('inwazja-content');
-        const dashboardBtn = document.getElementById('inwazja-dashboard');
+        if (!content) return;
         
-        // Oznacz przycisk jako aktywny
-        document.querySelectorAll('#inwazja-controls .ia-btn').forEach(btn => {
-            btn.classList.remove('active');
-        });
-        if (dashboardBtn) dashboardBtn.classList.add('active');
-        
-        // Ustaw tytuł
-        window.inwazjaSetActiveTitle('Dashboard');
-        
-        // Generuj statystyki
         const totalMessages = window.inwazjaConfig.autoMessages.filter(msg => msg.length > 0).length;
         const ignoredPlayers = window.inwazjaConfig.ignoredPlayers.length;
         const autoEnabled = window.inwazjaConfig.autoEnabled ? 'Tak' : 'Nie';
@@ -792,9 +553,8 @@
             <div class="dashboard-container">
                 <div class="dashboard-title">Inwazja Add-on</div>
                 <div class="dashboard-subtitle">
-                    Zaawansowany dodatek do Margonem z funkcją automatycznego odpowiadania na wiadomości i wieloma innymi modułami.
+                    Zaawansowany dodatek do Margonem z funkcją automatycznego odpowiadania na wiadomości i wieloma innymi modułami
                 </div>
-                <div class="dashboard-version">Wersja 2.0.0 | Modułowy System</div>
                 
                 <div class="dashboard-stats">
                     <div class="dashboard-stat">
@@ -802,7 +562,7 @@
                         <div class="dashboard-stat-label">Aktywne wiadomości</div>
                     </div>
                     <div class="dashboard-stat">
-                        <div class="dashboard-stat-value">${ignoredPlayers}</div>
+                        <div class="dashboard-stat-value">${ignoredPlayers}/5</div>
                         <div class="dashboard-stat-label">Ignorowani gracze</div>
                     </div>
                     <div class="dashboard-stat">
@@ -815,253 +575,130 @@
                     </div>
                 </div>
                 
-                <div class="dashboard-hint">
-                    Kliknij w kafelek po lewej stronie, aby przejść do konkretnego modułu.
+                <div class="dashboard-version">Wersja 2.1 | Stylowy Interfejs</div>
+                
+                <div style="margin-top: 40px; font-size: 13px; opacity: 0.6;">
+                    ✨ Kliknij w kafelek po lewej stronie, aby przejść do konkretnego modułu
                 </div>
             </div>
         `;
     }
     
-    // Funkcje pomocnicze dostępne globalnie
-    window.inwazjaShowModuleContent = function(contentHTML) {
-        const content = document.getElementById('inwazja-content');
-        if (content) content.innerHTML = contentHTML;
-    };
+    /**********************
+     *  Drag & Drop
+     **********************/
+    let isDraggingIcon = false;
+    let dragStartX = 0, dragStartY = 0;
+    let startIconX = 0, startIconY = 0;
     
-    window.inwazjaSetActiveTitle = function(title) {
-        const titleElement = document.getElementById('inwazja-activeTitle');
-        if (titleElement) titleElement.textContent = title;
-    };
+    icon.addEventListener('pointerdown', function(e) {
+        if (e.button !== 0) return;
+        
+        isDraggingIcon = true;
+        dragStartX = e.clientX;
+        dragStartY = e.clientY;
+        startIconX = parseInt(icon.style.left) || 25;
+        startIconY = parseInt(icon.style.top) || 25;
+        
+        icon.classList.add('dragging');
+        e.preventDefault();
+    });
+    
+    document.addEventListener('pointermove', function(e) {
+        if (!isDraggingIcon) return;
+        
+        const deltaX = e.clientX - dragStartX;
+        const deltaY = e.clientY - dragStartY;
+        
+        const newX = Math.max(10, Math.min(window.innerWidth - icon.offsetWidth - 10, startIconX + deltaX));
+        const newY = Math.max(10, Math.min(window.innerHeight - icon.offsetHeight - 10, startIconY + deltaY));
+        
+        icon.style.left = newX + 'px';
+        icon.style.top = newY + 'px';
+    });
+    
+    document.addEventListener('pointerup', function() {
+        if (!isDraggingIcon) return;
+        
+        isDraggingIcon = false;
+        icon.classList.remove('dragging');
+        
+        window.inwazjaConfig.iconPos = {
+            left: parseInt(icon.style.left),
+            top: parseInt(icon.style.top)
+        };
+        window.inwazjaSaveConfig(window.inwazjaConfig);
+    });
     
     /**********************
-     *  Inicjalizacja pozycjonowania
+     *  Event Listenery
      **********************/
-    const cfg = window.inwazjaConfig;
-    
-    // Pozycjonowanie ikony
-    if (cfg.iconPos && typeof cfg.iconPos.left === 'number') {
-        icon.style.left = cfg.iconPos.left + 'px';
-        icon.style.top = cfg.iconPos.top + 'px';
-    } else {
-        icon.style.left = '20px';
-        icon.style.top  = '20px';
-    }
-    
-    // Pozycjonowanie panelu
-    if (cfg.pos && typeof cfg.pos.left === 'number') {
-        panel.style.left = cfg.pos.left + 'px';
-        panel.style.top  = cfg.pos.top + 'px';
-        panel.style.transform = 'translate(0,0)';
-    } else {
-        panel.style.left = '50%';
-        panel.style.top  = '50%';
-        panel.style.transform = 'translate(-50%,-50%) scale(.98)';
-    }
-    
-    // Rozmiar panelu
-    if (cfg.size && cfg.size.width && cfg.size.height) {
-        panel.style.width = cfg.size.width + 'px';
-        panel.style.height = cfg.size.height + 'px';
-    }
-    
-    applyTheme();
-    
-    /**********************
-     *  Event Listeners
-     **********************/
-    // Suwak przezroczystości
-    const opacityInput = document.getElementById('inwazja-opacity');
-    if (opacityInput) {
-        opacityInput.value = currentOpacity;
-        opacityInput.addEventListener('input', (e) => {
-            currentOpacity = parseFloat(e.target.value);
-            applyTheme();
-            cfg.opacity = currentOpacity;
-            saveConfig(cfg);
-        });
-    }
-    
-    // Przycisk dashboard
-    const dashboardBtn = document.getElementById('inwazja-dashboard');
-    if (dashboardBtn) {
-        dashboardBtn.addEventListener('click', () => {
-            showDashboard();
-            window.inwazjaConfig.activeTab = 'dashboard';
-            window.inwazjaSaveConfig(window.inwazjaConfig);
-        });
-    }
-    
-    // Przycisk zamknięcia
-    const closeBtn = document.getElementById('inwazja-close');
-    if (closeBtn) {
-        closeBtn.addEventListener('click', () => {
-            panel.classList.remove('ia-visible');
-        });
-    }
-    
-    // Drag & drop ikony
-    (function iconClickDrag() {
-        let down = false, moved = false;
-        let startX = 0, startY = 0;
-        const THRESHOLD = 6;
+    icon.addEventListener('click', function(e) {
+        if (isDraggingIcon) return;
         
-        icon.addEventListener('pointerdown', (e) => {
-            if (e.button !== 0) return;
-            down = true; moved = false;
-            startX = e.clientX; startY = e.clientY;
-            icon.classList.add('dragging');
-            e.preventDefault();
-        });
-        
-        window.addEventListener('pointermove', (e) => {
-            if (!down) return;
-            const dx = e.clientX - startX, dy = e.clientY - startY;
-            if (!moved && Math.abs(dx) < THRESHOLD && Math.abs(dy) < THRESHOLD) return;
-            moved = true;
-            const left = Math.max(6, Math.min(window.innerWidth - icon.offsetWidth - 6, e.clientX - (icon.offsetWidth/2)));
-            const top  = Math.max(6, Math.min(window.innerHeight - icon.offsetHeight - 6, e.clientY - (icon.offsetHeight/2)));
-            icon.style.left = left + 'px';
-            icon.style.top  = top  + 'px';
-        });
-        
-        window.addEventListener('pointerup', (e) => {
-            if (!down) return;
-            down = false;
-            icon.classList.remove('dragging');
-            if (moved) {
-                cfg.iconPos = { left: parseInt(icon.style.left), top: parseInt(icon.style.top) };
-                saveConfig(cfg);
-                return;
-            }
-            if (panel.classList.contains('ia-visible')) {
-                panel.classList.remove('ia-visible');
-            } else {
-                panel.classList.add('ia-visible');
-                if (cfg.pos && typeof cfg.pos.left === 'number') {
-                    panel.style.transform = 'translate(0,0)';
-                } else {
-                    panel.style.transform = 'translate(-50%,-50%) scale(.98)';
-                }
-                
+        if (panel.classList.contains('visible')) {
+            panel.classList.remove('visible');
+        } else {
+            panel.classList.add('visible');
+            if (!window.inwazjaConfig.pos) {
+                panel.style.left = '50%';
+                panel.style.top = '50%';
+                panel.style.transform = 'translate(-50%, -50%) scale(0.8)';
                 setTimeout(() => {
-                    enableMouseWheelScroll(document.getElementById('inwazja-tiles'));
-                    enableMouseWheelScroll(document.getElementById('inwazja-content'));
-                }, 100);
+                    panel.style.transform = 'translate(-50%, -50%) scale(1)';
+                }, 10);
             }
-        });
-    })();
-    
-    // Drag panelu
-    (function panelDrag() {
-        const header = document.getElementById('inwazja-header');
-        if (!header) return;
-        
-        let dragging = false, startX = 0, startY = 0, startLeft = 0, startTop = 0;
-        
-        header.addEventListener('pointerdown', (e) => {
-            if (e.target.id === 'inwazja-opacity' || e.target.closest('#inwazja-opacity')) return;
-            if (e.target.id === 'inwazja-close' || e.target.id === 'inwazja-dashboard') return;
-            if (e.button !== 0) return;
-            dragging = true;
-            
-            if (!cfg.pos || typeof cfg.pos.left !== 'number') {
-                const rect = panel.getBoundingClientRect();
-                startLeft = rect.left;
-                startTop  = rect.top;
-                panel.style.left = startLeft + 'px';
-                panel.style.top  = startTop  + 'px';
-                panel.style.transform = 'translate(0,0)';
-            } else {
-                startLeft = parseInt(panel.style.left || 0);
-                startTop  = parseInt(panel.style.top || 0);
-            }
-            startX = e.clientX; startY = e.clientY;
-            document.body.style.userSelect = 'none';
-            e.preventDefault();
-        });
-        
-        window.addEventListener('pointermove', (e) => {
-            if (!dragging) return;
-            const dx = e.clientX - startX, dy = e.clientY - startY;
-            let left = startLeft + dx, top = startTop + dy;
-            left = Math.max(6, Math.min(window.innerWidth - panel.offsetWidth - 6, left));
-            top  = Math.max(6, Math.min(window.innerHeight - panel.offsetHeight - 6, top));
-            panel.style.left = left + 'px';
-            panel.style.top  = top  + 'px';
-        });
-        
-        window.addEventListener('pointerup', () => {
-            if (!dragging) return;
-            dragging = false;
-            document.body.style.userSelect = '';
-            cfg.pos = { left: parseInt(panel.style.left), top: parseInt(panel.style.top) };
-            saveConfig(cfg);
-        });
-    })();
-    
-    // Inicjalizacja funkcjonalności resize
-    initResizable();
-    
-    // Obsługa resize okna
-    window.addEventListener('resize', () => {
-        const left = parseInt(panel.style.left || 0), top = parseInt(panel.style.top || 0);
-        const w = panel.offsetWidth, h = panel.offsetHeight;
-        let changed = false, newLeft = left, newTop = top;
-        if (left + w > window.innerWidth - 8) { newLeft = Math.max(8, window.innerWidth - w - 8); changed = true; }
-        if (top + h > window.innerHeight - 8) { newTop = Math.max(8, window.innerHeight - h - 8); changed = true; }
-        if (changed) {
-            panel.style.left = newLeft + 'px';
-            panel.style.top = newTop + 'px';
-            cfg.pos = { left: newLeft, top: newTop };
-            saveConfig(cfg);
-        }
-        
-        const iconLeft = parseInt(icon.style.left || 0), iconTop = parseInt(icon.style.top || 0);
-        let iconChanged = false, newIconLeft = iconLeft, newIconTop = iconTop;
-        if (iconLeft + icon.offsetWidth > window.innerWidth - 6) { newIconLeft = Math.max(6, window.innerWidth - icon.offsetWidth - 6); iconChanged = true; }
-        if (iconTop + icon.offsetHeight > window.innerHeight - 6) { newIconTop = Math.max(6, window.innerHeight - icon.offsetHeight - 6); iconChanged = true; }
-        if (iconChanged) {
-            icon.style.left = newIconLeft + 'px';
-            icon.style.top  = newIconTop + 'px';
-            cfg.iconPos = { left: newIconLeft, top: newIconTop };
-            saveConfig(cfg);
+            setTimeout(showDashboard, 100);
         }
     });
     
-    // Zapisz przed zamknięciem
-    window.addEventListener('beforeunload', () => {
-        cfg.opacity = currentOpacity;
-        if (panel.style.left && panel.style.top) {
-            const leftVal = parseFloat(panel.style.left);
-            if (!isNaN(leftVal)) cfg.pos = { left: leftVal, top: parseFloat(panel.style.top) };
-        }
-        cfg.size = { width: panel.offsetWidth, height: panel.offsetHeight };
-        cfg.iconPos = { left: parseFloat(icon.style.left), top: parseFloat(icon.style.top) };
-        saveConfig(cfg);
+    document.getElementById('inwazja-dashboard').addEventListener('click', showDashboard);
+    
+    document.getElementById('inwazja-close').addEventListener('click', function() {
+        panel.classList.remove('visible');
+    });
+    
+    document.querySelectorAll('.inwazja-tile').forEach(tile => {
+        tile.addEventListener('click', function() {
+            const moduleId = this.dataset.id;
+            if (moduleId === 'auto-message') {
+                window.dispatchEvent(new CustomEvent('inwazjaModuleChange', {
+                    detail: { 
+                        moduleId: 'auto-message', 
+                        title: 'Auto-message', 
+                        subtitle: 'Skrypt na automatyczne odpisywanie graczom podczas nieobecności.' 
+                    }
+                }));
+            } else {
+                const content = document.getElementById('inwazja-content');
+                content.innerHTML = `
+                    <div style="padding:40px; text-align:center;">
+                        <div style="font-size:48px; margin-bottom:20px;">✨</div>
+                        <h3 style="margin-top:0; color:#00ffcc; font-size:28px;">${this.querySelector('div').textContent}</h3>
+                        <div style="opacity:0.9; margin-bottom:30px; font-size:18px; background:linear-gradient(135deg, #a0f0ff, #80e0ff); -webkit-background-clip:text; -webkit-text-fill-color:transparent;">Moduł w budowie</div>
+                        <div style="font-size:14px; opacity:0.7;">
+                            🎨 Ta funkcjonalność będzie dostępna w przyszłych aktualizacjach
+                        </div>
+                    </div>
+                `;
+            }
+        });
     });
     
     /**********************
-     *  Inicjalizacja Dashboard i Scroll
+     *  Inicjalizacja
      **********************/
-    // Inicjalizacja scrolla
-    setTimeout(() => {
-        enableMouseWheelScroll(document.getElementById('inwazja-tiles'));
-        enableMouseWheelScroll(document.getElementById('inwazja-content'));
-    }, 500);
-    
-    // Automatyczne wyświetlenie Dashboard przy pierwszym uruchomieniu
-    if (!cfg.activeTab || cfg.activeTab === 'dashboard') {
-        setTimeout(() => {
-            showDashboard();
-        }, 100);
-    } else {
-        const tile = tilesContainer.querySelector(`[data-id="${cfg.activeTab}"]`);
-        if (tile) {
-            setTimeout(() => {
-                tile.click();
-            }, 100);
-        }
+    if (window.inwazjaConfig.iconPos) {
+        icon.style.left = window.inwazjaConfig.iconPos.left + 'px';
+        icon.style.top = window.inwazjaConfig.iconPos.top + 'px';
     }
     
-    console.log('✅ Inwazja Add-on: Core UI załadowany z pełnym resize i scroll');
+    if (window.inwazjaConfig.pos) {
+        panel.style.left = window.inwazjaConfig.pos.left + 'px';
+        panel.style.top = window.inwazjaConfig.pos.top + 'px';
+        panel.style.transform = 'none';
+    }
+    
+    console.log('✅ Inwazja Core UI: stylowy interfejs załadowany');
+    
 })();
