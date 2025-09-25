@@ -1,70 +1,313 @@
 // auto-message.js
 (function() {
     'use strict';
-    
-    if (window.inwazjaAutoMessageLoaded) return;
+
+    if (window.inwazjaAutoMessageLoaded) {
+        return;
+    }
     window.inwazjaAutoMessageLoaded = true;
-    
-    const autoMessageCSS = `.auto-container{display:flex;flex-direction:column;gap:12px;padding:8px}.message-tabs-container{display:flex;align-items:center;gap:10px;margin-bottom:10px}.message-tabs{display:flex;gap:4px}.message-tab{padding:6px 12px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:4px;cursor:pointer;font-size:12px;font-weight:600;transition:all 0.3s ease;min-width:30px;text-align:center}.message-tab:hover{background:rgba(255,255,255,0.08);border-color:rgba(255,255,255,0.2)}.message-tab.active{background:rgba(100,255,100,0.2);border-color:rgba(100,255,100,0.5);color:#4CAF50}.clear-button{padding:4px 8px;background:rgba(255,100,100,0.1);border:1px solid rgba(255,100,100,0.3);border-radius:4px;color:#ff6b6b;font-size:11px;cursor:pointer;transition:all 0.3s ease}.clear-button:hover{background:rgba(255,100,100,0.2);border-color:rgba(255,100,100,0.5)}.message-content{display:flex;flex-direction:column;gap:12px}.auto-status{display:flex;align-items:center;gap:10px;padding:10px;background:rgba(255,255,255,0.02);border-radius:6px;border:1px solid rgba(255,255,255,0.05)}.status-text{font-size:12px;transition:color 0.3s ease}.status-text.active{color:#4CAF50}.status-text.inactive{color:#f44336}.auto-toggle{position:relative;width:45px;height:22px;background:rgba(255,255,255,0.1);border-radius:11px;cursor:pointer;transition:background 0.3s ease}.auto-toggle.active{background:rgba(100,255,100,0.3)}.auto-toggle::before{content:'';position:absolute;top:1px;left:1px;width:20px;height:20px;background:rgba(255,255,255,0.8);border-radius:50%;transition:transform 0.3s ease}.auto-toggle.active::before{transform:translateX(23px);background:rgba(100,255,100,1)}.checkbox-container{display:flex;align-items:center;gap:10px;padding:8px;background:rgba(255,255,255,0.02);border-radius:6px;border:1px solid rgba(255,255,255,0.05)}.custom-checkbox{position:relative;width:18px;height:18px;background:rgba(255,255,255,0.05);border:2px solid rgba(255,255,255,0.2);border-radius:3px;cursor:pointer;transition:all 0.3s ease}.custom-checkbox.checked{background:rgba(100,255,100,0.3);border-color:rgba(100,255,100,0.6)}.custom-checkbox.checked::after{content:'✓';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:#4CAF50;font-size:12px;font-weight:bold}.checkbox-label{font-size:12px;transition:color 0.3s ease}.checkbox-label.checked{color:#4CAF50}.schedule-container{padding:12px;background:rgba(255,255,255,0.02);border-radius:8px;border:1px solid rgba(255,255,255,0.05)}.schedule-header{display:flex;align-items:center;gap:10px;margin-bottom:12px}.schedule-toggle{position:relative;width:35px;height:18px;background:rgba(255,255,255,0.1);border-radius:9px;cursor:pointer;transition:background 0.3s ease}.schedule-toggle.active{background:rgba(100,255,100,0.3)}.schedule-toggle::before{content:'';position:absolute;top:1px;left:1px;width:16px;height:16px;background:rgba(255,255,255,0.8);border-radius:50%;transition:transform 0.3s ease}.schedule-toggle.active::before{transform:translateX(17px);background:rgba(100,255,100,1)}.schedule-time{display:flex;align-items:center;gap:10px;margin-top:8px}.time-input{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:4px;padding:6px 8px;color:#eaeff5;font-family:inherit;font-size:12px;width:70px;outline:none}.time-input:focus{border-color:rgba(255,255,255,0.3)}.auto-textarea{width:100%;min-height:80px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:5px;padding:8px;color:#eaeff5;font-family:inherit;font-size:13px;resize:vertical;outline:none}.auto-textarea:focus{border-color:rgba(255,255,255,0.3);background:rgba(255,255,255,0.08)}.auto-preview{padding:10px;background:rgba(0,0,0,0.2);border-radius:5px;border-left:2px solid rgba(255,255,255,0.2);font-size:12px;line-height:1.4}.auto-info{font-size:11px;opacity:0.7;margin-top:6px}.ignore-container{padding:12px;background:rgba(255,255,255,0.02);border-radius:8px;border:1px solid rgba(255,255,255,0.05)}.ignore-header{font-size:12px;font-weight:600;margin-bottom:8px}.ignore-input-container{display:flex;gap:8px;margin-bottom:10px}.ignore-input{flex:1;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:4px;padding:6px 8px;color:#eaeff5;font-family:inherit;font-size:12px;outline:none}.ignore-input:focus{border-color:rgba(255,255,255,0.3)}.ignore-input::placeholder{color:rgba(255,255,255,0.4)}.ignore-list{display:flex;flex-direction:column;gap:6px;min-height:30px}.ignore-item{display:flex;align-items:center;justify-content:space-between;padding:6px 8px;background:rgba(255,255,255,0.03);border-radius:4px;border:1px solid rgba(255,255,255,0.05)}.ignore-player{font-size:11px;color:#eaeff5}.ignore-remove{background:rgba(255,100,100,0.1);border:1px solid rgba(255,100,100,0.3);border-radius:3px;color:#ff6b6b;font-size:10px;width:16px;height:16px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 0.3s ease}.ignore-remove:hover{background:rgba(255,100,100,0.2);border-color:rgba(255,100,100,0.5)}.ignore-limit{font-size:10px;color:#ff6b6b;margin-top:6px;opacity:0.8;display:none}.ignore-limit.show{display:block}.ignore-info{font-size:10px;opacity:0.7;margin-top:4px}`;
-    
-    function addAutoMessageStyles() {
-        if (document.getElementById('inwazja-auto-message-styles')) return;
-        const style = document.createElement('style');
-        style.id = 'inwazja-auto-message-styles';
-        style.textContent = autoMessageCSS;
-        document.head.appendChild(style);
+
+    console.log('✅ Auto-message module loaded');
+
+    // Konfiguracja
+    const CONFIG = window.inwazjaConfig || {
+        autoMessages: ["", "", "", "", ""],
+        currentMessageTab: 0,
+        autoEnabled: false,
+        repeatMessage: false,
+        scheduleEnabled: false,
+        scheduleStart: "08:00",
+        scheduleEnd: "22:00",
+        ignoredPlayers: []
+    };
+
+    // Funkcja inicjalizacji GUI
+    window.initializeAutoMessageModule = function(contentElement) {
+        contentElement.innerHTML = `
+            <div style="padding: 20px; height: 100%; overflow-y: auto;">
+                <h2 style="color: #eaeff5; margin-top: 0; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;">
+                    Auto-message
+                </h2>
+                <div style="opacity: 0.8; margin-bottom: 20px; color: #b0b8c5;">
+                    Skrypt na automatyczne odpisywanie graczom podczas nieobecności.
+                </div>
+                
+                <!-- Zakładki wiadomości -->
+                <div style="display: flex; gap: 5px; margin-bottom: 20px;">
+                    ${[1,2,3,4,5].map(i => `
+                        <div class="message-tab ${i === CONFIG.currentMessageTab + 1 ? 'active' : ''}" 
+                             data-tab="${i-1}"
+                             style="padding: 8px 12px; background: rgba(255,255,255,0.05); border-radius: 4px; cursor: pointer; font-size: 12px; border: 1px solid rgba(255,255,255,0.1);">
+                            ${i}
+                        </div>
+                    `).join('')}
+                </div>
+
+                <!-- Status skryptu -->
+                <div style="margin-bottom: 15px; padding: 10px; background: rgba(255,255,255,0.03); border-radius: 4px;">
+                    <strong style="color: #eaeff5;">Status skryptu:</strong> 
+                    <span id="auto-status" style="color: ${CONFIG.autoEnabled ? '#00ff88' : '#ff4444'}; font-weight: bold;">
+                        ${CONFIG.autoEnabled ? 'AKTYWNY' : 'NIEAKTYWNY'}
+                    </span>
+                </div>
+
+                <div style="height: 1px; background: rgba(255,255,255,0.1); margin: 15px 0;"></div>
+
+                <!-- Treść wiadomości -->
+                <div style="margin-bottom: 20px;">
+                    <div style="font-weight: bold; margin-bottom: 8px; color: #eaeff5;">Treść wiadomości:</div>
+                    <textarea id="message-input" 
+                              style="width: 100%; height: 80px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; color: #eaeff5; padding: 10px; font-family: Arial; resize: vertical;"
+                              placeholder="Wpisz wiadomość, która będzie automatycznie wysyłana do graczy...">${CONFIG.autoMessages[CONFIG.currentMessageTab] || ''}</textarea>
+                    <div style="font-size: 11px; opacity: 0.7; margin-top: 5px; color: #b0b8c5;">
+                        Maksymalnie 200 znaków | Zakładka ${CONFIG.currentMessageTab + 1}/5
+                    </div>
+                </div>
+
+                <!-- Powtarzaj wiadomość -->
+                <div style="margin-bottom: 20px;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <strong style="color: #eaeff5;">Powtarzaj wiadomość:</strong> 
+                        <span id="repeat-status" style="color: ${CONFIG.repeatMessage ? '#00ff88' : '#ff4444'}; font-weight: bold;">
+                            ${CONFIG.repeatMessage ? 'AKTYWNE' : 'NIEAKTYWNE'}
+                        </span>
+                        <label class="switch" style="margin-left: auto;">
+                            <input type="checkbox" id="repeat-toggle" ${CONFIG.repeatMessage ? 'checked' : ''}>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div style="font-size: 11px; opacity: 0.7; margin-top: 5px; color: #b0b8c5;">
+                        Jeśli aktywne, wiadomość będzie wysyłana wielokrotnie do tego samego gracza
+                    </div>
+                </div>
+
+                <div style="height: 1px; background: rgba(255,255,255,0.1); margin: 15px 0;"></div>
+
+                <!-- Harmonogram -->
+                <div style="margin-bottom: 20px;">
+                    <div style="font-weight: bold; margin-bottom: 10px; color: #eaeff5;">Harmonogram aktywności</div>
+                    <div style="font-size: 12px; opacity: 0.8; margin-bottom: 10px; color: #b0b8c5;">
+                        Określ godziny, w których skrypt ma automatycznie odpowiadać
+                    </div>
+                    
+                    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 10px;">
+                        <div style="display: flex; align-items: center; gap: 5px;">
+                            <span style="color: #eaeff5;">Od:</span>
+                            <input type="time" id="schedule-start" value="${CONFIG.scheduleStart}" 
+                                   style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; color: #eaeff5; padding: 5px;">
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 5px;">
+                            <span style="color: #eaeff5;">Do:</span>
+                            <input type="time" id="schedule-end" value="${CONFIG.scheduleEnd}" 
+                                   style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; color: #eaeff5; padding: 5px;">
+                        </div>
+                        <label class="switch" style="margin-left: auto;">
+                            <input type="checkbox" id="schedule-toggle" ${CONFIG.scheduleEnabled ? 'checked' : ''}>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Podgląd wiadomości -->
+                <div style="margin-top: 25px; padding: 15px; background: rgba(255,255,255,0.02); border-radius: 6px; border: 1px solid rgba(255,255,255,0.05);">
+                    <div style="font-weight: bold; margin-bottom: 10px; color: #eaeff5;">Podgląd wiadomości (zakładka ${CONFIG.currentMessageTab + 1}):</div>
+                    <div id="message-preview" style="padding: 10px; background: rgba(0,0,0,0.2); border-radius: 4px; border-left: 3px solid rgba(0, 255, 136, 0.5); color: #b0b8c5; font-style: italic;">
+                        ${CONFIG.autoMessages[CONFIG.currentMessageTab] || 'Brak wiadomości...'}
+                    </div>
+                </div>
+
+                <!-- Przyciski akcji -->
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button id="save-message" style="padding: 8px 16px; background: linear-gradient(135deg, #00ff88, #0099ff); border: none; border-radius: 4px; color: #000; font-weight: bold; cursor: pointer;">
+                        Zapisz zmiany
+                    </button>
+                    <button id="toggle-auto" style="padding: 8px 16px; background: ${CONFIG.autoEnabled ? '#ff4444' : '#00ff88'}; border: none; border-radius: 4px; color: #000; font-weight: bold; cursor: pointer;">
+                        ${CONFIG.autoEnabled ? 'Wyłącz auto-odpowiadanie' : 'Włącz auto-odpowiadanie'}
+                    </button>
+                </div>
+            </div>
+
+            <style>
+                .message-tab.active {
+                    background: linear-gradient(135deg, #00ff88, #0099ff) !important;
+                    color: #000 !important;
+                    font-weight: bold;
+                }
+
+                .message-tab:hover {
+                    background: rgba(255,255,255,0.1) !important;
+                }
+
+                /* Style dla przełączników */
+                .switch {
+                    position: relative;
+                    display: inline-block;
+                    width: 40px;
+                    height: 20px;
+                }
+
+                .switch input {
+                    opacity: 0;
+                    width: 0;
+                    height: 0;
+                }
+
+                .slider {
+                    position: absolute;
+                    cursor: pointer;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    background-color: #ff4444;
+                    transition: .3s;
+                    border-radius: 20px;
+                }
+
+                .slider:before {
+                    position: absolute;
+                    content: "";
+                    height: 16px;
+                    width: 16px;
+                    left: 2px;
+                    bottom: 2px;
+                    background-color: white;
+                    transition: .3s;
+                    border-radius: 50%;
+                }
+
+                input:checked + .slider {
+                    background-color: #00ff88;
+                }
+
+                input:checked + .slider:before {
+                    transform: translateX(20px);
+                }
+
+                /* Focus styles */
+                textarea:focus, input:focus {
+                    outline: none;
+                    border-color: rgba(0, 255, 136, 0.5) !important;
+                }
+
+                /* Przyciski hover */
+                button:hover {
+                    opacity: 0.9;
+                    transform: translateY(-1px);
+                }
+            </style>
+        `;
+
+        // Inicjalizacja event listeners
+        initializeMessageTabs();
+        initializeAutoMessage();
+    };
+
+    function initializeMessageTabs() {
+        document.querySelectorAll('.message-tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                const tabIndex = parseInt(this.dataset.tab);
+                CONFIG.currentMessageTab = tabIndex;
+                
+                // Update UI
+                document.querySelectorAll('.message-tab').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                
+                // Update message input and preview
+                document.getElementById('message-input').value = CONFIG.autoMessages[tabIndex] || '';
+                document.getElementById('message-preview').textContent = CONFIG.autoMessages[tabIndex] || 'Brak wiadomości...';
+                document.querySelector('div[style*="Zakładka"]').textContent = `Maksymalnie 200 znaków | Zakładka ${tabIndex + 1}/5`;
+                document.querySelector('div[style*="Podgląd wiadomości"] strong').textContent = `Podgląd wiadomości (zakładka ${tabIndex + 1}):`;
+            });
+        });
     }
-    
-    function initAutoMessage() {
-        if (!window.inwazjaCoreLoaded) {
-            setTimeout(initAutoMessage, 100);
-            return;
-        }
-        
-        addAutoMessageStyles();
-        
-        function showAutoMessage(title, subtitle) {
-            const cfg = window.inwazjaConfig;
-            const content = document.getElementById('inwazja-content');
+
+    function initializeAutoMessage() {
+        // Zapisywanie wiadomości
+        document.getElementById('save-message')?.addEventListener('click', function() {
+            const message = document.getElementById('message-input').value.substring(0, 200);
+            CONFIG.autoMessages[CONFIG.currentMessageTab] = message;
+            document.getElementById('message-preview').textContent = message || 'Brak wiadomości...';
             
-            if (!content) {
-                setTimeout(() => showAutoMessage(title, subtitle), 100);
-                return;
+            window.inwazjaConfig.autoMessages = CONFIG.autoMessages;
+            window.inwazjaSaveConfig(window.inwazjaConfig);
+            
+            // Pokaz potwierdzenie
+            const originalText = this.textContent;
+            this.textContent = 'Zapisano!';
+            this.style.background = '#00ff88';
+            setTimeout(() => {
+                this.textContent = originalText;
+                this.style.background = 'linear-gradient(135deg, #00ff88, #0099ff)';
+            }, 1000);
+        });
+
+        // Przełącznik powtarzania wiadomości
+        document.getElementById('repeat-toggle')?.addEventListener('change', function() {
+            CONFIG.repeatMessage = this.checked;
+            const statusElement = document.getElementById('repeat-status');
+            statusElement.textContent = this.checked ? 'AKTYWNE' : 'NIEAKTYWNE';
+            statusElement.style.color = this.checked ? '#00ff88' : '#ff4444';
+            
+            window.inwazjaConfig.repeatMessage = CONFIG.repeatMessage;
+            window.inwazjaSaveConfig(window.inwazjaConfig);
+        });
+
+        // Przełącznik harmonogramu
+        document.getElementById('schedule-toggle')?.addEventListener('change', function() {
+            CONFIG.scheduleEnabled = this.checked;
+            window.inwazjaConfig.scheduleEnabled = CONFIG.scheduleEnabled;
+            window.inwazjaSaveConfig(window.inwazjaConfig);
+        });
+
+        // Zapisywanie harmonogramu
+        document.getElementById('schedule-start')?.addEventListener('change', function() {
+            CONFIG.scheduleStart = this.value;
+            window.inwazjaConfig.scheduleStart = CONFIG.scheduleStart;
+            window.inwazjaSaveConfig(window.inwazjaConfig);
+        });
+
+        document.getElementById('schedule-end')?.addEventListener('change', function() {
+            CONFIG.scheduleEnd = this.value;
+            window.inwazjaConfig.scheduleEnd = CONFIG.scheduleEnd;
+            window.inwazjaSaveConfig(window.inwazjaConfig);
+        });
+
+        // Główny przełącznik auto-odpowiadania
+        document.getElementById('toggle-auto')?.addEventListener('click', function() {
+            CONFIG.autoEnabled = !CONFIG.autoEnabled;
+            
+            const statusElement = document.getElementById('auto-status');
+            statusElement.textContent = CONFIG.autoEnabled ? 'AKTYWNY' : 'NIEAKTYWNY';
+            statusElement.style.color = CONFIG.autoEnabled ? '#00ff88' : '#ff4444';
+            
+            this.textContent = CONFIG.autoEnabled ? 'Wyłącz auto-odpowiadanie' : 'Włącz auto-odpowiadanie';
+            this.style.background = CONFIG.autoEnabled ? '#ff4444' : '#00ff88';
+            
+            window.inwazjaConfig.autoEnabled = CONFIG.autoEnabled;
+            window.inwazjaSaveConfig(window.inwazjaConfig);
+        });
+
+        // Live preview wiadomości
+        document.getElementById('message-input')?.addEventListener('input', function() {
+            const preview = this.value.substring(0, 200);
+            document.getElementById('message-preview').textContent = preview || 'Brak wiadomości...';
+        });
+    }
+
+    // Integracja z czatem gry (placeholder)
+    function setupChatIntegration() {
+        // Tutaj będzie integracja z czatem Margonem
+        console.log('🔗 Auto-message: Gotowy do integracji z czatem');
+    }
+
+    // Auto-init
+    if (document.getElementById('inwazja-content')) {
+        setTimeout(() => {
+            if (window.initializeAutoMessageModule) {
+                window.initializeAutoMessageModule(document.getElementById('inwazja-content'));
             }
-            
-            content.innerHTML = '<div class="auto-container"><h3 style="margin-top:0;margin-bottom:12px;font-size:14px">'+title+'</h3><div style="opacity:.9;margin-bottom:16px;font-size:12px">'+subtitle+'</div><div class="message-tabs-container"><div class="message-tabs" id="messageTabs"><div class="message-tab '+(cfg.currentMessageTab===0?'active':'')+'" data-tab="0">1</div><div class="message-tab '+(cfg.currentMessageTab===1?'active':'')+'" data-tab="1">2</div><div class="message-tab '+(cfg.currentMessageTab===2?'active':'')+'" data-tab="2">3</div><div class="message-tab '+(cfg.currentMessageTab===3?'active':'')+'" data-tab="3">4</div><div class="message-tab '+(cfg.currentMessageTab===4?'active':'')+'" data-tab="4">5</div></div><div class="clear-button" id="clearButton" title="Wyczyść treść aktualnej zakładki">🗑️</div></div><div class="message-content"><div class="auto-status"><div class="auto-toggle '+(cfg.autoEnabled?'active':'')+'" id="autoToggle"></div><div class="status-text '+(cfg.autoEnabled?'active':'inactive')+'" id="autoStatusText">Status skryptu: <strong>'+(cfg.autoEnabled?'AKTYWNY':'NIEAKTYWNY')+'</strong></div></div><div><div style="margin-bottom:6px;font-weight:600;font-size:12px">Treść wiadomości:</div><textarea class="auto-textarea" id="autoMessageText" placeholder="Wpisz wiadomość, która będzie automatycznie wysyłana do graczy...">'+(cfg.autoMessages[cfg.currentMessageTab]||'')+'</textarea><div class="auto-info">Maksymalnie 200 znaków | Zakładka '+(cfg.currentMessageTab+1)+'/5</div></div><div class="checkbox-container"><div class="custom-checkbox '+(cfg.repeatMessage?'checked':'')+'" id="repeatCheckbox"></div><div class="checkbox-label '+(cfg.repeatMessage?'checked':'')+'" id="repeatLabel">Powtarzaj wiadomość: <strong>'+(cfg.repeatMessage?'AKTYWNE':'NIEAKTYWNE')+'</strong></div></div><div class="schedule-container"><div class="schedule-header"><div class="schedule-toggle '+(cfg.scheduleEnabled?'active':'')+'" id="scheduleToggle"></div><div style="font-size:12px;font-weight:600">Harmonogram aktywności</div></div><div style="font-size:11px;opacity:0.8;margin-bottom:10px">Określ godziny, w których skrypt ma automatycznie odpowiadać</div><div class="schedule-time"><span style="font-size:11px">Od:</span><input type="time" class="time-input" id="scheduleStart" value="'+cfg.scheduleStart+'" '+(cfg.scheduleEnabled?'':'disabled')+'><span style="font-size:11px">Do:</span><input type="time" class="time-input" id="scheduleEnd" value="'+cfg.scheduleEnd+'" '+(cfg.scheduleEnabled?'':'disabled')+'></div></div><div><div style="margin-bottom:6px;font-weight:600;font-size:12px">Podgląd wiadomości (zakładka '+(cfg.currentMessageTab+1)+'):</div><div class="auto-preview" id="autoPreview">'+(cfg.autoMessages[cfg.currentMessageTab]||'Brak wiadomości...')+'</div></div><div class="ignore-container"><div class="ignore-header">Ignorowanie wysyłania wiadomości do graczy:</div><div class="ignore-input-container"><input type="text" class="ignore-input" id="ignoreInput" placeholder="Wpisz nick gracza i naciśnij Enter" maxlength="20"></div><div class="ignore-list" id="ignoreList">'+cfg.ignoredPlayers.map(player=>'<div class="ignore-item"><span class="ignore-player">'+player+'</span><div class="ignore-remove" data-player="'+player+'">×</div></div>').join('')+'</div><div class="ignore-info">Maksymalnie 5 graczy. Wiadomości nie będą wysyłane do ignorowanych graczy.</div><div class="ignore-limit '+(cfg.ignoredPlayers.length>=5?'show':'')+'" id="ignoreLimit">Osiągnięto limit dodanych graczy - usuń kogoś i spróbuj ponownie.</div></div></div><div style="margin-top:8px;font-size:11px;opacity:0.7">ⓘ System będzie automatycznie odpowiadał na prywatne wiadomości zgodnie z ustawieniami.</div></div>';
-
-            const autoToggle=document.getElementById('autoToggle');const autoStatusText=document.getElementById('autoStatusText');const autoMessageText=document.getElementById('autoMessageText');const autoPreview=document.getElementById('autoPreview');const repeatCheckbox=document.getElementById('repeatCheckbox');const repeatLabel=document.getElementById('repeatLabel');const scheduleToggle=document.getElementById('scheduleToggle');const scheduleStart=document.getElementById('scheduleStart');const scheduleEnd=document.getElementById('scheduleEnd');const messageTabs=document.getElementById('messageTabs');const clearButton=document.getElementById('clearButton');const ignoreInput=document.getElementById('ignoreInput');const ignoreList=document.getElementById('ignoreList');const ignoreLimit=document.getElementById('ignoreLimit');
-
-            function updateIgnoreList(){if(!ignoreList)return;ignoreList.innerHTML=cfg.ignoredPlayers.map(player=>'<div class="ignore-item"><span class="ignore-player">'+player+'</span><div class="ignore-remove" data-player="'+player+'">×</div></div>').join('');ignoreList.querySelectorAll('.ignore-remove').forEach(btn=>{btn.addEventListener('click',function(){const playerToRemove=this.dataset.player;cfg.ignoredPlayers=cfg.ignoredPlayers.filter(p=>p!==playerToRemove);window.inwazjaSaveConfig(cfg);updateIgnoreList();if(ignoreLimit)ignoreLimit.classList.toggle('show',cfg.ignoredPlayers.length>=5);});});}
-
-            if(messageTabs){messageTabs.querySelectorAll('.message-tab').forEach(tab=>{tab.addEventListener('click',()=>{const tabIndex=parseInt(tab.dataset.tab);cfg.autoMessages[cfg.currentMessageTab]=autoMessageText.value;cfg.currentMessageTab=tabIndex;messageTabs.querySelectorAll('.message-tab').forEach(t=>t.classList.remove('active'));tab.classList.add('active');autoMessageText.value=cfg.autoMessages[tabIndex]||'';if(autoPreview)autoPreview.textContent=cfg.autoMessages[tabIndex]||'Brak wiadomości...';const infoElement=autoMessageText.nextElementSibling;if(infoElement&&infoElement.classList.contains('auto-info')){infoElement.textContent='Maksymalnie 200 znaków | Zakładka '+(tabIndex+1)+'/5';}const previewTitle=autoPreview?autoPreview.previousElementSibling:null;if(previewTitle){previewTitle.textContent='Podgląd wiadomości (zakładka '+(tabIndex+1)+'):';}window.inwazjaSaveConfig(cfg);});});}
-
-            if(clearButton){clearButton.addEventListener('click',()=>{cfg.autoMessages[cfg.currentMessageTab]='';autoMessageText.value='';if(autoPreview)autoPreview.textContent='Brak wiadomości...';window.inwazjaSaveConfig(cfg);});}
-
-            if(autoToggle){autoToggle.addEventListener('click',()=>{cfg.autoEnabled=!cfg.autoEnabled;autoToggle.classList.toggle('active');if(autoStatusText){autoStatusText.textContent='Status skryptu: '+(cfg.autoEnabled?'AKTYWNY':'NIEAKTYWNY');autoStatusText.className='status-text '+(cfg.autoEnabled?'active':'inactive');}window.inwazjaSaveConfig(cfg);});}
-
-            if(autoMessageText){autoMessageText.addEventListener('input',e=>{const message=e.target.value.slice(0,200);e.target.value=message;cfg.autoMessages[cfg.currentMessageTab]=message;if(autoPreview)autoPreview.textContent=message||'Brak wiadomości...';window.inwazjaSaveConfig(cfg);});}
-
-            if(repeatCheckbox){repeatCheckbox.addEventListener('click',()=>{cfg.repeatMessage=!cfg.repeatMessage;repeatCheckbox.classList.toggle('checked');if(repeatLabel){repeatLabel.textContent='Powtarzaj wiadomość: '+(cfg.repeatMessage?'AKTYWNE':'NIEAKTYWNE');repeatLabel.className='checkbox-label '+(cfg.repeatMessage?'checked':'');}window.inwazjaSaveConfig(cfg);});}
-
-            if(scheduleToggle){scheduleToggle.addEventListener('click',()=>{cfg.scheduleEnabled=!cfg.scheduleEnabled;scheduleToggle.classList.toggle('active');if(scheduleStart)scheduleStart.disabled=!cfg.scheduleEnabled;if(scheduleEnd)scheduleEnd.disabled=!cfg.scheduleEnabled;window.inwazjaSaveConfig(cfg);});}
-
-            if(scheduleStart){scheduleStart.addEventListener('change',e=>{cfg.scheduleStart=e.target.value;window.inwazjaSaveConfig(cfg);});}
-
-            if(scheduleEnd){scheduleEnd.addEventListener('change',e=>{cfg.scheduleEnd=e.target.value;window.inwazjaSaveConfig(cfg);});}
-
-            if(ignoreInput){ignoreInput.addEventListener('keypress',e=>{if(e.key==='Enter'){const playerName=ignoreInput.value.trim();if(playerName){if(cfg.ignoredPlayers.length>=5){if(ignoreLimit)ignoreLimit.classList.add('show');return;}if(!cfg.ignoredPlayers.includes(playerName)){cfg.ignoredPlayers.push(playerName);window.inwazjaSaveConfig(cfg);ignoreInput.value='';updateIgnoreList();if(ignoreLimit)ignoreLimit.classList.toggle('show',cfg.ignoredPlayers.length>=5);}}}});}
-
-            if(autoPreview)autoPreview.textContent=cfg.autoMessages[cfg.currentMessageTab]||'Brak wiadomości...';updateIgnoreList();
-        }
-        
-        window.addEventListener('inwazjaModuleChange',event=>{if(event.detail.moduleId==='auto-message'){showAutoMessage(event.detail.title,event.detail.subtitle);}});
-        
-        if(window.inwazjaConfig.activeTab==='auto-message'){setTimeout(()=>{showAutoMessage('Auto-message','Skrypt na automatyczne odpisywanie graczom podczas nieobecności.');},1000);}
-        
-        console.log('✅ Inwazja Add-on: Auto-message załadowany');
+        }, 100);
     }
-    
-    setTimeout(initAutoMessage,500);
+
 })();
