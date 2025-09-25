@@ -117,6 +117,11 @@
         resize: none;
     `;
     
+    // SVG dla ikony domku (dashboard)
+    const dashboardSVG = `<svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M5.5 12.5V8.5H8.5V12.5H11.5V7.5H13.5L7 1.5L0.5 7.5H2.5V12.5H5.5Z" fill="currentColor"/>
+    </svg>`;
+    
     panel.innerHTML = `
         <div id="inwazja-header" style="
             height: 40px;
@@ -135,10 +140,15 @@
                 <span>Inwazja Add-on</span>
                 <span style="opacity: 0.6; font-size: 11px;">| v.2.2</span>
             </div>
-            <div id="inwazja-controls" style="display: flex; align-items: center; gap: 8px;">
-                <input type="range" id="inwazja-opacity" min="50" max="100" value="${currentOpacity * 100}" 
-                    style="width: 80px; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; cursor: pointer;"
-                    title="Przezroczystość">
+            <div id="inwazja-controls" style="display: flex; align-items: center; gap: 12px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span style="font-size: 11px; opacity: 0.7;">Przezroczystość</span>
+                    <div style="position: relative; width: 90px;">
+                        <input type="range" id="inwazja-opacity" min="50" max="100" value="${currentOpacity * 100}" 
+                            style="width: 100%; height: 4px; background: rgba(255,255,255,0.15); border-radius: 2px; cursor: pointer; appearance: none; outline: none;"
+                            title="Przezroczystość">
+                    </div>
+                </div>
                 <button id="inwazja-dashboard" class="ia-btn" title="Dashboard" style="
                     background: transparent;
                     border: none;
@@ -153,7 +163,7 @@
                     display: flex;
                     align-items: center;
                     justify-content: center;
-                ">🏠</button>
+                ">${dashboardSVG}</button>
                 <button id="inwazja-close" class="ia-btn" title="Zamknij" style="
                     background: transparent;
                     border: none;
@@ -195,8 +205,9 @@
                     border: 1px solid rgba(255,255,255,0.06);
                     border-radius: 6px;
                     cursor: pointer;
-                    transition: all 0.2s ease;
+                    transition: all 0.3s ease;
                     flex-shrink: 0;
+                    position: relative;
                 ">
                     <div style="font-weight:bold; font-size:13px; color:#eaeff5;">Auto-message</div>
                     <div style="opacity:0.8; font-size:11px; margin-top:4px; color:#b0b8c5;">Automatyczne odpisywanie</div>
@@ -207,8 +218,9 @@
                     border: 1px solid rgba(255,255,255,0.06);
                     border-radius: 6px;
                     cursor: pointer;
-                    transition: all 0.2s ease;
+                    transition: all 0.3s ease;
                     flex-shrink: 0;
+                    position: relative;
                 ">
                     <div style="font-weight:bold; font-size:13px; color:#eaeff5;">Ekwipunek</div>
                     <div style="opacity:0.8; font-size:11px; margin-top:4px; color:#b0b8c5;">Przegląd przedmiotów</div>
@@ -219,8 +231,9 @@
                     border: 1px solid rgba(255,255,255,0.06);
                     border-radius: 6px;
                     cursor: pointer;
-                    transition: all 0.2s ease;
+                    transition: all 0.3s ease;
                     flex-shrink: 0;
+                    position: relative;
                 ">
                     <div style="font-weight:bold; font-size:13px; color:#eaeff5;">Klan</div>
                     <div style="opacity:0.8; font-size:11px; margin-top:4px; color:#b0b8c5;">Lista członków</div>
@@ -231,8 +244,9 @@
                     border: 1px solid rgba(255,255,255,0.06);
                     border-radius: 6px;
                     cursor: pointer;
-                    transition: all 0.2s ease;
+                    transition: all 0.3s ease;
                     flex-shrink: 0;
+                    position: relative;
                 ">
                     <div style="font-weight:bold; font-size:13px; color:#eaeff5;">Umiejętności</div>
                     <div style="opacity:0.8; font-size:11px; margin-top:4px; color:#b0b8c5;">Tooltipy i cooldowny</div>
@@ -243,8 +257,9 @@
                     border: 1px solid rgba(255,255,255,0.06);
                     border-radius: 6px;
                     cursor: pointer;
-                    transition: all 0.2s ease;
+                    transition: all 0.3s ease;
                     flex-shrink: 0;
+                    position: relative;
                 ">
                     <div style="font-weight:bold; font-size:13px; color:#eaeff5;">Zadania</div>
                     <div style="opacity:0.8; font-size:11px; margin-top:4px; color:#b0b8c5;">Postępy i nagrody</div>
@@ -255,8 +270,9 @@
                     border: 1px solid rgba(255,255,255,0.06);
                     border-radius: 6px;
                     cursor: pointer;
-                    transition: all 0.2s ease;
+                    transition: all 0.3s ease;
                     flex-shrink: 0;
+                    position: relative;
                 ">
                     <div style="font-weight:bold; font-size:13px; color:#eaeff5;">Ustawienia</div>
                     <div style="opacity:0.8; font-size:11px; margin-top:4px; color:#b0b8c5;">Preferencje GUI</div>
@@ -300,6 +316,103 @@
     `;
     
     document.body.appendChild(panel);
+    
+    /**********************
+     *  Styl suwaka przezroczystości
+     **********************/
+    const style = document.createElement('style');
+    style.textContent = `
+        /* Styl dla suwaka przezroczystości */
+        #inwazja-opacity::-webkit-slider-thumb {
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #000000;
+            border: 2px solid rgba(255,255,255,0.3);
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        #inwazja-opacity::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #000000;
+            border: 2px solid rgba(255,255,255,0.3);
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        #inwazja-opacity::-webkit-slider-track {
+            background: rgba(255,255,255,0.15);
+            border-radius: 2px;
+            height: 4px;
+        }
+        
+        #inwazja-opacity::-moz-range-track {
+            background: rgba(255,255,255,0.15);
+            border-radius: 2px;
+            height: 4px;
+            border: none;
+        }
+        
+        /* Styl dla kafelków z gradientowym podświetleniem */
+        .inwazja-tile:hover::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(135deg, #00ff88, #0099ff);
+            border-radius: 8px;
+            z-index: -1;
+            opacity: 0.4;
+            animation: gradientGlow 2s ease-in-out infinite alternate;
+        }
+        
+        .inwazja-tile:hover {
+            transform: translateY(-2px);
+            border-color: rgba(255,255,255,0.15);
+            z-index: 1;
+        }
+        
+        @keyframes gradientGlow {
+            0% {
+                opacity: 0.3;
+            }
+            100% {
+                opacity: 0.6;
+            }
+        }
+        
+        /* Styl dla kafelków statystyk w dashboardzie */
+        .stat-tile {
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        
+        .stat-tile:hover::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(135deg, #00ff88, #0099ff);
+            border-radius: 8px;
+            z-index: -1;
+            opacity: 0.4;
+            animation: gradientGlow 2s ease-in-out infinite alternate;
+        }
+        
+        .stat-tile:hover {
+            transform: translateY(-1px);
+            border-color: rgba(0, 255, 136, 0.3);
+        }
+    `;
+    document.head.appendChild(style);
     
     /**********************
      *  Funkcje
@@ -349,19 +462,19 @@
                     max-width: 350px;
                     margin: 20px 0;
                 ">
-                    <div style="padding: 12px; background: rgba(255,255,255,0.03); border-radius: 6px; border: 1px solid rgba(255,255,255,0.08);">
+                    <div class="stat-tile" style="padding: 12px; background: rgba(255,255,255,0.03); border-radius: 6px; border: 1px solid rgba(255,255,255,0.08);">
                         <div style="font-size: 20px; font-weight: bold; margin-bottom: 4px; color: #eaeff5;">${totalMessages}/5</div>
                         <div style="font-size: 10px; opacity: 0.7; color: #b0b8c5;">Aktywne wiadomości</div>
                     </div>
-                    <div style="padding: 12px; background: rgba(255,255,255,0.03); border-radius: 6px; border: 1px solid rgba(255,255,255,0.08);">
+                    <div class="stat-tile" style="padding: 12px; background: rgba(255,255,255,0.03); border-radius: 6px; border: 1px solid rgba(255,255,255,0.08);">
                         <div style="font-size: 20px; font-weight: bold; margin-bottom: 4px; color: #eaeff5;">${ignoredPlayers}/5</div>
                         <div style="font-size: 10px; opacity: 0.7; color: #b0b8c5;">Ignorowani gracze</div>
                     </div>
-                    <div style="padding: 12px; background: rgba(255,255,255,0.03); border-radius: 6px; border: 1px solid rgba(255,255,255,0.08);">
+                    <div class="stat-tile" style="padding: 12px; background: rgba(255,255,255,0.03); border-radius: 6px; border: 1px solid rgba(255,255,255,0.08);">
                         <div style="font-size: 20px; font-weight: bold; margin-bottom: 4px; color: #eaeff5;">${autoEnabled}</div>
                         <div style="font-size: 10px; opacity: 0.7; color: #b0b8c5;">Auto-odpowiadanie</div>
                     </div>
-                    <div style="padding: 12px; background: rgba(255,255,255,0.03); border-radius: 6px; border: 1px solid rgba(255,255,255,0.08);">
+                    <div class="stat-tile" style="padding: 12px; background: rgba(255,255,255,0.03); border-radius: 6px; border: 1px solid rgba(255,255,255,0.08);">
                         <div style="font-size: 20px; font-weight: bold; margin-bottom: 4px; color: #eaeff5;">${scheduleEnabled}</div>
                         <div style="font-size: 10px; opacity: 0.7; color: #b0b8c5;">Harmonogram</div>
                     </div>
@@ -651,7 +764,6 @@
         tile.addEventListener('mouseenter', function() {
             this.style.background = 'linear-gradient(135deg, rgba(255,255,255,0.05), rgba(0,0,0,0.15))';
             this.style.borderColor = 'rgba(255,255,255,0.1)';
-            this.style.transform = 'translateY(-1px)';
         });
         
         tile.addEventListener('mouseleave', function() {
