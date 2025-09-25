@@ -372,24 +372,25 @@
     // Panel
     const panel = document.createElement('div');
     panel.id = 'inwazja-panel';
-    panel.innerHTML = `
-        <div id="inwazja-header">
-            <div class="title">
-                Inwazja Add-on
-                <span class="version">| v. 2.0.0</span>
-            </div>
-            <div id="inwazja-controls">
-                <input id="inwazja-opacity" type="range" min="0.5" max="1" step="0.01" value="${currentOpacity}" title="Przezroczystość">
-                <button id="inwazja-close" class="ia-btn" title="Zamknij">✖</button>
-            </div>
+        panel.innerHTML = `
+    <div id="inwazja-header">
+        <div class="title">
+            Inwazja Add-on
+            <span class="version">| v. 2.0.0</span>
         </div>
-        <div id="inwazja-body">
-            <div id="inwazja-tiles"></div>
-            <div id="inwazja-content"><div style="opacity:.9">Wersja: modułowa 2.0.0. <strong id="inwazja-activeTitle"></strong></div></div>
+        <div id="inwazja-controls">
+            <button id="inwazja-dashboard" class="ia-btn" title="Dashboard">🏠</button>
+            <input id="inwazja-opacity" type="range" min="0.5" max="1" step="0.01" value="${currentOpacity}" title="Przezroczystość">
+            <button id="inwazja-close" class="ia-btn" title="Zamknij">✖</button>
         </div>
-        <div id="inwazja-footer">Modułowy UI | Inwazja Add-on v2.0.0</div>
-        <div id="inwazja-resizer" aria-hidden="true" title="Zmień rozmiar okna"></div>
-    `;
+    </div>
+    <div id="inwazja-body">
+        <div id="inwazja-tiles"></div>
+        <div id="inwazja-content"><div style="opacity:.9">Wersja: modułowa 2.0.0. <strong id="inwazja-activeTitle"></strong></div></div>
+    </div>
+    <div id="inwazja-footer">Modułowy UI | Inwazja Add-on v2.0.0</div>
+    <div id="inwazja-resizer" aria-hidden="true" title="Zmień rozmiar okna"></div>
+`;
     document.body.appendChild(panel);
     
     // Kafelki
