@@ -5,17 +5,17 @@
     if (window.inwazjaCoreLoaded) return;
     window.inwazjaCoreLoaded = true;
     
-    console.log('🚀 Inwazja Core UI: ładowanie...');
+    console.log('🚀 Inwazja Core UI: ładowanie poprawionej wersji...');
     
     /**********************
      *  Konfiguracja
      **********************/
-    const STORAGE_KEY = 'inwazjaAddonConfig_v2_1';
+    const STORAGE_KEY = 'inwazjaAddonConfig_v2_2';
     const DEFAULT_CFG = {
         pos: null,
         size: { width: 800, height: 600 },
         iconPos: null,
-        opacity: 0.98,
+        opacity: 0.95,
         autoMessages: ["", "", "", "", ""],
         currentMessageTab: 0,
         autoEnabled: false,
@@ -48,6 +48,8 @@
     window.inwazjaConfig = loadConfig();
     window.inwazjaSaveConfig = saveConfig;
     
+    let currentOpacity = window.inwazjaConfig.opacity || 0.95;
+    
     /**********************
      *  Tworzenie DOM
      **********************/
@@ -64,15 +66,15 @@
         position: fixed;
         left: 20px;
         top: 20px;
-        width: 150px;
-        height: 40px;
-        padding: 10px 15px;
-        background: linear-gradient(135deg, #00ff88, #00ccff);
-        border: 2px solid rgba(255,255,255,0.3);
-        border-radius: 10px;
-        color: #002b33;
+        width: 140px;
+        height: 36px;
+        padding: 8px 12px;
+        background: rgba(12,12,12,0.95);
+        border: 2px solid rgba(255,255,255,0.08);
+        border-radius: 8px;
+        color: #fff;
         font-weight: bold;
-        font-size: 14px;
+        font-size: 13px;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -83,8 +85,8 @@
         box-sizing: border-box;
         font-family: Arial, sans-serif;
         text-align: center;
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 15px rgba(0,255,136,0.3);
+        transition: all 0.2s ease;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
     `;
     
     document.body.appendChild(icon);
@@ -96,165 +98,205 @@
     panel.style.cssText = `
         position: fixed;
         z-index: 9999;
-        width: 800px;
-        height: 600px;
-        border-radius: 15px;
+        width: ${window.inwazjaConfig.size.width}px;
+        height: ${window.inwazjaConfig.size.height}px;
+        border-radius: 12px;
         overflow: hidden;
         display: none;
         flex-direction: column;
-        background: rgba(20,30,40,0.95);
-        color: #e0f7ff;
+        background: rgba(28,28,28,${currentOpacity});
+        color: #eaeff5;
         font-family: Arial, sans-serif;
         box-shadow: 0 20px 40px rgba(0,0,0,0.5);
         user-select: none;
-        border: 1px solid rgba(0,255,136,0.3);
+        border: 1px solid rgba(255,255,255,0.1);
         backdrop-filter: blur(10px);
         left: 50%;
         top: 50%;
         transform: translate(-50%, -50%);
+        resize: none;
     `;
     
     panel.innerHTML = `
         <div id="inwazja-header" style="
-            height: 45px;
+            height: 40px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0 20px;
-            background: rgba(0,40,80,0.8);
-            border-bottom: 1px solid rgba(0,255,136,0.2);
+            padding: 0 15px;
+            background: rgba(0,0,0,0.3);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
             cursor: move;
-            font-size: 14px;
+            font-size: 13px;
             font-weight: bold;
+            position: relative;
         ">
-            <div>Inwazja Add-on | v.2.1</div>
-            <div id="inwazja-controls" style="display: flex; align-items: center; gap: 10px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <span>Inwazja Add-on</span>
+                <span style="opacity: 0.6; font-size: 11px;">| v.2.2</span>
+            </div>
+            <div id="inwazja-controls" style="display: flex; align-items: center; gap: 8px;">
+                <input type="range" id="inwazja-opacity" min="50" max="100" value="${currentOpacity * 100}" 
+                    style="width: 80px; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; cursor: pointer;"
+                    title="Przezroczystość">
                 <button id="inwazja-dashboard" class="ia-btn" title="Dashboard" style="
-                    background: rgba(0,255,136,0.2);
-                    border: 1px solid rgba(0,255,136,0.3);
-                    color: #a0f0ff;
-                    padding: 6px 10px;
+                    background: transparent;
+                    border: none;
+                    color: #d6d6d6;
+                    padding: 4px;
                     cursor: pointer;
-                    border-radius: 5px;
-                    font-size: 16px;
+                    font-size: 14px;
                     transition: all 0.2s ease;
+                    border-radius: 3px;
+                    width: 24px;
+                    height: 24px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
                 ">🏠</button>
                 <button id="inwazja-close" class="ia-btn" title="Zamknij" style="
-                    background: rgba(255,100,100,0.2);
-                    border: 1px solid rgba(255,100,100,0.3);
-                    color: #ffa0a0;
-                    padding: 6px 10px;
+                    background: transparent;
+                    border: none;
+                    color: #d6d6d6;
+                    padding: 4px;
                     cursor: pointer;
-                    border-radius: 5px;
-                    font-size: 16px;
+                    font-size: 14px;
                     transition: all 0.2s ease;
+                    border-radius: 3px;
+                    width: 24px;
+                    height: 24px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
                 ">✖</button>
             </div>
         </div>
         <div id="inwazja-body" style="
             display: flex;
             flex: 1;
-            gap: 20px;
-            padding: 20px;
-            height: calc(100% - 65px);
-            background: rgba(0,0,0,0.2);
+            gap: 15px;
+            padding: 15px;
+            height: calc(100% - 50px);
+            background: rgba(0,0,0,0.1);
             overflow: hidden;
         ">
             <div id="inwazja-tiles" style="
                 width: 200px;
                 display: flex;
                 flex-direction: column;
-                gap: 10px;
+                gap: 8px;
                 flex-shrink: 0;
                 overflow-y: auto;
                 padding-right: 5px;
             ">
                 <div class="inwazja-tile" data-id="auto-message" style="
-                    padding: 15px;
-                    background: rgba(0,255,136,0.1);
-                    border: 1px solid rgba(0,255,136,0.2);
-                    border-radius: 8px;
+                    padding: 12px;
+                    background: linear-gradient(135deg, rgba(255,255,255,0.03), rgba(0,0,0,0.1));
+                    border: 1px solid rgba(255,255,255,0.06);
+                    border-radius: 6px;
                     cursor: pointer;
-                    transition: all 0.3s ease;
+                    transition: all 0.2s ease;
                     flex-shrink: 0;
                 ">
-                    <div style="font-weight:bold; font-size:14px; color:#00ffcc;">Auto-message</div>
-                    <div style="opacity:0.8; font-size:12px; margin-top:5px; color:#a0f0ff;">Automatyczne odpisywanie</div>
+                    <div style="font-weight:bold; font-size:13px; color:#eaeff5;">Auto-message</div>
+                    <div style="opacity:0.8; font-size:11px; margin-top:4px; color:#b0b8c5;">Automatyczne odpisywanie</div>
                 </div>
                 <div class="inwazja-tile" data-id="inventory" style="
-                    padding: 15px;
-                    background: rgba(0,255,136,0.1);
-                    border: 1px solid rgba(0,255,136,0.2);
-                    border-radius: 8px;
+                    padding: 12px;
+                    background: linear-gradient(135deg, rgba(255,255,255,0.03), rgba(0,0,0,0.1));
+                    border: 1px solid rgba(255,255,255,0.06);
+                    border-radius: 6px;
                     cursor: pointer;
-                    transition: all 0.3s ease;
+                    transition: all 0.2s ease;
                     flex-shrink: 0;
                 ">
-                    <div style="font-weight:bold; font-size:14px; color:#00ffcc;">Ekwipunek</div>
-                    <div style="opacity:0.8; font-size:12px; margin-top:5px; color:#a0f0ff;">Przegląd przedmiotów</div>
+                    <div style="font-weight:bold; font-size:13px; color:#eaeff5;">Ekwipunek</div>
+                    <div style="opacity:0.8; font-size:11px; margin-top:4px; color:#b0b8c5;">Przegląd przedmiotów</div>
                 </div>
                 <div class="inwazja-tile" data-id="clan" style="
-                    padding: 15px;
-                    background: rgba(0,255,136,0.1);
-                    border: 1px solid rgba(0,255,136,0.2);
-                    border-radius: 8px;
+                    padding: 12px;
+                    background: linear-gradient(135deg, rgba(255,255,255,0.03), rgba(0,0,0,0.1));
+                    border: 1px solid rgba(255,255,255,0.06);
+                    border-radius: 6px;
                     cursor: pointer;
-                    transition: all 0.3s ease;
+                    transition: all 0.2s ease;
                     flex-shrink: 0;
                 ">
-                    <div style="font-weight:bold; font-size:14px; color:#00ffcc;">Klan</div>
-                    <div style="opacity:0.8; font-size:12px; margin-top:5px; color:#a0f0ff;">Lista członków</div>
+                    <div style="font-weight:bold; font-size:13px; color:#eaeff5;">Klan</div>
+                    <div style="opacity:0.8; font-size:11px; margin-top:4px; color:#b0b8c5;">Lista członków</div>
                 </div>
                 <div class="inwazja-tile" data-id="skills" style="
-                    padding: 15px;
-                    background: rgba(0,255,136,0.1);
-                    border: 1px solid rgba(0,255,136,0.2);
-                    border-radius: 8px;
+                    padding: 12px;
+                    background: linear-gradient(135deg, rgba(255,255,255,0.03), rgba(0,0,0,0.1));
+                    border: 1px solid rgba(255,255,255,0.06);
+                    border-radius: 6px;
                     cursor: pointer;
-                    transition: all 0.3s ease;
+                    transition: all 0.2s ease;
                     flex-shrink: 0;
                 ">
-                    <div style="font-weight:bold; font-size:14px; color:#00ffcc;">Umiejętności</div>
-                    <div style="opacity:0.8; font-size:12px; margin-top:5px; color:#a0f0ff;">Tooltipy i cooldowny</div>
+                    <div style="font-weight:bold; font-size:13px; color:#eaeff5;">Umiejętności</div>
+                    <div style="opacity:0.8; font-size:11px; margin-top:4px; color:#b0b8c5;">Tooltipy i cooldowny</div>
                 </div>
                 <div class="inwazja-tile" data-id="quests" style="
-                    padding: 15px;
-                    background: rgba(0,255,136,0.1);
-                    border: 1px solid rgba(0,255,136,0.2);
-                    border-radius: 8px;
+                    padding: 12px;
+                    background: linear-gradient(135deg, rgba(255,255,255,0.03), rgba(0,0,0,0.1));
+                    border: 1px solid rgba(255,255,255,0.06);
+                    border-radius: 6px;
                     cursor: pointer;
-                    transition: all 0.3s ease;
+                    transition: all 0.2s ease;
                     flex-shrink: 0;
                 ">
-                    <div style="font-weight:bold; font-size:14px; color:#00ffcc;">Zadania</div>
-                    <div style="opacity:0.8; font-size:12px; margin-top:5px; color:#a0f0ff;">Postępy i nagrody</div>
+                    <div style="font-weight:bold; font-size:13px; color:#eaeff5;">Zadania</div>
+                    <div style="opacity:0.8; font-size:11px; margin-top:4px; color:#b0b8c5;">Postępy i nagrody</div>
                 </div>
                 <div class="inwazja-tile" data-id="settings" style="
-                    padding: 15px;
-                    background: rgba(0,255,136,0.1);
-                    border: 1px solid rgba(0,255,136,0.2);
-                    border-radius: 8px;
+                    padding: 12px;
+                    background: linear-gradient(135deg, rgba(255,255,255,0.03), rgba(0,0,0,0.1));
+                    border: 1px solid rgba(255,255,255,0.06);
+                    border-radius: 6px;
                     cursor: pointer;
-                    transition: all 0.3s ease;
+                    transition: all 0.2s ease;
                     flex-shrink: 0;
                 ">
-                    <div style="font-weight:bold; font-size:14px; color:#00ffcc;">Ustawienia</div>
-                    <div style="opacity:0.8; font-size:12px; margin-top:5px; color:#a0f0ff;">Preferencje GUI</div>
+                    <div style="font-weight:bold; font-size:13px; color:#eaeff5;">Ustawienia</div>
+                    <div style="opacity:0.8; font-size:11px; margin-top:4px; color:#b0b8c5;">Preferencje GUI</div>
                 </div>
             </div>
             <div id="inwazja-content" style="
                 flex: 1;
-                padding: 20px;
+                padding: 15px;
                 overflow: auto;
-                background: rgba(0,20,40,0.3);
-                border-radius: 10px;
-                border: 1px solid rgba(0,255,136,0.1);
+                background: rgba(0,0,0,0.05);
+                border-radius: 8px;
+                border: 1px solid rgba(255,255,255,0.05);
             ">
-                <div style="display:flex; align-items:center; justify-content:center; height:100%; opacity:0.7;">
+                <div style="display:flex; align-items:center; justify-content:center; height:100%; opacity:0.7; font-size:14px;">
                     Ładowanie dashboardu...
                 </div>
             </div>
         </div>
+        <div id="inwazja-resizer" style="
+            position: absolute;
+            right: 2px;
+            bottom: 2px;
+            width: 12px;
+            height: 12px;
+            cursor: nwse-resize;
+            background: linear-gradient(135deg, transparent 50%, rgba(255,255,255,0.3) 50%);
+            border-radius: 1px;
+            z-index: 1000;
+        "></div>
+        <div id="inwazja-footer" style="
+            height: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2px 8px;
+            background: rgba(0,0,0,0.2);
+            border-top: 1px solid rgba(255,255,255,0.03);
+            font-size: 10px;
+            opacity: 0.7;
+        ">Inwazja Add-on v2.2</div>
     `;
     
     document.body.appendChild(panel);
@@ -279,25 +321,22 @@
                 justify-content: center;
                 height: 100%;
                 text-align: center;
-                padding: 40px 30px;
+                padding: 30px 20px;
             ">
                 <div style="
-                    font-size: 32px;
+                    font-size: 24px;
                     font-weight: bold;
-                    margin-bottom: 15px;
-                    background: linear-gradient(135deg, #00ff88, #00ccff);
-                    -webkit-background-clip: text;
-                    -webkit-text-fill-color: transparent;
-                    background-clip: text;
+                    margin-bottom: 10px;
+                    color: #eaeff5;
                 ">Inwazja Add-on</div>
                 
                 <div style="
-                    font-size: 15px;
-                    opacity: 0.9;
-                    margin-bottom: 30px;
-                    max-width: 500px;
-                    line-height: 1.5;
-                    color: #a0f0ff;
+                    font-size: 13px;
+                    opacity: 0.8;
+                    margin-bottom: 25px;
+                    max-width: 400px;
+                    line-height: 1.4;
+                    color: #b0b8c5;
                 ">
                     Zaawansowany dodatek do Margonem z funkcją automatycznego odpowiadania na wiadomości
                 </div>
@@ -305,55 +344,58 @@
                 <div style="
                     display: grid;
                     grid-template-columns: repeat(2, 1fr);
-                    gap: 15px;
+                    gap: 12px;
                     width: 100%;
-                    max-width: 400px;
-                    margin: 25px 0;
+                    max-width: 350px;
+                    margin: 20px 0;
                 ">
-                    <div style="padding: 15px; background: rgba(0,255,136,0.1); border-radius: 8px; border: 1px solid rgba(0,255,136,0.3);">
-                        <div style="font-size: 24px; font-weight: bold; margin-bottom: 5px; color: #00ff88;">${totalMessages}/5</div>
-                        <div style="font-size: 11px; opacity: 0.8; color: #80e0ff;">Aktywne wiadomości</div>
+                    <div style="padding: 12px; background: rgba(255,255,255,0.03); border-radius: 6px; border: 1px solid rgba(255,255,255,0.08);">
+                        <div style="font-size: 20px; font-weight: bold; margin-bottom: 4px; color: #eaeff5;">${totalMessages}/5</div>
+                        <div style="font-size: 10px; opacity: 0.7; color: #b0b8c5;">Aktywne wiadomości</div>
                     </div>
-                    <div style="padding: 15px; background: rgba(0,255,136,0.1); border-radius: 8px; border: 1px solid rgba(0,255,136,0.3);">
-                        <div style="font-size: 24px; font-weight: bold; margin-bottom: 5px; color: #00ff88;">${ignoredPlayers}/5</div>
-                        <div style="font-size: 11px; opacity: 0.8; color: #80e0ff;">Ignorowani gracze</div>
+                    <div style="padding: 12px; background: rgba(255,255,255,0.03); border-radius: 6px; border: 1px solid rgba(255,255,255,0.08);">
+                        <div style="font-size: 20px; font-weight: bold; margin-bottom: 4px; color: #eaeff5;">${ignoredPlayers}/5</div>
+                        <div style="font-size: 10px; opacity: 0.7; color: #b0b8c5;">Ignorowani gracze</div>
                     </div>
-                    <div style="padding: 15px; background: rgba(0,255,136,0.1); border-radius: 8px; border: 1px solid rgba(0,255,136,0.3);">
-                        <div style="font-size: 24px; font-weight: bold; margin-bottom: 5px; color: #00ff88;">${autoEnabled}</div>
-                        <div style="font-size: 11px; opacity: 0.8; color: #80e0ff;">Auto-odpowiadanie</div>
+                    <div style="padding: 12px; background: rgba(255,255,255,0.03); border-radius: 6px; border: 1px solid rgba(255,255,255,0.08);">
+                        <div style="font-size: 20px; font-weight: bold; margin-bottom: 4px; color: #eaeff5;">${autoEnabled}</div>
+                        <div style="font-size: 10px; opacity: 0.7; color: #b0b8c5;">Auto-odpowiadanie</div>
                     </div>
-                    <div style="padding: 15px; background: rgba(0,255,136,0.1); border-radius: 8px; border: 1px solid rgba(0,255,136,0.3);">
-                        <div style="font-size: 24px; font-weight: bold; margin-bottom: 5px; color: #00ff88;">${scheduleEnabled}</div>
-                        <div style="font-size: 11px; opacity: 0.8; color: #80e0ff;">Harmonogram</div>
+                    <div style="padding: 12px; background: rgba(255,255,255,0.03); border-radius: 6px; border: 1px solid rgba(255,255,255,0.08);">
+                        <div style="font-size: 20px; font-weight: bold; margin-bottom: 4px; color: #eaeff5;">${scheduleEnabled}</div>
+                        <div style="font-size: 10px; opacity: 0.7; color: #b0b8c5;">Harmonogram</div>
                     </div>
                 </div>
                 
                 <div style="
-                    font-size: 12px;
-                    opacity: 0.7;
-                    padding: 8px 16px;
-                    background: rgba(255,255,255,0.05);
-                    border-radius: 20px;
-                    border: 1px solid rgba(255,255,255,0.1);
-                    margin-top: 20px;
-                    color: #a0f0ff;
-                ">Wersja 2.1 | Działający Interfejs</div>
+                    font-size: 11px;
+                    opacity: 0.6;
+                    padding: 6px 12px;
+                    background: rgba(255,255,255,0.03);
+                    border-radius: 12px;
+                    border: 1px solid rgba(255,255,255,0.05);
+                    margin-top: 15px;
+                    color: #b0b8c5;
+                ">Wersja 2.2 | Poprawiony Interfejs</div>
                 
-                <div style="margin-top: 30px; font-size: 11px; opacity: 0.6; color: #80e0ff;">
+                <div style="margin-top: 20px; font-size: 10px; opacity: 0.5; color: #b0b8c5;">
                     Kliknij w kafelek po lewej stronie, aby przejść do konkretnego modułu
                 </div>
             </div>
         `;
     }
     
+    function applyOpacity() {
+        panel.style.background = `rgba(28,28,28,${currentOpacity})`;
+    }
+    
     /**********************
-     *  POPRAWIONY DRAG & DROP (szybki i responsywny)
+     *  Drag & Drop Ikony
      **********************/
     let isDraggingIcon = false;
     let dragStartX = 0, dragStartY = 0;
     let startIconX = 0, startIconY = 0;
     
-    // Optymalny drag & drop
     const handleIconMouseDown = (e) => {
         if (e.button !== 0) return;
         
@@ -363,8 +405,8 @@
         startIconX = parseInt(icon.style.left) || 20;
         startIconY = parseInt(icon.style.top) || 20;
         
-        icon.style.transition = 'none'; // Wyłącz animacje podczas drag
-        icon.style.opacity = '0.9';
+        icon.style.transition = 'none';
+        icon.style.opacity = '0.8';
         e.preventDefault();
     };
     
@@ -385,7 +427,7 @@
         if (!isDraggingIcon) return;
         
         isDraggingIcon = false;
-        icon.style.transition = 'all 0.3s ease'; // Włącz animacje z powrotem
+        icon.style.transition = 'all 0.2s ease';
         icon.style.opacity = '1';
         
         window.inwazjaConfig.iconPos = {
@@ -395,77 +437,165 @@
         window.inwazjaSaveConfig(window.inwazjaConfig);
     };
     
-    // Event listeners dla drag & drop
     icon.addEventListener('mousedown', handleIconMouseDown);
     document.addEventListener('mousemove', handleIconMouseMove);
     document.addEventListener('mouseup', handleIconMouseUp);
     
     /**********************
-     *  SCROLL (działa z kółkiem myszy)
+     *  Drag & Drop Panelu
+     **********************/
+    let isDraggingPanel = false;
+    let panelStartX = 0, panelStartY = 0;
+    let startPanelX = 0, startPanelY = 0;
+    
+    const header = document.getElementById('inwazja-header');
+    
+    const handlePanelMouseDown = (e) => {
+        if (e.button !== 0) return;
+        if (e.target.closest('#inwazja-controls')) return;
+        
+        isDraggingPanel = true;
+        panelStartX = e.clientX;
+        panelStartY = e.clientY;
+        startPanelX = parseInt(panel.style.left);
+        startPanelY = parseInt(panel.style.top);
+        
+        panel.style.transition = 'none';
+        e.preventDefault();
+    };
+    
+    const handlePanelMouseMove = (e) => {
+        if (!isDraggingPanel) return;
+        
+        const deltaX = e.clientX - panelStartX;
+        const deltaY = e.clientY - panelStartY;
+        
+        const newX = Math.max(0, Math.min(window.innerWidth - panel.offsetWidth, startPanelX + deltaX));
+        const newY = Math.max(0, Math.min(window.innerHeight - panel.offsetHeight, startPanelY + deltaY));
+        
+        panel.style.left = newX + 'px';
+        panel.style.top = newY + 'px';
+        panel.style.transform = 'none';
+    };
+    
+    const handlePanelMouseUp = () => {
+        if (!isDraggingPanel) return;
+        
+        isDraggingPanel = false;
+        panel.style.transition = 'all 0.2s ease';
+        
+        window.inwazjaConfig.pos = {
+            left: parseInt(panel.style.left),
+            top: parseInt(panel.style.top)
+        };
+        window.inwazjaSaveConfig(window.inwazjaConfig);
+    };
+    
+    header.addEventListener('mousedown', handlePanelMouseDown);
+    document.addEventListener('mousemove', handlePanelMouseMove);
+    document.addEventListener('mouseup', handlePanelMouseUp);
+    
+    /**********************
+     *  Resize Panelu
+     **********************/
+    let isResizing = false;
+    let resizeStartX = 0, resizeStartY = 0;
+    let startWidth = 0, startHeight = 0;
+    
+    const resizer = document.getElementById('inwazja-resizer');
+    
+    const handleResizeMouseDown = (e) => {
+        if (e.button !== 0) return;
+        
+        isResizing = true;
+        resizeStartX = e.clientX;
+        resizeStartY = e.clientY;
+        startWidth = panel.offsetWidth;
+        startHeight = panel.offsetHeight;
+        
+        panel.style.transition = 'none';
+        e.preventDefault();
+    };
+    
+    const handleResizeMouseMove = (e) => {
+        if (!isResizing) return;
+        
+        const deltaX = e.clientX - resizeStartX;
+        const deltaY = e.clientY - resizeStartY;
+        
+        const newWidth = Math.max(600, Math.min(1200, startWidth + deltaX));
+        const newHeight = Math.max(400, Math.min(800, startHeight + deltaY));
+        
+        panel.style.width = newWidth + 'px';
+        panel.style.height = newHeight + 'px';
+    };
+    
+    const handleResizeMouseUp = () => {
+        if (!isResizing) return;
+        
+        isResizing = false;
+        panel.style.transition = 'all 0.2s ease';
+        
+        window.inwazjaConfig.size = {
+            width: panel.offsetWidth,
+            height: panel.offsetHeight
+        };
+        window.inwazjaSaveConfig(window.inwazjaConfig);
+    };
+    
+    resizer.addEventListener('mousedown', handleResizeMouseDown);
+    document.addEventListener('mousemove', handleResizeMouseMove);
+    document.addEventListener('mouseup', handleResizeMouseUp);
+    
+    /**********************
+     *  Scroll
      **********************/
     function enableScrolling() {
         const content = document.getElementById('inwazja-content');
         const tiles = document.getElementById('inwazja-tiles');
         
+        // Custom scrollbar styles
+        const scrollStyle = document.createElement('style');
+        scrollStyle.textContent = `
+            #inwazja-content::-webkit-scrollbar,
+            #inwazja-tiles::-webkit-scrollbar {
+                width: 6px;
+            }
+            #inwazja-content::-webkit-scrollbar-track,
+            #inwazja-tiles::-webkit-scrollbar-track {
+                background: rgba(255,255,255,0.02);
+                border-radius: 3px;
+            }
+            #inwazja-content::-webkit-scrollbar-thumb,
+            #inwazja-tiles::-webkit-scrollbar-thumb {
+                background: rgba(255,255,255,0.15);
+                border-radius: 3px;
+            }
+            #inwazja-content::-webkit-scrollbar-thumb:hover,
+            #inwazja-tiles::-webkit-scrollbar-thumb:hover {
+                background: rgba(255,255,255,0.25);
+            }
+        `;
+        document.head.appendChild(scrollStyle);
+        
+        // Wheel scrolling
         if (content) {
             content.addEventListener('wheel', (e) => {
                 e.preventDefault();
-                content.scrollTop += e.deltaY;
+                content.scrollTop += e.deltaY * 0.5;
             }, { passive: false });
         }
         
         if (tiles) {
             tiles.addEventListener('wheel', (e) => {
                 e.preventDefault();
-                tiles.scrollTop += e.deltaY;
+                tiles.scrollTop += e.deltaY * 0.5;
             }, { passive: false });
         }
     }
     
     /**********************
-     *  Hover effects
-     **********************/
-    icon.addEventListener('mouseenter', function() {
-        this.style.background = 'linear-gradient(135deg, #00ffaa, #00e0ff)';
-        this.style.transform = 'translateY(-2px)';
-        this.style.boxShadow = '0 6px 20px rgba(0,255,136,0.4)';
-    });
-    
-    icon.addEventListener('mouseleave', function() {
-        if (isDraggingIcon) return;
-        this.style.background = 'linear-gradient(135deg, #00ff88, #00ccff)';
-        this.style.transform = 'translateY(0px)';
-        this.style.boxShadow = '0 4px 15px rgba(0,255,136,0.3)';
-    });
-    
-    document.querySelectorAll('.inwazja-tile').forEach(tile => {
-        tile.addEventListener('mouseenter', function() {
-            this.style.background = 'rgba(0,255,136,0.2)';
-            this.style.borderColor = 'rgba(0,255,136,0.4)';
-            this.style.transform = 'translateY(-3px)';
-        });
-        
-        tile.addEventListener('mouseleave', function() {
-            this.style.background = 'rgba(0,255,136,0.1)';
-            this.style.borderColor = 'rgba(0,255,136,0.2)';
-            this.style.transform = 'translateY(0px)';
-        });
-    });
-    
-    document.querySelectorAll('.ia-btn').forEach(btn => {
-        btn.addEventListener('mouseenter', function() {
-            this.style.transform = 'scale(1.1)';
-            this.style.opacity = '1';
-        });
-        
-        btn.addEventListener('mouseleave', function() {
-            this.style.transform = 'scale(1.0)';
-            this.style.opacity = '0.9';
-        });
-    });
-    
-    /**********************
-     *  Podstawowe eventy
+     *  Event Listenery
      **********************/
     icon.addEventListener('click', function(e) {
         if (isDraggingIcon) return;
@@ -476,7 +606,7 @@
             panel.style.display = 'flex';
             setTimeout(() => {
                 showDashboard();
-                enableScrolling(); // Włącz scroll po otwarciu
+                enableScrolling();
             }, 50);
         }
     });
@@ -487,7 +617,49 @@
         panel.style.display = 'none';
     });
     
+    // Suwak przezroczystości
+    document.getElementById('inwazja-opacity').addEventListener('input', function(e) {
+        currentOpacity = parseInt(e.target.value) / 100;
+        applyOpacity();
+        window.inwazjaConfig.opacity = currentOpacity;
+        window.inwazjaSaveConfig(window.inwazjaConfig);
+    });
+    
+    // Hover effects
+    icon.addEventListener('mouseenter', function() {
+        this.style.background = 'rgba(20,20,20,0.95)';
+        this.style.transform = 'translateY(-1px)';
+    });
+    
+    icon.addEventListener('mouseleave', function() {
+        if (isDraggingIcon) return;
+        this.style.background = 'rgba(12,12,12,0.95)';
+        this.style.transform = 'translateY(0px)';
+    });
+    
+    document.querySelectorAll('.ia-btn').forEach(btn => {
+        btn.addEventListener('mouseenter', function() {
+            this.style.background = 'rgba(255,255,255,0.1)';
+        });
+        
+        btn.addEventListener('mouseleave', function() {
+            this.style.background = 'transparent';
+        });
+    });
+    
     document.querySelectorAll('.inwazja-tile').forEach(tile => {
+        tile.addEventListener('mouseenter', function() {
+            this.style.background = 'linear-gradient(135deg, rgba(255,255,255,0.05), rgba(0,0,0,0.15))';
+            this.style.borderColor = 'rgba(255,255,255,0.1)';
+            this.style.transform = 'translateY(-1px)';
+        });
+        
+        tile.addEventListener('mouseleave', function() {
+            this.style.background = 'linear-gradient(135deg, rgba(255,255,255,0.03), rgba(0,0,0,0.1))';
+            this.style.borderColor = 'rgba(255,255,255,0.06)';
+            this.style.transform = 'translateY(0px)';
+        });
+        
         tile.addEventListener('click', function() {
             const moduleId = this.dataset.id;
             if (moduleId === 'auto-message') {
@@ -501,10 +673,10 @@
             } else {
                 const content = document.getElementById('inwazja-content');
                 content.innerHTML = `
-                    <div style="padding:30px; text-align:center;">
-                        <h3 style="margin-top:0; color:#00ffcc; font-size:24px;">${this.querySelector('div').textContent}</h3>
-                        <div style="opacity:0.8; margin-bottom:20px; font-size:16px; color:#a0f0ff;">Moduł w budowie</div>
-                        <div style="font-size:14px; opacity:0.6; color:#80e0ff;">
+                    <div style="padding:25px;">
+                        <h3 style="margin-top:0; color:#eaeff5; font-size:18px;">${this.querySelector('div').textContent}</h3>
+                        <div style="opacity:0.8; margin-bottom:15px; font-size:14px; color:#b0b8c5;">Moduł w budowie</div>
+                        <div style="font-size:12px; opacity:0.6; color:#b0b8c5;">
                             Ta funkcjonalność będzie dostępna w przyszłych aktualizacjach.
                         </div>
                     </div>
@@ -526,6 +698,8 @@
         panel.style.top = window.inwazjaConfig.pos.top + 'px';
         panel.style.transform = 'none';
     }
+    
+    applyOpacity();
     
     console.log('✅ Inwazja Core UI: POPRAWIONY interfejs załadowany');
     
