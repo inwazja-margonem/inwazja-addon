@@ -368,6 +368,138 @@
         background: rgba(0,0,0,0.06);
     }
 
+    /* --- DASHBOARD STYLES --- */
+    .dashboard-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 40px 20px;
+        text-align: center;
+        height: 100%;
+    }
+
+    .dashboard-title {
+        font-size: 32px;
+        font-weight: 800;
+        margin-bottom: 16px;
+        background: linear-gradient(135deg, #00ff88 0%, #00ccff 50%, #667eea 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        text-shadow: 0 4px 20px rgba(0, 204, 255, 0.3);
+        letter-spacing: -0.5px;
+        line-height: 1.1;
+        position: relative;
+        padding-bottom: 12px;
+    }
+
+    .dashboard-title::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 80px;
+        height: 3px;
+        background: linear-gradient(90deg, transparent, #00ff88, #00ccff, transparent);
+        border-radius: 2px;
+    }
+
+    .dashboard-subtitle {
+        font-size: 15px;
+        opacity: 0.85;
+        margin-bottom: 30px;
+        max-width: 500px;
+        line-height: 1.6;
+        font-weight: 400;
+        color: #e0e0e0;
+        text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+    }
+
+    .dashboard-version {
+        font-size: 12px;
+        opacity: 0.7;
+        margin-bottom: 40px;
+        padding: 10px 20px;
+        background: rgba(255,255,255,0.05);
+        border-radius: 12px;
+        border: 1px solid rgba(255,255,255,0.1);
+        backdrop-filter: blur(10px);
+        font-weight: 600;
+        letter-spacing: 0.5px;
+    }
+
+    .dashboard-stats {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+        width: 100%;
+        max-width: 500px;
+        margin-top: 30px;
+    }
+
+    .dashboard-stat {
+        padding: 20px 15px;
+        background: rgba(255,255,255,0.04);
+        border-radius: 12px;
+        border: 1px solid rgba(255,255,255,0.08);
+        backdrop-filter: blur(10px);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .dashboard-stat::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+        transition: left 0.5s ease;
+    }
+
+    .dashboard-stat:hover::before {
+        left: 100%;
+    }
+
+    .dashboard-stat:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+        border-color: rgba(100, 200, 255, 0.3);
+    }
+
+    .dashboard-stat-value {
+        font-size: 28px;
+        font-weight: 700;
+        margin-bottom: 8px;
+        background: linear-gradient(135deg, #00ff88, #00ccff);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .dashboard-stat-label {
+        font-size: 12px;
+        opacity: 0.8;
+        font-weight: 500;
+        letter-spacing: 0.3px;
+    }
+
+    .dashboard-hint {
+        margin-top: 40px;
+        font-size: 12px;
+        opacity: 0.6;
+        padding: 12px 20px;
+        background: rgba(255,255,255,0.03);
+        border-radius: 8px;
+        border: 1px solid rgba(255,255,255,0.05);
+        max-width: 400px;
+        line-height: 1.5;
+    }
+
     /* SCROLLBARY */
     #inwazja-tiles::-webkit-scrollbar,
     #inwazja-content::-webkit-scrollbar {
@@ -401,11 +533,34 @@
             min-height: 300px;
         }
         #inwazja-tiles { width: 35%; }
+        
+        .dashboard-title {
+            font-size: 28px;
+        }
+        
+        .dashboard-subtitle {
+            font-size: 14px;
+            max-width: 400px;
+        }
+        
+        .dashboard-stats {
+            grid-template-columns: 1fr;
+            max-width: 300px;
+        }
     }
 
     @media (max-width: 600px) {
         #inwazja-tiles { width: 100%; grid-template-columns: repeat(2, 1fr); }
         #inwazja-body { flex-direction: column; }
+        
+        .dashboard-title {
+            font-size: 24px;
+        }
+        
+        .dashboard-subtitle {
+            font-size: 13px;
+            max-width: 300px;
+        }
     }
     `;
     
@@ -647,7 +802,7 @@
                         <div class="dashboard-stat-label">Aktywne wiadomości</div>
                     </div>
                     <div class="dashboard-stat">
-                        <div class="dashboard-stat-value">${ignoredPlayers}/5</div>
+                        <div class="dashboard-stat-value">${ignoredPlayers}</div>
                         <div class="dashboard-stat-label">Ignorowani gracze</div>
                     </div>
                     <div class="dashboard-stat">
@@ -660,7 +815,7 @@
                     </div>
                 </div>
                 
-                <div style="margin-top: 30px; font-size: 11px; opacity: 0.6;">
+                <div class="dashboard-hint">
                     Kliknij w kafelek po lewej stronie, aby przejść do konkretnego modułu.
                 </div>
             </div>
