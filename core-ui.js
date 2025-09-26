@@ -1,11 +1,11 @@
-// core-ui.js - NAPRAWIONA WERSJA
+// core-ui.js - ORYGINALNA DZIAŁAJĄCA WERSJA
 (function() {
     'use strict';
     
     if (window.inwazjaCoreLoaded) return;
     window.inwazjaCoreLoaded = true;
     
-    console.log('🚀 Inwazja Core UI: ładowanie POPRAWIONEJ wersji...');
+    console.log('🚀 Inwazja Core UI: ładowanie działającej wersji...');
     
     /**********************
      *  Konfiguracja
@@ -58,124 +58,47 @@
     let currentOpacity = window.inwazjaConfig.opacity || 0.95;
     
     /**********************
-     *  Tworzenie DOM
+     *  Tworzenie DOM - ORYGINALNA WERSJA
      **********************/
     document.getElementById('inwazja-icon')?.remove();
     document.getElementById('inwazja-panel')?.remove();
     
-    // Styl dla gradientowej ikony
-    const style = document.createElement('style');
-    style.textContent = `
-        #inwazja-icon {
-            position: fixed;
-            left: 20px;
-            top: 20px;
-            width: 140px;
-            height: 36px;
-            padding: 8px 12px;
-            background: rgba(12,12,12,0.95);
-            border: 2px solid transparent;
-            border-radius: 8px;
-            color: #fff;
-            font-weight: bold;
-            font-size: 13px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            z-index: 10000;
-            user-select: none;
-            white-space: nowrap;
-            box-sizing: border-box;
-            font-family: Arial, sans-serif;
-            text-align: center;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-            background-clip: padding-box;
-        }
-        
-        #inwazja-icon::before {
-            content: '';
-            position: absolute;
-            top: -2px;
-            left: -2px;
-            right: -2px;
-            bottom: -2px;
-            background: linear-gradient(135deg, #00ff88, #0099ff);
-            border-radius: 10px;
-            z-index: -1;
-            opacity: 0.8;
-            animation: iconGlow 3s ease-in-out infinite alternate;
-        }
-        
-        #inwazja-icon:hover::before {
-            animation-duration: 1s;
-            opacity: 1;
-        }
-        
-        #inwazja-icon:hover {
-            transform: translateY(-1px);
-            background: rgba(20,20,20,0.95);
-        }
-        
-        @keyframes iconGlow {
-            0% {
-                opacity: 0.7;
-                box-shadow: 0 0 10px rgba(0, 255, 136, 0.3);
-            }
-            100% {
-                opacity: 1;
-                box-shadow: 0 0 20px rgba(0, 153, 255, 0.5);
-            }
-        }
-        
-        /* Reszta stylów */
-        #inwazja-opacity::-webkit-slider-thumb {
-            appearance: none;
-            width: 16px;
-            height: 16px;
-            border-radius: 50%;
-            background: #000000;
-            border: 2px solid rgba(255,255,255,0.3);
-            cursor: pointer;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-        }
-        
-        .inwazja-tile:hover::before {
-            content: '';
-            position: absolute;
-            top: -2px;
-            left: -2px;
-            right: -2px;
-            bottom: -2px;
-            background: linear-gradient(135deg, #00ff88, #0099ff);
-            border-radius: 8px;
-            z-index: -1;
-            opacity: 0.4;
-            animation: gradientGlow 2s ease-in-out infinite alternate;
-        }
-        
-        .inwazja-tile:hover {
-            transform: translateY(-2px);
-            border-color: rgba(255,255,255,0.15);
-            z-index: 1;
-        }
-        
-        @keyframes gradientGlow {
-            0% { opacity: 0.3; }
-            100% { opacity: 0.6; }
-        }
-    `;
-    document.head.appendChild(style);
-    
-    // Ikona
+    // IKONA - ORYGINALNA PROSTA WERSJA
     const icon = document.createElement('div');
     icon.id = 'inwazja-icon';
     icon.textContent = 'Inwazja Add-on';
     icon.title = 'Inwazja Add-on - Kliknij aby otworzyć';
+    
+    icon.style.cssText = `
+        position: fixed;
+        left: 20px;
+        top: 20px;
+        width: 140px;
+        height: 36px;
+        padding: 8px 12px;
+        background: rgba(12,12,12,0.95);
+        border: 2px solid rgba(255,255,255,0.08);
+        border-radius: 8px;
+        color: #fff;
+        font-weight: bold;
+        font-size: 13px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        z-index: 10000;
+        user-select: none;
+        white-space: nowrap;
+        box-sizing: border-box;
+        font-family: Arial, sans-serif;
+        text-align: center;
+        transition: all 0.2s ease;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    `;
+    
     document.body.appendChild(icon);
     
-    // Panel
+    // PANEL - ORYGINALNA WERSJA
     const panel = document.createElement('div');
     panel.id = 'inwazja-panel';
     
@@ -306,7 +229,50 @@
     document.body.appendChild(panel);
     
     /**********************
-     *  FUNKCJE
+     *  Styl - ORYGINALNY
+     **********************/
+    const style = document.createElement('style');
+    style.textContent = `
+        #inwazja-opacity::-webkit-slider-thumb {
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #000000;
+            border: 2px solid rgba(255,255,255,0.3);
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .inwazja-tile:hover::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(135deg, #00ff88, #0099ff);
+            border-radius: 8px;
+            z-index: -1;
+            opacity: 0.4;
+            animation: gradientGlow 2s ease-in-out infinite alternate;
+        }
+        
+        .inwazja-tile:hover {
+            transform: translateY(-2px);
+            border-color: rgba(255,255,255,0.15);
+            z-index: 1;
+        }
+        
+        @keyframes gradientGlow {
+            0% { opacity: 0.3; }
+            100% { opacity: 0.6; }
+        }
+    `;
+    document.head.appendChild(style);
+    
+    /**********************
+     *  FUNKCJE - ORYGINALNE DZIAŁAJĄCE!
      **********************/
     function showDashboard() {
         const content = document.getElementById('inwazja-content');
@@ -362,7 +328,7 @@
     }
     
     /**********************
-     *  EVENT LISTENERS - POPRAWIONE!
+     *  EVENT LISTENERS - ORYGINALNE DZIAŁAJĄCE!
      **********************/
     
     // Drag & Drop ikony
@@ -372,13 +338,11 @@
     
     icon.addEventListener('mousedown', function(e) {
         if (e.button !== 0) return;
-        
         isDraggingIcon = true;
         dragStartX = e.clientX;
         dragStartY = e.clientY;
         startIconX = parseInt(icon.style.left) || 20;
         startIconY = parseInt(icon.style.top) || 20;
-        
         icon.style.transition = 'none';
         icon.style.opacity = '0.8';
         e.preventDefault();
@@ -386,105 +350,78 @@
     
     document.addEventListener('mousemove', function(e) {
         if (!isDraggingIcon) return;
-        
         const deltaX = e.clientX - dragStartX;
         const deltaY = e.clientY - dragStartY;
-        
         const newX = Math.max(5, Math.min(window.innerWidth - icon.offsetWidth - 5, startIconX + deltaX));
         const newY = Math.max(5, Math.min(window.innerHeight - icon.offsetHeight - 5, startIconY + deltaY));
-        
         icon.style.left = newX + 'px';
         icon.style.top = newY + 'px';
     });
     
     document.addEventListener('mouseup', function() {
         if (!isDraggingIcon) return;
-        
         isDraggingIcon = false;
-        icon.style.transition = 'all 0.3s ease';
+        icon.style.transition = 'all 0.2s ease';
         icon.style.opacity = '1';
-        
-        window.inwazjaConfig.iconPos = {
-            left: parseInt(icon.style.left),
-            top: parseInt(icon.style.top)
-        };
+        window.inwazjaConfig.iconPos = { left: parseInt(icon.style.left), top: parseInt(icon.style.top) };
         window.inwazjaSaveConfig(window.inwazjaConfig);
     });
     
-    // Kliknięcie ikony - OTWIERANIE PANELU
+    // Kliknięcie ikony
     icon.addEventListener('click', function(e) {
         if (isDraggingIcon) return;
-        
-        if (panel.style.display === 'flex') {
-            panel.style.display = 'none';
-        } else {
-            panel.style.display = 'flex';
-            showDashboard();
-        }
+        panel.style.display = panel.style.display === 'flex' ? 'none' : 'flex';
+        if (panel.style.display === 'flex') showDashboard();
     });
     
-    // Event listeners dla panelu - DODAJEMY PO UTWORZENIU PANELU
-    setTimeout(() => {
-        // Przycisk zamykania
-        const closeBtn = document.getElementById('inwazja-close');
-        if (closeBtn) {
-            closeBtn.addEventListener('click', function() {
-                panel.style.display = 'none';
-            });
-        }
-        
-        // Przycisk dashboardu
-        const dashboardBtn = document.getElementById('inwazja-dashboard');
-        if (dashboardBtn) {
-            dashboardBtn.addEventListener('click', showDashboard);
-        }
-        
-        // Suwak przezroczystości
-        const opacitySlider = document.getElementById('inwazja-opacity');
-        if (opacitySlider) {
-            opacitySlider.addEventListener('input', function(e) {
-                currentOpacity = parseInt(e.target.value) / 100;
-                applyOpacity();
-                window.inwazjaConfig.opacity = currentOpacity;
-                window.inwazjaSaveConfig(window.inwazjaConfig);
-            });
-        }
-        
-        // Kafelki modułów
-        document.querySelectorAll('.inwazja-tile').forEach(tile => {
-            tile.addEventListener('click', function() {
-                const moduleId = this.dataset.id;
-                const content = document.getElementById('inwazja-content');
-                
-                if (moduleId === 'auto-message') {
-                    if (typeof window.initializeAutoMessageModule === 'function') {
-                        window.initializeAutoMessageModule(content);
-                    } else {
-                        content.innerHTML = '<div style="display:flex; align-items:center; justify-content:center; height:100%;">Ładowanie Auto-message...</div>';
-                        const script = document.createElement('script');
-                        script.src = 'https://raw.githack.com/inwazja-margonem/inwazja-addon/main/auto-message.js';
-                        document.head.appendChild(script);
-                    }
-                } 
-                else if (moduleId === 'auto-heal') {
-                    content.innerHTML = '<div style="display:flex; align-items:center; justify-content:center; height:100%;">Ładowanie Auto-heal...</div>';
+    // Event listeners dla panelu
+    document.getElementById('inwazja-close').addEventListener('click', function() {
+        panel.style.display = 'none';
+    });
+    
+    document.getElementById('inwazja-dashboard').addEventListener('click', showDashboard);
+    
+    document.getElementById('inwazja-opacity').addEventListener('input', function(e) {
+        currentOpacity = parseInt(e.target.value) / 100;
+        applyOpacity();
+        window.inwazjaConfig.opacity = currentOpacity;
+        window.inwazjaSaveConfig(window.inwazjaConfig);
+    });
+    
+    // Kafelki modułów
+    document.querySelectorAll('.inwazja-tile').forEach(tile => {
+        tile.addEventListener('click', function() {
+            const moduleId = this.dataset.id;
+            const content = document.getElementById('inwazja-content');
+            
+            if (moduleId === 'auto-message') {
+                if (typeof window.initializeAutoMessageModule === 'function') {
+                    window.initializeAutoMessageModule(content);
+                } else {
+                    content.innerHTML = '<div style="display:flex; align-items:center; justify-content:center; height:100%;">Ładowanie Auto-message...</div>';
                     const script = document.createElement('script');
-                    script.src = 'https://raw.githack.com/inwazja-margonem/inwazja-addon/main/auto-heal.js';
+                    script.src = 'https://raw.githack.com/inwazja-margonem/inwazja-addon/main/auto-message.js';
                     document.head.appendChild(script);
                 }
-                else {
-                    content.innerHTML = `
-                        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; text-align: center; padding: 40px 20px;">
-                            <div style="font-size: 28px; font-weight: bold; margin-bottom: 15px; color: #eaeff5; opacity: 0.9;">Moduł w budowie</div>
-                            <div style="font-size: 14px; opacity: 0.7; color: #b0b8c5; max-width: 300px; line-height: 1.5;">
-                                Funkcjonalność tego modułu będzie dostępna w przyszłych aktualizacjach.
-                            </div>
+            } 
+            else if (moduleId === 'auto-heal') {
+                content.innerHTML = '<div style="display:flex; align-items:center; justify-content:center; height:100%;">Ładowanie Auto-heal...</div>';
+                const script = document.createElement('script');
+                script.src = 'https://raw.githack.com/inwazja-margonem/inwazja-addon/main/auto-heal.js';
+                document.head.appendChild(script);
+            }
+            else {
+                content.innerHTML = `
+                    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; text-align: center; padding: 40px 20px;">
+                        <div style="font-size: 28px; font-weight: bold; margin-bottom: 15px; color: #eaeff5; opacity: 0.9;">Moduł w budowie</div>
+                        <div style="font-size: 14px; opacity: 0.7; color: #b0b8c5; max-width: 300px; line-height: 1.5;">
+                            Funkcjonalność tego modułu będzie dostępna w przyszłych aktualizacjach.
                         </div>
-                    `;
-                }
-            });
+                    </div>
+                `;
+            }
         });
-    }, 100);
+    });
     
     /**********************
      *  INICJALIZACJA
@@ -502,6 +439,6 @@
     
     applyOpacity();
     
-    console.log('✅ Inwazja Core UI: DZIAŁA! Ikona z gradientem, panel się wyświetla!');
+    console.log('✅ Inwazja Core UI: ORYGINALNA WERSJA DZIAŁA! Wszystko działa poprawnie!');
     
 })();
