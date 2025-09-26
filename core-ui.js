@@ -212,19 +212,19 @@
                     <div style="font-weight:bold; font-size:13px; color:#eaeff5;">Auto-message</div>
                     <div style="opacity:0.8; font-size:11px; margin-top:4px; color:#b0b8c5;">Automatyczne odpisywanie</div>
                 </div>
-                <div class="inwazja-tile" data-id="inventory" style="
-                    padding: 12px;
-                    background: linear-gradient(135deg, rgba(255,255,255,0.03), rgba(0,0,0,0.1));
-                    border: 1px solid rgba(255,255,255,0.06);
-                    border-radius: 6px;
-                    cursor: pointer;
-                    transition: all 0.3s ease;
-                    flex-shrink: 0;
-                    position: relative;
-                ">
-                    <div style="font-weight:bold; font-size:13px; color:#eaeff5;">Ekwipunek</div>
-                    <div style="opacity:0.8; font-size:11px; margin-top:4px; color:#b0b8c5;">Przegląd przedmiotów</div>
-                </div>
+<div class="inwazja-tile" data-id="auto-heal" style="
+    padding: 12px;
+    background: linear-gradient(135deg, rgba(255,255,255,0.03), rgba(0,0,0,0.1));
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+    position: relative;
+">
+    <div style="font-weight:bold; font-size:13px; color:#eaeff5;">Auto-heal</div>
+    <div style="opacity:0.8; font-size:11px; margin-top:4px; color:#b0b8c5;">Skrypt na automatyczne leczenie</div>
+</div>
                 <div class="inwazja-tile" data-id="clan" style="
                     padding: 12px;
                     background: linear-gradient(135deg, rgba(255,255,255,0.03), rgba(0,0,0,0.1));
