@@ -80,7 +80,7 @@
                     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; padding: 8px; background: rgba(255,255,255,0.02); border-radius: 4px;">
                         <div>
                             <strong style="color: #eaeff5; font-size: 13px;">Leczenie postaci po śmierci:</strong>
-                            <div style="font-size: 11px; opacity: 0.7; color: #b0b8c5;">Automatyczne leczenie po resurrectie</div>
+                            <div style="font-size: 11px; opacity: 0.7; color: #b0b8c5;">Automatyczne leczenie po śmierci</div>
                         </div>
                         <div style="display: flex; align-items: center; gap: 10px;">
                             <span id="resurrect-heal-status" style="color: ${CONFIG.resurrectHealEnabled ? '#00ff88' : '#ff4444'}; font-weight: bold; font-size: 13px;">
