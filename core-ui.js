@@ -1,4 +1,4 @@
-// core-ui.js - KOMPLETNA ZAKTUALIZOWANA WERSJA
+// core-ui.js - POPRAWIONA WERSJA
 (function() {
     'use strict';
     
@@ -231,7 +231,7 @@
                     position: relative;
                 ">
                     <div style="font-weight:bold; font-size:13px; color:#eaeff5;">Auto-heal</div>
-                    <div style="opacity:0.8; font-size:11px; margin-top:4px; color:#b0b8c5;">Skrypt na automatyczne leczenie</div>
+                    <div style="opacity:0.8; font-size:11px; margin-top:4px; color:#b0b8c5;">Skrypt na automatyczne leczenie gracza podczas walki oraz po śmierci.</div>
                 </div>
                 <div class="inwazja-tile" data-id="clan" style="
                     padding: 12px;
