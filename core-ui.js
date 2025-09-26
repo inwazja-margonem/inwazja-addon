@@ -1,4 +1,4 @@
-// core-ui.js (POPRAWIONA WERSJA)
+// core-ui.js - KOMPLETNA ZAKTUALIZOWANA WERSJA
 (function() {
     'use strict';
     
@@ -24,7 +24,15 @@
         scheduleStart: "08:00",
         scheduleEnd: "22:00",
         ignoredPlayers: [],
-        activeTab: 'dashboard'
+        activeTab: 'dashboard',
+        // Nowe ustawienia dla auto-heal
+        autoHealEnabled: false,
+        combatHealEnabled: true,
+        resurrectHealEnabled: true,
+        usePotions: true,
+        usePercentPotions: false,
+        alwaysFullHeal: false,
+        healThreshold: 50
     };
     
     function loadConfig() {
@@ -210,21 +218,21 @@
                     position: relative;
                 ">
                     <div style="font-weight:bold; font-size:13px; color:#eaeff5;">Auto-message</div>
-                     <div style="opacity:0.8; font-size:11px; margin-top:4px; color:#b0b8c5;">Skrypt na automatyczne odpisywanie graczom podczas nieobecności.</div>
+                    <div style="opacity:0.8; font-size:11px; margin-top:4px; color:#b0b8c5;">Skrypt na automatyczne odpisywanie graczom podczas nieobecności.</div>
                 </div>
-<div class="inwazja-tile" data-id="auto-heal" style="
-    padding: 12px;
-    background: linear-gradient(135deg, rgba(255,255,255,0.03), rgba(0,0,0,0.1));
-    border: 1px solid rgba(255,255,255,0.06);
-    border-radius: 6px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    flex-shrink: 0;
-    position: relative;
-">
-    <div style="font-weight:bold; font-size:13px; color:#eaeff5;">Auto-heal</div>
-    <div style="opacity:0.8; font-size:11px; margin-top:4px; color:#b0b8c5;">Skrypt na automatyczne leczenie</div>
-</div>
+                <div class="inwazja-tile" data-id="auto-heal" style="
+                    padding: 12px;
+                    background: linear-gradient(135deg, rgba(255,255,255,0.03), rgba(0,0,0,0.1));
+                    border: 1px solid rgba(255,255,255,0.06);
+                    border-radius: 6px;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                    flex-shrink: 0;
+                    position: relative;
+                ">
+                    <div style="font-weight:bold; font-size:13px; color:#eaeff5;">Auto-heal</div>
+                    <div style="opacity:0.8; font-size:11px; margin-top:4px; color:#b0b8c5;">Skrypt na automatyczne leczenie</div>
+                </div>
                 <div class="inwazja-tile" data-id="clan" style="
                     padding: 12px;
                     background: linear-gradient(135deg, rgba(255,255,255,0.03), rgba(0,0,0,0.1));
@@ -318,7 +326,7 @@
     document.body.appendChild(panel);
     
     /**********************
-     *  Styl suwaka przezroczystości
+     *  Styl suwaka przezroczystości i kafelków
      **********************/
     const style = document.createElement('style');
     style.textContent = `
@@ -411,6 +419,26 @@
             transform: translateY(-1px);
             border-color: rgba(0, 255, 136, 0.3);
         }
+        
+        /* Custom scrollbar styles */
+        #inwazja-content::-webkit-scrollbar,
+        #inwazja-tiles::-webkit-scrollbar {
+            width: 6px;
+        }
+        #inwazja-content::-webkit-scrollbar-track,
+        #inwazja-tiles::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.02);
+            border-radius: 3px;
+        }
+        #inwazja-content::-webkit-scrollbar-thumb,
+        #inwazja-tiles::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.15);
+            border-radius: 3px;
+        }
+        #inwazja-content::-webkit-scrollbar-thumb:hover,
+        #inwazja-tiles::-webkit-scrollbar-thumb:hover {
+            background: rgba(255,255,255,0.25);
+        }
     `;
     document.head.appendChild(style);
     
@@ -425,6 +453,7 @@
         const ignoredPlayers = window.inwazjaConfig.ignoredPlayers.length;
         const autoEnabled = window.inwazjaConfig.autoEnabled ? 'Tak' : 'Nie';
         const scheduleEnabled = window.inwazjaConfig.scheduleEnabled ? 'Tak' : 'Nie';
+        const autoHealEnabled = window.inwazjaConfig.autoHealEnabled ? 'Tak' : 'Nie';
         
         content.innerHTML = `
             <div style="
@@ -477,6 +506,14 @@
                     <div class="stat-tile" style="padding: 12px; background: rgba(255,255,255,0.03); border-radius: 6px; border: 1px solid rgba(255,255,255,0.08);">
                         <div style="font-size: 20px; font-weight: bold; margin-bottom: 4px; color: #eaeff5;">${scheduleEnabled}</div>
                         <div style="font-size: 10px; opacity: 0.7; color: #b0b8c5;">Harmonogram</div>
+                    </div>
+                    <div class="stat-tile" style="padding: 12px; background: rgba(255,255,255,0.03); border-radius: 6px; border: 1px solid rgba(255,255,255,0.08);">
+                        <div style="font-size: 20px; font-weight: bold; margin-bottom: 4px; color: #eaeff5;">${autoHealEnabled}</div>
+                        <div style="font-size: 10px; opacity: 0.7; color: #b0b8c5;">Auto-heal</div>
+                    </div>
+                    <div class="stat-tile" style="padding: 12px; background: rgba(255,255,255,0.03); border-radius: 6px; border: 1px solid rgba(255,255,255,0.08);">
+                        <div style="font-size: 20px; font-weight: bold; margin-bottom: 4px; color: #eaeff5;">${window.inwazjaConfig.healThreshold || 50}%</div>
+                        <div style="font-size: 10px; opacity: 0.7; color: #b0b8c5;">Próg leczenia</div>
                     </div>
                 </div>
                 
@@ -667,30 +704,6 @@
         const content = document.getElementById('inwazja-content');
         const tiles = document.getElementById('inwazja-tiles');
         
-        // Custom scrollbar styles
-        const scrollStyle = document.createElement('style');
-        scrollStyle.textContent = `
-            #inwazja-content::-webkit-scrollbar,
-            #inwazja-tiles::-webkit-scrollbar {
-                width: 6px;
-            }
-            #inwazja-content::-webkit-scrollbar-track,
-            #inwazja-tiles::-webkit-scrollbar-track {
-                background: rgba(255,255,255,0.02);
-                border-radius: 3px;
-            }
-            #inwazja-content::-webkit-scrollbar-thumb,
-            #inwazja-tiles::-webkit-scrollbar-thumb {
-                background: rgba(255,255,255,0.15);
-                border-radius: 3px;
-            }
-            #inwazja-content::-webkit-scrollbar-thumb:hover,
-            #inwazja-tiles::-webkit-scrollbar-thumb:hover {
-                background: rgba(255,255,255,0.25);
-            }
-        `;
-        document.head.appendChild(scrollStyle);
-        
         // Wheel scrolling
         if (content) {
             content.addEventListener('wheel', (e) => {
@@ -779,10 +792,8 @@
             if (moduleId === 'auto-message') {
                 // Sprawdź czy moduł auto-message jest już załadowany
                 if (typeof window.initializeAutoMessageModule === 'function') {
-                    // Moduł już załadowany - po prostu go zainicjuj
                     window.initializeAutoMessageModule(content);
                 } else {
-                    // Moduł nie załadowany - pokaż loading i załaduj
                     content.innerHTML = `
                         <div style="display:flex; align-items:center; justify-content:center; height:100%; flex-direction:column;">
                             <div style="font-size:14px; opacity:0.7; margin-bottom:10px;">Ładowanie Auto-message...</div>
@@ -790,7 +801,6 @@
                         </div>
                     `;
                     
-                    // Dynamicznie załaduj auto-message.js
                     const script = document.createElement('script');
                     script.src = 'https://raw.githack.com/inwazja-margonem/inwazja-addon/main/auto-message.js';
                     script.onload = function() {
@@ -803,46 +813,40 @@
                             <div style="padding:25px;">
                                 <h3 style="margin-top:0; color:#eaeff5; font-size:18px;">Auto-message</h3>
                                 <div style="opacity:0.8; margin-bottom:15px; font-size:14px; color:#b0b8c5;">Błąd ładowania modułu</div>
-                                <div style="font-size:12px; opacity:0.6; color:#b0b8c5;">
-                                    Nie udało się załadować modułu z GitHub.
-                                </div>
                             </div>
                         `;
                     };
                     document.head.appendChild(script);
-                 } 
-    else if (moduleId === 'auto-heal') {
-        // Loading screen dla auto-heal
-        content.innerHTML = `
-            <div style="display:flex; align-items:center; justify-content:center; height:100%; flex-direction:column;">
-                <div style="font-size:14px; opacity:0.7; margin-bottom:10px;">Ładowanie Auto-heal...</div>
-                <div style="font-size:11px; opacity:0.5;">auto-heal.js</div>
-            </div>
-        `;
-        
-        // Dynamicznie załaduj auto-heal.js
-        const script = document.createElement('script');
-        script.src = 'https://raw.githack.com/inwazja-margonem/inwazja-addon/main/auto-heal.js';
-        script.onload = function() {
-            if (typeof window.initializeAutoHealModule === 'function') {
-                window.initializeAutoHealModule(content);
-            }
-        };
-        script.onerror = function() {
-            content.innerHTML = `
-                <div style="padding:25px;">
-                    <h3 style="margin-top:0; color:#eaeff5; font-size:18px;">Auto-heal</h3>
-                    <div style="opacity:0.8; margin-bottom:15px; font-size:14px; color:#b0b8c5;">Błąd ładowania modułu</div>
-                    <div style="font-size:12px; opacity:0.6; color:#b0b8c5;">
-                        Nie udało się załadować modułu z GitHub.
+                }
+            } 
+            else if (moduleId === 'auto-heal') {
+                // Loading screen dla auto-heal
+                content.innerHTML = `
+                    <div style="display:flex; align-items:center; justify-content:center; height:100%; flex-direction:column;">
+                        <div style="font-size:14px; opacity:0.7; margin-bottom:10px;">Ładowanie Auto-heal...</div>
+                        <div style="font-size:11px; opacity:0.5;">auto-heal.js</div>
                     </div>
-                </div>
-            `;
-        };
-        document.head.appendChild(script);
-    }
-    else {
-            } else {
+                `;
+                
+                // Dynamicznie załaduj auto-heal.js
+                const script = document.createElement('script');
+                script.src = 'https://raw.githack.com/inwazja-margonem/inwazja-addon/main/auto-heal.js';
+                script.onload = function() {
+                    if (typeof window.initializeAutoHealModule === 'function') {
+                        window.initializeAutoHealModule(content);
+                    }
+                };
+                script.onerror = function() {
+                    content.innerHTML = `
+                        <div style="padding:25px;">
+                            <h3 style="margin-top:0; color:#eaeff5; font-size:18px;">Auto-heal</h3>
+                            <div style="opacity:0.8; margin-bottom:15px; font-size:14px; color:#b0b8c5;">Błąd ładowania modułu</div>
+                        </div>
+                    `;
+                };
+                document.head.appendChild(script);
+            }
+            else {
                 // Dla innych modułów
                 content.innerHTML = `
                     <div style="padding:25px;">
