@@ -210,7 +210,7 @@
                     position: relative;
                 ">
                     <div style="font-weight:bold; font-size:13px; color:#eaeff5;">Auto-message</div>
-                    <div style="opacity:0.8; font-size:11px; margin-top:4px; color:#b0b8c5;">Automatyczne odpisywanie</div>
+                     <div style="opacity:0.8; font-size:11px; margin-top:4px; color:#b0b8c5;">Skrypt na automatyczne odpisywanie graczom podczas nieobecności.</div>
                 </div>
 <div class="inwazja-tile" data-id="auto-heal" style="
     padding: 12px;
