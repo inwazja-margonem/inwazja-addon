@@ -1,4 +1,4 @@
-// auto-message.js - POPRAWIONA WERSJA
+// auto-message.js - POPRAWIONA WERSJA Z AUTOMATYCZNYM ZAPISEM
 (function() {
     'use strict';
 
@@ -23,20 +23,15 @@
 
     // Funkcja inicjalizacji GUI
     window.initializeAutoMessageModule = function(contentElement) {
-        // PRZYWRÓĆ poprawne overflow dla zawartości
-        contentElement.style.overflow = 'auto';
-        contentElement.style.overflowX = 'hidden';
-        
         contentElement.innerHTML = `
-            <div id="auto-message-container" style="
+            <div style="
                 padding: 15px; 
-                min-height: 100%;
+                height: 100%; 
                 display: flex;
                 flex-direction: column;
-                box-sizing: border-box;
             ">
                 <!-- Nagłówek -->
-                <div style="margin-bottom: 15px;">
+                <div style="margin-bottom: 20px;">
                     <h2 style="color: #eaeff5; margin: 0 0 5px 0; font-size: 18px; font-weight: bold;">
                         Auto-message
                     </h2>
@@ -46,7 +41,7 @@
                 </div>
 
                 <!-- Zakładki wiadomości -->
-                <div style="display: flex; gap: 4px; margin-bottom: 15px;">
+                <div style="display: flex; gap: 4px; margin-bottom: 20px;">
                     ${[1,2,3,4,5].map(i => `
                         <div class="message-tab ${i === CONFIG.currentMessageTab + 1 ? 'active' : ''}" 
                              data-tab="${i-1}"
@@ -68,11 +63,11 @@
 
                 <!-- Status skryptu -->
                 <div style="
-                    margin-bottom: 12px; 
-                    padding: 8px; 
+                    margin-bottom: 15px; 
+                    padding: 12px; 
                     background: rgba(255,255,255,0.03); 
-                    border-radius: 4px;
-                    font-size: 13px;
+                    border-radius: 6px;
+                    font-size: 14px;
                 ">
                     <strong style="color: #eaeff5;">Status skryptu:</strong> 
                     <span id="auto-status" style="color: ${CONFIG.autoEnabled ? '#00ff88' : '#ff4444'}; font-weight: bold;">
@@ -101,7 +96,7 @@
                               "
                               placeholder="Wpisz wiadomość, która będzie automatycznie wysyłana do graczy...">${CONFIG.autoMessages[CONFIG.currentMessageTab] || ''}</textarea>
                     <div style="font-size: 10px; opacity: 0.7; margin-top: 4px; color: #b0b8c5;">
-                        Maksymalnie 200 znaków | Zakładka ${CONFIG.currentMessageTab + 1}/5
+                        Maksymalnie 200 znaków | <span id="current-tab-info">Zakładka ${CONFIG.currentMessageTab + 1}/5</span>
                     </div>
                 </div>
 
@@ -174,7 +169,7 @@
                     border: 1px solid rgba(255,255,255,0.05);
                 ">
                     <div style="font-weight: bold; margin-bottom: 6px; color: #eaeff5; font-size: 13px;">
-                        Podgląd wiadomości (zakładka ${CONFIG.currentMessageTab + 1}):
+                        <span id="preview-label">Podgląd wiadomości (zakładka ${CONFIG.currentMessageTab + 1}):</span>
                     </div>
                     <div id="message-preview" style="
                         padding: 8px; 
@@ -192,7 +187,7 @@
 
                 <!-- Przyciski akcji -->
                 <div style="display: flex; gap: 8px; margin-top: 20px;">
-                    <button id="save-message" style="
+                    <button id="save-all-settings" style="
                         padding: 8px 16px; 
                         background: linear-gradient(135deg, #00ff88, #0099ff); 
                         border: none; 
@@ -203,7 +198,7 @@
                         font-size: 12px;
                         flex: 1;
                     ">
-                        Zapisz zmiany
+                        Zapisz wszystkie zmiany
                     </button>
                     <button id="toggle-auto" style="
                         padding: 8px 16px; 
@@ -222,36 +217,6 @@
             </div>
 
             <style>
-                /* POPRAWNE UKRYWANIE TYLKO SCROLLBARÓW - ZACHOWUJĄC PRZEWIJANIE */
-                #inwazja-content {
-                    overflow-y: auto !important;
-                    overflow-x: hidden !important;
-                }
-                
-                /* Ukrywanie scrollbarów ale zachowanie funkcjonalności scroll */
-                #inwazja-content::-webkit-scrollbar {
-                    width: 0px !important;
-                    background: transparent !important;
-                }
-                
-                #inwazja-content::-webkit-scrollbar-thumb {
-                    background: transparent !important;
-                }
-                
-                #inwazja-content::-webkit-scrollbar-track {
-                    background: transparent !important;
-                }
-                
-                /* Dla Firefox - ukrywa scrollbar ale zachowuje scroll */
-                #inwazja-content {
-                    scrollbar-width: none !important;
-                }
-                
-                /* Dla IE/Edge */
-                #inwazja-content {
-                    -ms-overflow-style: none !important;
-                }
-
                 /* Style dla zakładek */
                 .message-tab.active {
                     background: linear-gradient(135deg, #00ff88, #0099ff) !important;
@@ -330,47 +295,56 @@
         // Inicjalizacja event listeners
         initializeMessageTabs();
         initializeAutoMessage();
-        
-        // Przywróć poprawne przewijanie
-        setTimeout(() => {
-            contentElement.style.overflowY = 'auto';
-            contentElement.style.overflowX = 'hidden';
-        }, 10);
     };
 
     function initializeMessageTabs() {
         document.querySelectorAll('.message-tab').forEach(tab => {
             tab.addEventListener('click', function() {
                 const tabIndex = parseInt(this.dataset.tab);
+                
+                // AUTOMATYCZNE ZAPISANIE aktualnej wiadomości przed zmianą zakładki
+                const currentMessage = document.getElementById('message-input').value.substring(0, 200);
+                CONFIG.autoMessages[CONFIG.currentMessageTab] = currentMessage;
+                
+                // Zmiana zakładki
                 CONFIG.currentMessageTab = tabIndex;
                 
+                // Update UI
                 document.querySelectorAll('.message-tab').forEach(t => t.classList.remove('active'));
                 this.classList.add('active');
                 
+                // Update message input and preview z NOWEJ zakładki
                 document.getElementById('message-input').value = CONFIG.autoMessages[tabIndex] || '';
                 document.getElementById('message-preview').textContent = CONFIG.autoMessages[tabIndex] || 'Brak wiadomości...';
                 
-                const labels = document.querySelectorAll('div[style*="Zakładka"], div[style*="Podgląd wiadomości"]');
-                if (labels[0]) labels[0].textContent = `Maksymalnie 200 znaków | Zakładka ${tabIndex + 1}/5`;
-                if (labels[1]) labels[1].innerHTML = `<div style="font-weight: bold; margin-bottom: 6px; color: #eaeff5; font-size: 13px;">Podgląd wiadomości (zakładka ${tabIndex + 1}):</div>`;
+                // Update labels - POPRAWIONE!
+                document.getElementById('current-tab-info').textContent = `Zakładka ${tabIndex + 1}/5`;
+                document.getElementById('preview-label').textContent = `Podgląd wiadomości (zakładka ${tabIndex + 1}):`;
+                
+                // AUTOMATYCZNE ZAPISANIE konfiguracji
+                window.inwazjaConfig.autoMessages = CONFIG.autoMessages;
+                window.inwazjaConfig.currentMessageTab = CONFIG.currentMessageTab;
+                window.inwazjaSaveConfig(window.inwazjaConfig);
             });
         });
     }
 
     function initializeAutoMessage() {
-        // Zapisywanie wiadomości
-        document.getElementById('save-message')?.addEventListener('click', function() {
-            const message = document.getElementById('message-input').value.substring(0, 200);
-            CONFIG.autoMessages[CONFIG.currentMessageTab] = message;
-            document.getElementById('message-preview').textContent = message || 'Brak wiadomości...';
+        // ZAPISZ WSZYSTKIE ZMIANY (teraz służy do ręcznego zapisu przed zmianą modułu)
+        document.getElementById('save-all-settings')?.addEventListener('click', function() {
+            // Zapisz aktualną wiadomość
+            const currentMessage = document.getElementById('message-input').value.substring(0, 200);
+            CONFIG.autoMessages[CONFIG.currentMessageTab] = currentMessage;
             
             window.inwazjaConfig.autoMessages = CONFIG.autoMessages;
             window.inwazjaSaveConfig(window.inwazjaConfig);
             
-            this.textContent = 'Zapisano!';
+            // Pokaz potwierdzenie
+            const originalText = this.textContent;
+            this.textContent = 'Zapisano.';
             this.style.background = '#00ff88';
             setTimeout(() => {
-                this.textContent = 'Zapisz zmiany';
+                this.textContent = originalText;
                 this.style.background = 'linear-gradient(135deg, #00ff88, #0099ff)';
             }, 1000);
         });
@@ -393,7 +367,7 @@
             window.inwazjaSaveConfig(window.inwazjaConfig);
         });
 
-        // Harmonogram
+        // Zapisywanie harmonogramu
         document.getElementById('schedule-start')?.addEventListener('change', function() {
             CONFIG.scheduleStart = this.value;
             window.inwazjaConfig.scheduleStart = CONFIG.scheduleStart;
@@ -406,7 +380,7 @@
             window.inwazjaSaveConfig(window.inwazjaConfig);
         });
 
-        // Główny przełącznik
+        // Główny przełącznik auto-odpowiadania
         document.getElementById('toggle-auto')?.addEventListener('click', function() {
             CONFIG.autoEnabled = !CONFIG.autoEnabled;
             
@@ -421,7 +395,7 @@
             window.inwazjaSaveConfig(window.inwazjaConfig);
         });
 
-        // Live preview
+        // Live preview wiadomości
         document.getElementById('message-input')?.addEventListener('input', function() {
             const preview = this.value.substring(0, 200);
             document.getElementById('message-preview').textContent = preview || 'Brak wiadomości...';
