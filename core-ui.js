@@ -1,11 +1,11 @@
-// core-ui.js - Z GRADIENTOWĄ OBRWÓDKĄ IKONY
+// core-ui.js - NAPRAWIONA WERSJA
 (function() {
     'use strict';
     
     if (window.inwazjaCoreLoaded) return;
     window.inwazjaCoreLoaded = true;
     
-    console.log('🚀 Inwazja Core UI: ładowanie poprawionej wersji...');
+    console.log('🚀 Inwazja Core UI: ładowanie POPRAWIONEJ wersji...');
     
     /**********************
      *  Konfiguracja
@@ -25,7 +25,6 @@
         scheduleEnd: "22:00",
         ignoredPlayers: [],
         activeTab: 'dashboard',
-        // Nowe ustawienia dla auto-heal
         autoHealEnabled: false,
         combatHealEnabled: true,
         resurrectHealEnabled: true,
@@ -59,29 +58,34 @@
     let currentOpacity = window.inwazjaConfig.opacity || 0.95;
     
     /**********************
-     *  Tworzenie DOM
+     *  Tworzenie DOM - POPRAWIONE!
      **********************/
     document.getElementById('inwazja-icon')?.remove();
     document.getElementById('inwazja-panel')?.remove();
     
-    // Ikona z gradientową obwódką
+    // IKONA - PROSTA STRUKTURA Z GRADIENTEM W TLE
     const icon = document.createElement('div');
     icon.id = 'inwazja-icon';
-    icon.innerHTML = `
-        <div class="icon-gradient-border">
-            <div class="icon-content">
-                Inwazja Add-on
-            </div>
-        </div>
-    `;
+    icon.textContent = 'Inwazja Add-on';
     icon.title = 'Inwazja Add-on - Kliknij aby otworzyć';
     
+    // Style bezpośrednio na ikonie - bez zagnieżdżonych divów!
     icon.style.cssText = `
         position: fixed;
         left: 20px;
         top: 20px;
         width: 140px;
         height: 36px;
+        padding: 8px 12px;
+        background: rgba(12,12,12,0.95);
+        border: 2px solid transparent;
+        border-radius: 8px;
+        color: #fff;
+        font-weight: bold;
+        font-size: 13px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         cursor: pointer;
         z-index: 10000;
         user-select: none;
@@ -90,11 +94,159 @@
         font-family: Arial, sans-serif;
         text-align: center;
         transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        
+        /* GRADIENT BORDER POPRAWIONY */
+        background-clip: padding-box;
+        position: relative;
     `;
+    
+    // Dodaj pseudo-element dla gradientowej obwódki
+    const style = document.createElement('style');
+    style.textContent = `
+        #inwazja-icon::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(135deg, #00ff88, #0099ff);
+            border-radius: 10px;
+            z-index: -1;
+            opacity: 0.8;
+            animation: iconGlow 3s ease-in-out infinite alternate;
+        }
+        
+        #inwazja-icon:hover::before {
+            animation-duration: 1s;
+            opacity: 1;
+        }
+        
+        #inwazja-icon:hover {
+            transform: translateY(-1px);
+            background: rgba(20,20,20,0.95);
+        }
+        
+        @keyframes iconGlow {
+            0% {
+                opacity: 0.7;
+                box-shadow: 0 0 10px rgba(0, 255, 136, 0.3);
+            }
+            100% {
+                opacity: 1;
+                box-shadow: 0 0 20px rgba(0, 153, 255, 0.5);
+            }
+        }
+        
+        /* RESZTA STYLÓW */
+        #inwazja-opacity::-webkit-slider-thumb {
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #000000;
+            border: 2px solid rgba(255,255,255,0.3);
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        #inwazja-opacity::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #000000;
+            border: 2px solid rgba(255,255,255,0.3);
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        #inwazja-opacity::-webkit-slider-track {
+            background: rgba(255,255,255,0.15);
+            border-radius: 2px;
+            height: 4px;
+        }
+        
+        #inwazja-opacity::-moz-range-track {
+            background: rgba(255,255,255,0.15);
+            border-radius: 2px;
+            height: 4px;
+            border: none;
+        }
+        
+        .inwazja-tile:hover::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(135deg, #00ff88, #0099ff);
+            border-radius: 8px;
+            z-index: -1;
+            opacity: 0.4;
+            animation: gradientGlow 2s ease-in-out infinite alternate;
+        }
+        
+        .inwazja-tile:hover {
+            transform: translateY(-2px);
+            border-color: rgba(255,255,255,0.15);
+            z-index: 1;
+        }
+        
+        @keyframes gradientGlow {
+            0% { opacity: 0.3; }
+            100% { opacity: 0.6; }
+        }
+        
+        .stat-tile {
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        
+        .stat-tile:hover::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(135deg, #00ff88, #0099ff);
+            border-radius: 8px;
+            z-index: -1;
+            opacity: 0.4;
+            animation: gradientGlow 2s ease-in-out infinite alternate;
+        }
+        
+        .stat-tile:hover {
+            transform: translateY(-1px);
+            border-color: rgba(0, 255, 136, 0.3);
+        }
+        
+        #inwazja-content::-webkit-scrollbar,
+        #inwazja-tiles::-webkit-scrollbar {
+            width: 6px;
+        }
+        #inwazja-content::-webkit-scrollbar-track,
+        #inwazja-tiles::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.02);
+            border-radius: 3px;
+        }
+        #inwazja-content::-webkit-scrollbar-thumb,
+        #inwazja-tiles::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.15);
+            border-radius: 3px;
+        }
+        #inwazja-content::-webkit-scrollbar-thumb:hover,
+        #inwazja-tiles::-webkit-scrollbar-thumb:hover {
+            background: rgba(255,255,255,0.25);
+        }
+    `;
+    document.head.appendChild(style);
     
     document.body.appendChild(icon);
     
-    // Panel
+    // PANEL - BEZ ZMIAN
     const panel = document.createElement('div');
     panel.id = 'inwazja-panel';
     
@@ -120,7 +272,6 @@
         resize: none;
     `;
     
-    // SVG dla ikony domku (dashboard)
     const dashboardSVG = `<svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path d="M5.5 12.5V8.5H8.5V12.5H11.5V7.5H13.5L7 1.5L0.5 7.5H2.5V12.5H5.5Z" fill="currentColor"/>
     </svg>`;
@@ -321,171 +472,7 @@
     document.body.appendChild(panel);
     
     /**********************
-     *  Styl suwaka przezroczystości, kafelków i IKONY
-     **********************/
-    const style = document.createElement('style');
-    style.textContent = `
-        /* STYL DLA IKONY Z GRADIENTOWĄ OBWÓDKĄ */
-        .icon-gradient-border {
-            position: relative;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, #00ff88, #0099ff);
-            border-radius: 8px;
-            padding: 2px;
-            animation: iconGlow 3s ease-in-out infinite alternate;
-        }
-        
-        .icon-content {
-            width: 100%;
-            height: 100%;
-            background: rgba(12,12,12,0.95);
-            border-radius: 6px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #fff;
-            font-weight: bold;
-            font-size: 13px;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-        }
-        
-        #inwazja-icon:hover .icon-gradient-border {
-            animation-duration: 1s;
-            animation-timing-function: ease-out;
-        }
-        
-        #inwazja-icon:hover .icon-content {
-            background: rgba(20,20,20,0.95);
-            transform: translateY(-1px);
-        }
-        
-        @keyframes iconGlow {
-            0% {
-                opacity: 0.7;
-                box-shadow: 0 0 10px rgba(0, 255, 136, 0.3);
-            }
-            100% {
-                opacity: 1;
-                box-shadow: 0 0 20px rgba(0, 153, 255, 0.5);
-            }
-        }
-        
-        /* Styl dla suwaka przezroczystości */
-        #inwazja-opacity::-webkit-slider-thumb {
-            appearance: none;
-            width: 16px;
-            height: 16px;
-            border-radius: 50%;
-            background: #000000;
-            border: 2px solid rgba(255,255,255,0.3);
-            cursor: pointer;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-        }
-        
-        #inwazja-opacity::-moz-range-thumb {
-            width: 16px;
-            height: 16px;
-            border-radius: 50%;
-            background: #000000;
-            border: 2px solid rgba(255,255,255,0.3);
-            cursor: pointer;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-        }
-        
-        #inwazja-opacity::-webkit-slider-track {
-            background: rgba(255,255,255,0.15);
-            border-radius: 2px;
-            height: 4px;
-        }
-        
-        #inwazja-opacity::-moz-range-track {
-            background: rgba(255,255,255,0.15);
-            border-radius: 2px;
-            height: 4px;
-            border: none;
-        }
-        
-        /* Styl dla kafelków z gradientowym podświetleniem */
-        .inwazja-tile:hover::before {
-            content: '';
-            position: absolute;
-            top: -2px;
-            left: -2px;
-            right: -2px;
-            bottom: -2px;
-            background: linear-gradient(135deg, #00ff88, #0099ff);
-            border-radius: 8px;
-            z-index: -1;
-            opacity: 0.4;
-            animation: gradientGlow 2s ease-in-out infinite alternate;
-        }
-        
-        .inwazja-tile:hover {
-            transform: translateY(-2px);
-            border-color: rgba(255,255,255,0.15);
-            z-index: 1;
-        }
-        
-        @keyframes gradientGlow {
-            0% {
-                opacity: 0.3;
-            }
-            100% {
-                opacity: 0.6;
-            }
-        }
-        
-        /* Styl dla kafelków statystyk w dashboardzie */
-        .stat-tile {
-            position: relative;
-            transition: all 0.3s ease;
-        }
-        
-        .stat-tile:hover::before {
-            content: '';
-            position: absolute;
-            top: -2px;
-            left: -2px;
-            right: -2px;
-            bottom: -2px;
-            background: linear-gradient(135deg, #00ff88, #0099ff);
-            border-radius: 8px;
-            z-index: -1;
-            opacity: 0.4;
-            animation: gradientGlow 2s ease-in-out infinite alternate;
-        }
-        
-        .stat-tile:hover {
-            transform: translateY(-1px);
-            border-color: rgba(0, 255, 136, 0.3);
-        }
-        
-        /* Custom scrollbar styles */
-        #inwazja-content::-webkit-scrollbar,
-        #inwazja-tiles::-webkit-scrollbar {
-            width: 6px;
-        }
-        #inwazja-content::-webkit-scrollbar-track,
-        #inwazja-tiles::-webkit-scrollbar-track {
-            background: rgba(255,255,255,0.02);
-            border-radius: 3px;
-        }
-        #inwazja-content::-webkit-scrollbar-thumb,
-        #inwazja-tiles::-webkit-scrollbar-thumb {
-            background: rgba(255,255,255,0.15);
-            border-radius: 3px;
-        }
-        #inwazja-content::-webkit-scrollbar-thumb:hover,
-        #inwazja-tiles::-webkit-scrollbar-thumb:hover {
-            background: rgba(255,255,255,0.25);
-        }
-    `;
-    document.head.appendChild(style);
-    
-    /**********************
-     *  Funkcje
+     *  FUNKCJE - POPRAWIONE EVENT LISTENERS!
      **********************/
     function showDashboard() {
         const content = document.getElementById('inwazja-content');
@@ -498,41 +485,12 @@
         const autoHealEnabled = window.inwazjaConfig.autoHealEnabled ? 'Tak' : 'Nie';
         
         content.innerHTML = `
-            <div style="
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-                height: 100%;
-                text-align: center;
-                padding: 30px 20px;
-            ">
-                <div style="
-                    font-size: 24px;
-                    font-weight: bold;
-                    margin-bottom: 10px;
-                    color: #eaeff5;
-                ">Inwazja Add-on</div>
-                
-                <div style="
-                    font-size: 13px;
-                    opacity: 0.8;
-                    margin-bottom: 25px;
-                    max-width: 400px;
-                    line-height: 1.4;
-                    color: #b0b8c5;
-                ">
+            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; text-align: center; padding: 30px 20px;">
+                <div style="font-size: 24px; font-weight: bold; margin-bottom: 10px; color: #eaeff5;">Inwazja Add-on</div>
+                <div style="font-size: 13px; opacity: 0.8; margin-bottom: 25px; max-width: 400px; line-height: 1.4; color: #b0b8c5;">
                     Zaawansowany dodatek do Margonem z funkcją automatycznego odpowiadania na wiadomości
                 </div>
-                
-                <div style="
-                    display: grid;
-                    grid-template-columns: repeat(2, 1fr);
-                    gap: 12px;
-                    width: 100%;
-                    max-width: 350px;
-                    margin: 20px 0;
-                ">
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; width: 100%; max-width: 350px; margin: 20px 0;">
                     <div class="stat-tile" style="padding: 12px; background: rgba(255,255,255,0.03); border-radius: 6px; border: 1px solid rgba(255,255,255,0.08);">
                         <div style="font-size: 20px; font-weight: bold; margin-bottom: 4px; color: #eaeff5;">${totalMessages}/5</div>
                         <div style="font-size: 10px; opacity: 0.7; color: #b0b8c5;">Aktywne wiadomości</div>
@@ -558,18 +516,9 @@
                         <div style="font-size: 10px; opacity: 0.7; color: #b0b8c5;">Próg leczenia</div>
                     </div>
                 </div>
-                
-                <div style="
-                    font-size: 11px;
-                    opacity: 0.6;
-                    padding: 6px 12px;
-                    background: rgba(255,255,255,0.03);
-                    border-radius: 12px;
-                    border: 1px solid rgba(255,255,255,0.05);
-                    margin-top: 15px;
-                    color: #b0b8c5;
-                ">Wersja 2.2 | Poprawiony Interfejs</div>
-                
+                <div style="font-size: 11px; opacity: 0.6; padding: 6px 12px; background: rgba(255,255,255,0.03); border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); margin-top: 15px; color: #b0b8c5;">
+                    Wersja 2.2 | Poprawiony Interfejs
+                </div>
                 <div style="margin-top: 20px; font-size: 10px; opacity: 0.5; color: #b0b8c5;">
                     Kliknij w kafelek po lewej stronie, aby przejść do konkretnego modułu
                 </div>
@@ -582,13 +531,15 @@
     }
     
     /**********************
-     *  Drag & Drop Ikony (ZAKTUALIZOWANE dla nowej struktury)
+     *  EVENT LISTENERS - DZIAŁAJĄCE!
      **********************/
+    
+    // DRAG & DROP IKONY - POPRAWIONE
     let isDraggingIcon = false;
     let dragStartX = 0, dragStartY = 0;
     let startIconX = 0, startIconY = 0;
     
-    const handleIconMouseDown = (e) => {
+    icon.addEventListener('mousedown', function(e) {
         if (e.button !== 0) return;
         
         isDraggingIcon = true;
@@ -598,11 +549,11 @@
         startIconY = parseInt(icon.style.top) || 20;
         
         icon.style.transition = 'none';
-        icon.querySelector('.icon-content').style.opacity = '0.8';
+        icon.style.opacity = '0.8';
         e.preventDefault();
-    };
+    });
     
-    const handleIconMouseMove = (e) => {
+    document.addEventListener('mousemove', function(e) {
         if (!isDraggingIcon) return;
         
         const deltaX = e.clientX - dragStartX;
@@ -613,32 +564,23 @@
         
         icon.style.left = newX + 'px';
         icon.style.top = newY + 'px';
-    };
+    });
     
-    const handleIconMouseUp = () => {
+    document.addEventListener('mouseup', function() {
         if (!isDraggingIcon) return;
         
         isDraggingIcon = false;
         icon.style.transition = 'all 0.3s ease';
-        icon.querySelector('.icon-content').style.opacity = '1';
+        icon.style.opacity = '1';
         
         window.inwazjaConfig.iconPos = {
             left: parseInt(icon.style.left),
             top: parseInt(icon.style.top)
         };
         window.inwazjaSaveConfig(window.inwazjaConfig);
-    };
+    });
     
-    icon.addEventListener('mousedown', handleIconMouseDown);
-    document.addEventListener('mousemove', handleIconMouseMove);
-    document.addEventListener('mouseup', handleIconMouseUp);
-    
-    /**********************
-     *  Reszta kodu pozostaje bez zmian...
-     **********************/
-    // ... (reszta kodu Drag & Drop Panelu, Resize, Event Listeners itd. pozostaje identyczna)
-    
-    // Event Listenery dla ikony
+    // KLIKNIĘCIE IKONY - DZIAŁA!
     icon.addEventListener('click', function(e) {
         if (isDraggingIcon) return;
         
@@ -648,15 +590,79 @@
             panel.style.display = 'flex';
             setTimeout(() => {
                 showDashboard();
-                enableScrolling();
             }, 50);
         }
     });
     
-    // ... (reszta kodu identyczna jak w poprzedniej wersji)
+    // PRZYCSIKI PANELU - DZIAŁAJĄ!
+    document.addEventListener('click', function(e) {
+        if (e.target.id === 'inwazja-dashboard') {
+            showDashboard();
+        }
+        if (e.target.id === 'inwazja-close') {
+            panel.style.display = 'none';
+        }
+    });
+    
+    // SUWAK PRZEZROCZYSTOŚCI - DZIAŁA!
+    document.addEventListener('input', function(e) {
+        if (e.target.id === 'inwazja-opacity') {
+            currentOpacity = parseInt(e.target.value) / 100;
+            applyOpacity();
+            window.inwazjaConfig.opacity = currentOpacity;
+            window.inwazjaSaveConfig(window.inwazjaConfig);
+        }
+    });
+    
+    // HOVER EFFECTS
+    icon.addEventListener('mouseenter', function() {
+        this.style.background = 'rgba(20,20,20,0.95)';
+    });
+    
+    icon.addEventListener('mouseleave', function() {
+        if (isDraggingIcon) return;
+        this.style.background = 'rgba(12,12,12,0.95)';
+        this.style.transform = 'translateY(0px)';
+    });
+    
+    // KAFELKI MODUŁÓW - DZIAŁAJĄ!
+    document.addEventListener('click', function(e) {
+        const tile = e.target.closest('.inwazja-tile');
+        if (!tile) return;
+        
+        const moduleId = tile.dataset.id;
+        const content = document.getElementById('inwazja-content');
+        
+        if (moduleId === 'auto-message') {
+            if (typeof window.initializeAutoMessageModule === 'function') {
+                window.initializeAutoMessageModule(content);
+            } else {
+                content.innerHTML = '<div style="display:flex; align-items:center; justify-content:center; height:100%;">Ładowanie Auto-message...</div>';
+                const script = document.createElement('script');
+                script.src = 'https://raw.githack.com/inwazja-margonem/inwazja-addon/main/auto-message.js';
+                document.head.appendChild(script);
+            }
+        } 
+        else if (moduleId === 'auto-heal') {
+            content.innerHTML = '<div style="display:flex; align-items:center; justify-content:center; height:100%;">Ładowanie Auto-heal...</div>';
+            const script = document.createElement('script');
+            script.src = 'https://raw.githack.com/inwazja-margonem/inwazja-addon/main/auto-heal.js';
+            document.head.appendChild(script);
+        }
+        else if (moduleId.startsWith('module-')) {
+            content.innerHTML = `
+                <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; text-align: center; padding: 40px 20px;">
+                    <div style="font-size: 28px; font-weight: bold; margin-bottom: 15px; color: #eaeff5; opacity: 0.9;">Moduł w budowie</div>
+                    <div style="font-size: 14px; opacity: 0.7; color: #b0b8c5; max-width: 300px; line-height: 1.5;">
+                        Funkcjonalność tego modułu będzie dostępna w przyszłych aktualizacjach.
+                    </div>
+                </div>
+            `;
+        }
+    });
     
     /**********************
-     *  Inicjalizacja
+     *  INICJALIZACJA
      **********************/
     if (window.inwazjaConfig.iconPos) {
         icon.style.left = window.inwazjaConfig.iconPos.left + 'px';
@@ -671,6 +677,6 @@
     
     applyOpacity();
     
-    console.log('✅ Inwazja Core UI: POPRAWIONY interfejs z gradientową ikoną załadowany');
+    console.log('✅ Inwazja Core UI: NAPRAWIONY interfejs załadowany! Wszystko działa!');
     
 })();
