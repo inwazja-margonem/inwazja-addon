@@ -1,4 +1,4 @@
-// core-ui.js - POPRAWIONA WERSJA
+// core-ui.js - ZAKTUALIZOWANA WERSJA Z MODUŁAMI W BUDOWIE
 (function() {
     'use strict';
     
@@ -233,7 +233,7 @@
                     <div style="font-weight:bold; font-size:13px; color:#eaeff5;">Auto-heal</div>
                     <div style="opacity:0.8; font-size:11px; margin-top:4px; color:#b0b8c5;">Skrypt na automatyczne leczenie gracza podczas walki oraz po śmierci.</div>
                 </div>
-                <div class="inwazja-tile" data-id="clan" style="
+                <div class="inwazja-tile" data-id="module-1" style="
                     padding: 12px;
                     background: linear-gradient(135deg, rgba(255,255,255,0.03), rgba(0,0,0,0.1));
                     border: 1px solid rgba(255,255,255,0.06);
@@ -243,10 +243,10 @@
                     flex-shrink: 0;
                     position: relative;
                 ">
-                    <div style="font-weight:bold; font-size:13px; color:#eaeff5;">Klan</div>
-                    <div style="opacity:0.8; font-size:11px; margin-top:4px; color:#b0b8c5;">Lista członków</div>
+                    <div style="font-weight:bold; font-size:13px; color:#eaeff5;">Moduł</div>
+                    <div style="opacity:0.8; font-size:11px; margin-top:4px; color:#b0b8c5;">Moduł w budowie</div>
                 </div>
-                <div class="inwazja-tile" data-id="skills" style="
+                <div class="inwazja-tile" data-id="module-2" style="
                     padding: 12px;
                     background: linear-gradient(135deg, rgba(255,255,255,0.03), rgba(0,0,0,0.1));
                     border: 1px solid rgba(255,255,255,0.06);
@@ -256,10 +256,10 @@
                     flex-shrink: 0;
                     position: relative;
                 ">
-                    <div style="font-weight:bold; font-size:13px; color:#eaeff5;">Umiejętności</div>
-                    <div style="opacity:0.8; font-size:11px; margin-top:4px; color:#b0b8c5;">Tooltipy i cooldowny</div>
+                    <div style="font-weight:bold; font-size:13px; color:#eaeff5;">Moduł</div>
+                    <div style="opacity:0.8; font-size:11px; margin-top:4px; color:#b0b8c5;">Moduł w budowie</div>
                 </div>
-                <div class="inwazja-tile" data-id="quests" style="
+                <div class="inwazja-tile" data-id="module-3" style="
                     padding: 12px;
                     background: linear-gradient(135deg, rgba(255,255,255,0.03), rgba(0,0,0,0.1));
                     border: 1px solid rgba(255,255,255,0.06);
@@ -269,10 +269,10 @@
                     flex-shrink: 0;
                     position: relative;
                 ">
-                    <div style="font-weight:bold; font-size:13px; color:#eaeff5;">Zadania</div>
-                    <div style="opacity:0.8; font-size:11px; margin-top:4px; color:#b0b8c5;">Postępy i nagrody</div>
+                    <div style="font-weight:bold; font-size:13px; color:#eaeff5;">Moduł</div>
+                    <div style="opacity:0.8; font-size:11px; margin-top:4px; color:#b0b8c5;">Moduł w budowie</div>
                 </div>
-                <div class="inwazja-tile" data-id="settings" style="
+                <div class="inwazja-tile" data-id="module-4" style="
                     padding: 12px;
                     background: linear-gradient(135deg, rgba(255,255,255,0.03), rgba(0,0,0,0.1));
                     border: 1px solid rgba(255,255,255,0.06);
@@ -282,8 +282,8 @@
                     flex-shrink: 0;
                     position: relative;
                 ">
-                    <div style="font-weight:bold; font-size:13px; color:#eaeff5;">Ustawienia</div>
-                    <div style="opacity:0.8; font-size:11px; margin-top:4px; color:#b0b8c5;">Preferencje GUI</div>
+                    <div style="font-weight:bold; font-size:13px; color:#eaeff5;">Moduł</div>
+                    <div style="opacity:0.8; font-size:11px; margin-top:4px; color:#b0b8c5;">Moduł w budowie</div>
                 </div>
             </div>
             <div id="inwazja-content" style="
@@ -846,8 +846,37 @@
                 };
                 document.head.appendChild(script);
             }
+            else if (moduleId.startsWith('module-')) {
+                // Dla modułów w budowie - nowy wygląd
+                content.innerHTML = `
+                    <div style="
+                        display: flex;
+                        flex-direction: column;
+                        align-items: center;
+                        justify-content: center;
+                        height: 100%;
+                        text-align: center;
+                        padding: 40px 20px;
+                    ">
+                        <div style="
+                            font-size: 28px;
+                            font-weight: bold;
+                            margin-bottom: 15px;
+                            color: #eaeff5;
+                            opacity: 0.9;
+                        ">Moduł w budowie</div>
+                        <div style="
+                            font-size: 14px;
+                            opacity: 0.7;
+                            color: #b0b8c5;
+                            max-width: 300px;
+                            line-height: 1.5;
+                        ">Funkcjonalność tego modułu będzie dostępna w przyszłych aktualizacjach.</div>
+                    </div>
+                `;
+            }
             else {
-                // Dla innych modułów
+                // Fallback dla innych modułów
                 content.innerHTML = `
                     <div style="padding:25px;">
                         <h3 style="margin-top:0; color:#eaeff5; font-size:18px;">${this.querySelector('div').textContent}</h3>
