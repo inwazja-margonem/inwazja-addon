@@ -1,4 +1,4 @@
-// auto-message.js - DEFINITYWNA WERSJA BEZ SCROLLBARÓW
+// auto-message.js - POPRAWIONA WERSJA
 (function() {
     'use strict';
 
@@ -23,23 +23,20 @@
 
     // Funkcja inicjalizacji GUI
     window.initializeAutoMessageModule = function(contentElement) {
-        // NAJPIERW usuń wszystkie style scrollbarów z contentElement
-        contentElement.style.overflow = 'hidden';
+        // PRZYWRÓĆ poprawne overflow dla zawartości
+        contentElement.style.overflow = 'auto';
         contentElement.style.overflowX = 'hidden';
-        contentElement.style.overflowY = 'hidden';
         
         contentElement.innerHTML = `
             <div id="auto-message-container" style="
                 padding: 15px; 
-                height: 100%; 
-                width: 100%;
-                overflow: hidden !important;
+                min-height: 100%;
                 display: flex;
                 flex-direction: column;
                 box-sizing: border-box;
             ">
                 <!-- Nagłówek -->
-                <div style="margin-bottom: 15px; flex-shrink: 0;">
+                <div style="margin-bottom: 15px;">
                     <h2 style="color: #eaeff5; margin: 0 0 5px 0; font-size: 18px; font-weight: bold;">
                         Auto-message
                     </h2>
@@ -49,7 +46,7 @@
                 </div>
 
                 <!-- Zakładki wiadomości -->
-                <div style="display: flex; gap: 4px; margin-bottom: 15px; flex-shrink: 0;">
+                <div style="display: flex; gap: 4px; margin-bottom: 15px;">
                     ${[1,2,3,4,5].map(i => `
                         <div class="message-tab ${i === CONFIG.currentMessageTab + 1 ? 'active' : ''}" 
                              data-tab="${i-1}"
@@ -76,7 +73,6 @@
                     background: rgba(255,255,255,0.03); 
                     border-radius: 4px;
                     font-size: 13px;
-                    flex-shrink: 0;
                 ">
                     <strong style="color: #eaeff5;">Status skryptu:</strong> 
                     <span id="auto-status" style="color: ${CONFIG.autoEnabled ? '#00ff88' : '#ff4444'}; font-weight: bold;">
@@ -85,14 +81,14 @@
                 </div>
 
                 <!-- Treść wiadomości -->
-                <div style="margin-bottom: 15px; flex-shrink: 0;">
+                <div style="margin-bottom: 15px;">
                     <div style="font-weight: bold; margin-bottom: 6px; color: #eaeff5; font-size: 13px;">
                         Treść wiadomości:
                     </div>
                     <textarea id="message-input" 
                               style="
-                                  width: 100% !important; 
-                                  height: 70px !important; 
+                                  width: 100%; 
+                                  height: 70px; 
                                   background: rgba(255,255,255,0.05); 
                                   border: 1px solid rgba(255,255,255,0.1); 
                                   border-radius: 4px; 
@@ -102,7 +98,6 @@
                                   resize: none;
                                   font-size: 12px;
                                   box-sizing: border-box;
-                                  overflow: hidden !important;
                               "
                               placeholder="Wpisz wiadomość, która będzie automatycznie wysyłana do graczy...">${CONFIG.autoMessages[CONFIG.currentMessageTab] || ''}</textarea>
                     <div style="font-size: 10px; opacity: 0.7; margin-top: 4px; color: #b0b8c5;">
@@ -111,7 +106,7 @@
                 </div>
 
                 <!-- Powtarzaj wiadomość -->
-                <div style="margin-bottom: 15px; flex-shrink: 0;">
+                <div style="margin-bottom: 15px;">
                     <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
                         <strong style="color: #eaeff5; font-size: 13px;">Powtarzaj wiadomość:</strong> 
                         <span id="repeat-status" style="color: ${CONFIG.repeatMessage ? '#00ff88' : '#ff4444'}; font-weight: bold; font-size: 13px;">
@@ -128,7 +123,7 @@
                 </div>
 
                 <!-- Harmonogram -->
-                <div style="margin-bottom: 15px; flex-shrink: 0;">
+                <div style="margin-bottom: 15px;">
                     <div style="font-weight: bold; margin-bottom: 6px; color: #eaeff5; font-size: 13px;">
                         Harmonogram aktywności
                     </div>
@@ -172,12 +167,11 @@
 
                 <!-- Podgląd wiadomości -->
                 <div style="
-                    margin-top: auto; 
+                    margin-top: 20px; 
                     padding: 10px; 
                     background: rgba(255,255,255,0.02); 
                     border-radius: 6px; 
                     border: 1px solid rgba(255,255,255,0.05);
-                    flex-shrink: 0;
                 ">
                     <div style="font-weight: bold; margin-bottom: 6px; color: #eaeff5; font-size: 13px;">
                         Podgląd wiadomości (zakładka ${CONFIG.currentMessageTab + 1}):
@@ -191,14 +185,13 @@
                         font-style: italic;
                         font-size: 12px;
                         min-height: 20px;
-                        overflow: hidden !important;
                     ">
                         ${CONFIG.autoMessages[CONFIG.currentMessageTab] || 'Brak wiadomości...'}
                     </div>
                 </div>
 
                 <!-- Przyciski akcji -->
-                <div style="display: flex; gap: 8px; margin-top: 15px; flex-shrink: 0;">
+                <div style="display: flex; gap: 8px; margin-top: 20px;">
                     <button id="save-message" style="
                         padding: 8px 16px; 
                         background: linear-gradient(135deg, #00ff88, #0099ff); 
@@ -227,171 +220,122 @@
                     </button>
                 </div>
             </div>
+
+            <style>
+                /* POPRAWNE UKRYWANIE TYLKO SCROLLBARÓW - ZACHOWUJĄC PRZEWIJANIE */
+                #inwazja-content {
+                    overflow-y: auto !important;
+                    overflow-x: hidden !important;
+                }
+                
+                /* Ukrywanie scrollbarów ale zachowanie funkcjonalności scroll */
+                #inwazja-content::-webkit-scrollbar {
+                    width: 0px !important;
+                    background: transparent !important;
+                }
+                
+                #inwazja-content::-webkit-scrollbar-thumb {
+                    background: transparent !important;
+                }
+                
+                #inwazja-content::-webkit-scrollbar-track {
+                    background: transparent !important;
+                }
+                
+                /* Dla Firefox - ukrywa scrollbar ale zachowuje scroll */
+                #inwazja-content {
+                    scrollbar-width: none !important;
+                }
+                
+                /* Dla IE/Edge */
+                #inwazja-content {
+                    -ms-overflow-style: none !important;
+                }
+
+                /* Style dla zakładek */
+                .message-tab.active {
+                    background: linear-gradient(135deg, #00ff88, #0099ff) !important;
+                    color: #000 !important;
+                    font-weight: bold;
+                    border-color: rgba(0, 255, 136, 0.5) !important;
+                }
+
+                .message-tab:hover {
+                    background: rgba(255,255,255,0.1) !important;
+                    transform: translateY(-1px);
+                }
+
+                /* Style dla przełączników */
+                .switch {
+                    position: relative;
+                    display: inline-block;
+                    width: 36px;
+                    height: 18px;
+                }
+
+                .switch input {
+                    opacity: 0;
+                    width: 0;
+                    height: 0;
+                }
+
+                .slider {
+                    position: absolute;
+                    cursor: pointer;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    background-color: #ff4444;
+                    transition: .3s;
+                    border-radius: 18px;
+                }
+
+                .slider:before {
+                    position: absolute;
+                    content: "";
+                    height: 14px;
+                    width: 14px;
+                    left: 2px;
+                    bottom: 2px;
+                    background-color: white;
+                    transition: .3s;
+                    border-radius: 50%;
+                }
+
+                input:checked + .slider {
+                    background-color: #00ff88;
+                }
+
+                input:checked + .slider:before {
+                    transform: translateX(18px);
+                }
+
+                /* Focus styles */
+                textarea:focus, input:focus {
+                    outline: none;
+                    border-color: rgba(0, 255, 136, 0.5) !important;
+                    box-shadow: 0 0 0 2px rgba(0, 255, 136, 0.1);
+                }
+
+                /* Przyciski hover */
+                button:hover {
+                    opacity: 0.9;
+                    transform: translateY(-1px);
+                    transition: all 0.2s ease;
+                }
+            </style>
         `;
-
-        // DODAJEMY AGRESYWNE STYLE CSS ŻEBY UKRYĆ SCROLLBARY
-        const style = document.createElement('style');
-        style.textContent = `
-            /* AGRESYWNE UKRYWANIE SCROLLBARÓW - NAJWYŻSZY PRIORYTET */
-            #inwazja-content {
-                overflow: hidden !important;
-                overflow-x: hidden !important;
-                overflow-y: hidden !important;
-            }
-            
-            #auto-message-container {
-                overflow: hidden !important;
-                overflow-x: hidden !important;
-                overflow-y: hidden !important;
-            }
-            
-            #inwazja-content::-webkit-scrollbar {
-                display: none !important;
-                width: 0 !important;
-                height: 0 !important;
-                opacity: 0 !important;
-                visibility: hidden !important;
-            }
-            
-            #inwazja-content::-webkit-scrollbar-track {
-                display: none !important;
-            }
-            
-            #inwazja-content::-webkit-scrollbar-thumb {
-                display: none !important;
-            }
-            
-            #inwazja-content::-webkit-scrollbar-corner {
-                display: none !important;
-            }
-            
-            /* Dla Firefox */
-            #inwazja-content {
-                scrollbar-width: none !important;
-            }
-            
-            /* Dla IE/Edge */
-            #inwazja-content {
-                -ms-overflow-style: none !important;
-            }
-            
-            /* Ukrywanie scrollbarów we wszystkich elementach wewnątrz */
-            #auto-message-container * {
-                overflow: hidden !important;
-            }
-            
-            #auto-message-container textarea {
-                overflow: hidden !important;
-            }
-            
-            #auto-message-container div {
-                overflow: hidden !important;
-            }
-
-            /* Style dla zakładek */
-            .message-tab.active {
-                background: linear-gradient(135deg, #00ff88, #0099ff) !important;
-                color: #000 !important;
-                font-weight: bold;
-                border-color: rgba(0, 255, 136, 0.5) !important;
-            }
-
-            .message-tab:hover {
-                background: rgba(255,255,255,0.1) !important;
-                transform: translateY(-1px);
-            }
-
-            /* Style dla przełączników */
-            .switch {
-                position: relative;
-                display: inline-block;
-                width: 36px;
-                height: 18px;
-            }
-
-            .switch input {
-                opacity: 0;
-                width: 0;
-                height: 0;
-            }
-
-            .slider {
-                position: absolute;
-                cursor: pointer;
-                top: 0;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                background-color: #ff4444;
-                transition: .3s;
-                border-radius: 18px;
-            }
-
-            .slider:before {
-                position: absolute;
-                content: "";
-                height: 14px;
-                width: 14px;
-                left: 2px;
-                bottom: 2px;
-                background-color: white;
-                transition: .3s;
-                border-radius: 50%;
-            }
-
-            input:checked + .slider {
-                background-color: #00ff88;
-            }
-
-            input:checked + .slider:before {
-                transform: translateX(18px);
-            }
-
-            /* Focus styles */
-            textarea:focus, input:focus {
-                outline: none;
-                border-color: rgba(0, 255, 136, 0.5) !important;
-                box-shadow: 0 0 0 2px rgba(0, 255, 136, 0.1);
-            }
-
-            /* Przyciski hover */
-            button:hover {
-                opacity: 0.9;
-                transform: translateY(-1px);
-                transition: all 0.2s ease;
-            }
-
-            /* Zapobieganie overflow */
-            * {
-                box-sizing: border-box;
-            }
-        `;
-        
-        // Dodaj style do head z wysokim priorytetem
-        style.setAttribute('data-inwazja', 'auto-message-styles');
-        document.head.appendChild(style);
 
         // Inicjalizacja event listeners
         initializeMessageTabs();
         initializeAutoMessage();
         
-        // OSTATECZNE WYMUSZENIE UKRYCIA SCROLLBARÓW
+        // Przywróć poprawne przewijanie
         setTimeout(() => {
-            if (contentElement) {
-                contentElement.style.overflow = 'hidden';
-                contentElement.style.overflowX = 'hidden';
-                contentElement.style.overflowY = 'hidden';
-                
-                // Wymuś ukrycie scrollbarów dla przeglądarek
-                contentElement.style.scrollbarWidth = 'none';
-                contentElement.style.msOverflowStyle = 'none';
-            }
-            
-            const container = document.getElementById('auto-message-container');
-            if (container) {
-                container.style.overflow = 'hidden';
-            }
-        }, 50);
+            contentElement.style.overflowY = 'auto';
+            contentElement.style.overflowX = 'hidden';
+        }, 10);
     };
 
     function initializeMessageTabs() {
@@ -400,134 +344,88 @@
                 const tabIndex = parseInt(this.dataset.tab);
                 CONFIG.currentMessageTab = tabIndex;
                 
-                // Update UI
                 document.querySelectorAll('.message-tab').forEach(t => t.classList.remove('active'));
                 this.classList.add('active');
                 
-                // Update message input and preview
                 document.getElementById('message-input').value = CONFIG.autoMessages[tabIndex] || '';
                 document.getElementById('message-preview').textContent = CONFIG.autoMessages[tabIndex] || 'Brak wiadomości...';
                 
-                // Update labels
-                const messageInfo = document.querySelector('div[style*="Maksymalnie 200 znaków"]');
-                const previewLabel = document.querySelector('div[style*="Podgląd wiadomości"]');
-                
-                if (messageInfo) {
-                    messageInfo.textContent = `Maksymalnie 200 znaków | Zakładka ${tabIndex + 1}/5`;
-                }
-                
-                if (previewLabel) {
-                    previewLabel.innerHTML = `<div style="font-weight: bold; margin-bottom: 6px; color: #eaeff5; font-size: 13px;">Podgląd wiadomości (zakładka ${tabIndex + 1}):</div>`;
-                }
+                const labels = document.querySelectorAll('div[style*="Zakładka"], div[style*="Podgląd wiadomości"]');
+                if (labels[0]) labels[0].textContent = `Maksymalnie 200 znaków | Zakładka ${tabIndex + 1}/5`;
+                if (labels[1]) labels[1].innerHTML = `<div style="font-weight: bold; margin-bottom: 6px; color: #eaeff5; font-size: 13px;">Podgląd wiadomości (zakładka ${tabIndex + 1}):</div>`;
             });
         });
     }
 
     function initializeAutoMessage() {
-        // ... (funkcje pozostają bez zmian jak w poprzedniej wersji)
         // Zapisywanie wiadomości
-        const saveButton = document.getElementById('save-message');
-        if (saveButton) {
-            saveButton.addEventListener('click', function() {
-                const messageInput = document.getElementById('message-input');
-                const messagePreview = document.getElementById('message-preview');
-                
-                if (messageInput && messagePreview) {
-                    const message = messageInput.value.substring(0, 200);
-                    CONFIG.autoMessages[CONFIG.currentMessageTab] = message;
-                    messagePreview.textContent = message || 'Brak wiadomości...';
-                    
-                    window.inwazjaConfig.autoMessages = CONFIG.autoMessages;
-                    window.inwazjaSaveConfig(window.inwazjaConfig);
-                    
-                    // Pokaz potwierdzenie
-                    const originalText = this.textContent;
-                    this.textContent = 'Zapisano!';
-                    this.style.background = '#00ff88';
-                    setTimeout(() => {
-                        this.textContent = originalText;
-                        this.style.background = 'linear-gradient(135deg, #00ff88, #0099ff)';
-                    }, 1000);
-                }
-            });
-        }
+        document.getElementById('save-message')?.addEventListener('click', function() {
+            const message = document.getElementById('message-input').value.substring(0, 200);
+            CONFIG.autoMessages[CONFIG.currentMessageTab] = message;
+            document.getElementById('message-preview').textContent = message || 'Brak wiadomości...';
+            
+            window.inwazjaConfig.autoMessages = CONFIG.autoMessages;
+            window.inwazjaSaveConfig(window.inwazjaConfig);
+            
+            this.textContent = 'Zapisano!';
+            this.style.background = '#00ff88';
+            setTimeout(() => {
+                this.textContent = 'Zapisz zmiany';
+                this.style.background = 'linear-gradient(135deg, #00ff88, #0099ff)';
+            }, 1000);
+        });
 
         // Przełącznik powtarzania wiadomości
-        const repeatToggle = document.getElementById('repeat-toggle');
-        if (repeatToggle) {
-            repeatToggle.addEventListener('change', function() {
-                CONFIG.repeatMessage = this.checked;
-                const statusElement = document.getElementById('repeat-status');
-                if (statusElement) {
-                    statusElement.textContent = this.checked ? 'AKTYWNE' : 'NIEAKTYWNE';
-                    statusElement.style.color = this.checked ? '#00ff88' : '#ff4444';
-                }
-                
-                window.inwazjaConfig.repeatMessage = CONFIG.repeatMessage;
-                window.inwazjaSaveConfig(window.inwazjaConfig);
-            });
-        }
+        document.getElementById('repeat-toggle')?.addEventListener('change', function() {
+            CONFIG.repeatMessage = this.checked;
+            const statusElement = document.getElementById('repeat-status');
+            statusElement.textContent = this.checked ? 'AKTYWNE' : 'NIEAKTYWNE';
+            statusElement.style.color = this.checked ? '#00ff88' : '#ff4444';
+            
+            window.inwazjaConfig.repeatMessage = CONFIG.repeatMessage;
+            window.inwazjaSaveConfig(window.inwazjaConfig);
+        });
 
         // Przełącznik harmonogramu
-        const scheduleToggle = document.getElementById('schedule-toggle');
-        if (scheduleToggle) {
-            scheduleToggle.addEventListener('change', function() {
-                CONFIG.scheduleEnabled = this.checked;
-                window.inwazjaConfig.scheduleEnabled = CONFIG.scheduleEnabled;
-                window.inwazjaSaveConfig(window.inwazjaConfig);
-            });
-        }
+        document.getElementById('schedule-toggle')?.addEventListener('change', function() {
+            CONFIG.scheduleEnabled = this.checked;
+            window.inwazjaConfig.scheduleEnabled = CONFIG.scheduleEnabled;
+            window.inwazjaSaveConfig(window.inwazjaConfig);
+        });
 
-        // Zapisywanie harmonogramu
-        const scheduleStart = document.getElementById('schedule-start');
-        if (scheduleStart) {
-            scheduleStart.addEventListener('change', function() {
-                CONFIG.scheduleStart = this.value;
-                window.inwazjaConfig.scheduleStart = CONFIG.scheduleStart;
-                window.inwazjaSaveConfig(window.inwazjaConfig);
-            });
-        }
+        // Harmonogram
+        document.getElementById('schedule-start')?.addEventListener('change', function() {
+            CONFIG.scheduleStart = this.value;
+            window.inwazjaConfig.scheduleStart = CONFIG.scheduleStart;
+            window.inwazjaSaveConfig(window.inwazjaConfig);
+        });
 
-        const scheduleEnd = document.getElementById('schedule-end');
-        if (scheduleEnd) {
-            scheduleEnd.addEventListener('change', function() {
-                CONFIG.scheduleEnd = this.value;
-                window.inwazjaConfig.scheduleEnd = CONFIG.scheduleEnd;
-                window.inwazjaSaveConfig(window.inwazjaConfig);
-            });
-        }
+        document.getElementById('schedule-end')?.addEventListener('change', function() {
+            CONFIG.scheduleEnd = this.value;
+            window.inwazjaConfig.scheduleEnd = CONFIG.scheduleEnd;
+            window.inwazjaSaveConfig(window.inwazjaConfig);
+        });
 
-        // Główny przełącznik auto-odpowiadania
-        const toggleAuto = document.getElementById('toggle-auto');
-        if (toggleAuto) {
-            toggleAuto.addEventListener('click', function() {
-                CONFIG.autoEnabled = !CONFIG.autoEnabled;
-                
-                const statusElement = document.getElementById('auto-status');
-                if (statusElement) {
-                    statusElement.textContent = CONFIG.autoEnabled ? 'AKTYWNY' : 'NIEAKTYWNY';
-                    statusElement.style.color = CONFIG.autoEnabled ? '#00ff88' : '#ff4444';
-                }
-                
-                this.textContent = CONFIG.autoEnabled ? 'Wyłącz auto-odpowiadanie' : 'Włącz auto-odpowiadanie';
-                this.style.background = CONFIG.autoEnabled ? '#ff4444' : '#00ff88';
-                
-                window.inwazjaConfig.autoEnabled = CONFIG.autoEnabled;
-                window.inwazjaSaveConfig(window.inwazjaConfig);
-            });
-        }
+        // Główny przełącznik
+        document.getElementById('toggle-auto')?.addEventListener('click', function() {
+            CONFIG.autoEnabled = !CONFIG.autoEnabled;
+            
+            const statusElement = document.getElementById('auto-status');
+            statusElement.textContent = CONFIG.autoEnabled ? 'AKTYWNY' : 'NIEAKTYWNY';
+            statusElement.style.color = CONFIG.autoEnabled ? '#00ff88' : '#ff4444';
+            
+            this.textContent = CONFIG.autoEnabled ? 'Wyłącz auto-odpowiadanie' : 'Włącz auto-odpowiadanie';
+            this.style.background = CONFIG.autoEnabled ? '#ff4444' : '#00ff88';
+            
+            window.inwazjaConfig.autoEnabled = CONFIG.autoEnabled;
+            window.inwazjaSaveConfig(window.inwazjaConfig);
+        });
 
-        // Live preview wiadomości
-        const messageInput = document.getElementById('message-input');
-        if (messageInput) {
-            messageInput.addEventListener('input', function() {
-                const messagePreview = document.getElementById('message-preview');
-                if (messagePreview) {
-                    const preview = this.value.substring(0, 200);
-                    messagePreview.textContent = preview || 'Brak wiadomości...';
-                }
-            });
-        }
+        // Live preview
+        document.getElementById('message-input')?.addEventListener('input', function() {
+            const preview = this.value.substring(0, 200);
+            document.getElementById('message-preview').textContent = preview || 'Brak wiadomości...';
+        });
     }
 
 })();
