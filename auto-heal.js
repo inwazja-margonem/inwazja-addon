@@ -329,7 +329,7 @@
             window.inwazjaSaveConfig(window.inwazjaConfig);
             
             const originalText = this.textContent;
-            this.textContent = 'Zapisano!';
+            this.textContent = 'Zapisano.';
             this.style.background = '#00ff88';
             setTimeout(() => {
                 this.textContent = originalText;
