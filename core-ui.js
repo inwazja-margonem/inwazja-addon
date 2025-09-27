@@ -1,16 +1,16 @@
-// core-ui.js - ZAKTUALIZOWANA WERSJA Z MODUŁAMI W BUDOWIE
+// core-ui.js - ZAKTUALIZOWANA WERSJA Z MODUŁEM AUTO-X
 (function() {
     'use strict';
     
     if (window.inwazjaCoreLoaded) return;
     window.inwazjaCoreLoaded = true;
     
-    console.log('🚀 Inwazja Core UI: ładowanie poprawionej wersji...');
+    console.log('🚀 Inwazja Core UI: ładowanie poprawionej wersji z Auto-X...');
     
     /**********************
      *  Konfiguracja
      **********************/
-    const STORAGE_KEY = 'inwazjaAddonConfig_v2_2';
+    const STORAGE_KEY = 'inwazjaAddonConfig_v2_3';
     const DEFAULT_CFG = {
         pos: null,
         size: { width: 800, height: 600 },
@@ -146,7 +146,7 @@
         ">
             <div style="display: flex; align-items: center; gap: 8px;">
                 <span>Inwazja Add-on</span>
-                <span style="opacity: 0.6; font-size: 11px;">| v.2.2</span>
+                <span style="opacity: 0.6; font-size: 11px;">| v.2.3</span>
             </div>
             <div id="inwazja-controls" style="display: flex; align-items: center; gap: 12px;">
                 <div style="display: flex; align-items: center; gap: 8px;">
@@ -232,6 +232,19 @@
                 ">
                     <div style="font-weight:bold; font-size:13px; color:#eaeff5;">Auto-heal</div>
                     <div style="opacity:0.8; font-size:11px; margin-top:4px; color:#b0b8c5;">Skrypt na automatyczne leczenie gracza podczas walki oraz po śmierci.</div>
+                </div>
+                <div class="inwazja-tile" data-id="auto-x" style="
+                    padding: 12px;
+                    background: linear-gradient(135deg, rgba(255,255,255,0.03), rgba(0,0,0,0.1));
+                    border: 1px solid rgba(255,255,255,0.06);
+                    border-radius: 6px;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                    flex-shrink: 0;
+                    position: relative;
+                ">
+                    <div style="font-weight:bold; font-size:13px; color:#eaeff5;">Auto-X</div>
+                    <div style="opacity:0.8; font-size:11px; margin-top:4px; color:#b0b8c5;">Skrypt na automatyczne atakowanie innych przeciwników wg. przedziału.</div>
                 </div>
                 <div class="inwazja-tile" data-id="module-1" style="
                     padding: 12px;
@@ -320,7 +333,7 @@
             border-top: 1px solid rgba(255,255,255,0.03);
             font-size: 10px;
             opacity: 0.7;
-        ">Inwazja Add-on v2.2</div>
+        ">Inwazja Add-on v2.3</div>
     `;
     
     document.body.appendChild(panel);
@@ -526,7 +539,7 @@
                     border: 1px solid rgba(255,255,255,0.05);
                     margin-top: 15px;
                     color: #b0b8c5;
-                ">Wersja 2.2 | Poprawiony Interfejs</div>
+                ">Wersja 2.3 | Nowy moduł Auto-X</div>
                 
                 <div style="margin-top: 20px; font-size: 10px; opacity: 0.5; color: #b0b8c5;">
                     Kliknij w kafelek po lewej stronie, aby przejść do konkretnego modułu
@@ -846,6 +859,33 @@
                 };
                 document.head.appendChild(script);
             }
+            else if (moduleId === 'auto-x') {
+                // Loading screen dla Auto-X
+                content.innerHTML = `
+                    <div style="display:flex; align-items:center; justify-content:center; height:100%; flex-direction:column;">
+                        <div style="font-size:14px; opacity:0.7; margin-bottom:10px;">Ładowanie Auto-X...</div>
+                        <div style="font-size:11px; opacity:0.5;">auto-x.js</div>
+                    </div>
+                `;
+                
+                // Dynamicznie załaduj auto-x.js
+                const script = document.createElement('script');
+                script.src = 'https://raw.githack.com/inwazja-margonem/inwazja-addon/main/auto-x.js';
+                script.onload = function() {
+                    if (typeof window.initializeAutoXModule === 'function') {
+                        window.initializeAutoXModule(content);
+                    }
+                };
+                script.onerror = function() {
+                    content.innerHTML = `
+                        <div style="padding:25px;">
+                            <h3 style="margin-top:0; color:#eaeff5; font-size:18px;">Auto-X</h3>
+                            <div style="opacity:0.8; margin-bottom:15px; font-size:14px; color:#b0b8c5;">Błąd ładowania modułu</div>
+                        </div>
+                    `;
+                };
+                document.head.appendChild(script);
+            }
             else if (moduleId.startsWith('module-')) {
                 // Dla modułów w budowie - nowy wygląd
                 content.innerHTML = `
@@ -906,6 +946,6 @@
     
     applyOpacity();
     
-    console.log('✅ Inwazja Core UI: POPRAWIONY interfejs załadowany');
+    console.log('✅ Inwazja Core UI: POPRAWIONY interfejs załadowany z modułem Auto-X');
     
 })();
