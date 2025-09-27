@@ -1,357 +1,400 @@
-// auto-heal.js - NOWY MODUŁ
+// auto-x.js - POPRAWIONY moduł automatycznego atakowania przeciwników
 (function() {
     'use strict';
-
-    if (window.inwazjaAutoHealLoaded) {
-        return;
-    }
-    window.inwazjaAutoHealLoaded = true;
-
-    console.log('✅ Auto-heal module loaded');
-
-    // Konfiguracja
-    const CONFIG = window.inwazjaConfig || {
-        autoHealEnabled: false,
-        combatHealEnabled: true,
-        resurrectHealEnabled: true,
-        usePotions: true,
-        usePercentPotions: false,
-        alwaysFullHeal: false,
-        healThreshold: 50
+    
+    // Konfiguracja modułu Auto-X
+    const AUTO_X_CONFIG_KEY = 'inwazjaAutoXConfig_v1';
+    const DEFAULT_AUTO_X_CONFIG = {
+        enabled: false,
+        minLevel: 1,
+        maxLevel: 300,
+        attackAll: true,
+        attackExceptClan: false,
+        fastCombat: false,
+        targetLevel: null
     };
-
-    // Funkcja inicjalizacji GUI
-    window.initializeAutoHealModule = function(contentElement) {
+    
+    function loadAutoXConfig() {
+        try {
+            const raw = localStorage.getItem(AUTO_X_CONFIG_KEY);
+            return raw ? {...DEFAULT_AUTO_X_CONFIG, ...JSON.parse(raw)} : {...DEFAULT_AUTO_X_CONFIG};
+        } catch (e) {
+            console.warn('Błąd wczytywania configu Auto-X', e);
+            return {...DEFAULT_AUTO_X_CONFIG};
+        }
+    }
+    
+    function saveAutoXConfig(config) {
+        try {
+            localStorage.setItem(AUTO_X_CONFIG_KEY, JSON.stringify(config));
+        } catch (e) {
+            console.warn('Błąd zapisu configu Auto-X', e);
+        }
+    }
+    
+    // Główna funkcja inicjalizująca moduł
+    window.initializeAutoXModule = function(contentElement) {
+        const config = loadAutoXConfig();
+        
         contentElement.innerHTML = `
-            <div style="
-                padding: 15px; 
-                height: 100%; 
-                display: flex;
-                flex-direction: column;
-            ">
+            <div style="padding: 20px; height: 100%; overflow-y: auto; box-sizing: border-box;">
                 <!-- Nagłówek -->
-                <div style="margin-bottom: 20px;">
-                    <h2 style="color: #eaeff5; margin: 0 0 5px 0; font-size: 18px; font-weight: bold;">
-                        Auto-heal
-                    </h2>
-                    <div style="opacity: 0.8; font-size: 12px; color: #b0b8c5;">
-                        Skrypt na automatyczne leczenie gracza podczas walki oraz po śmierci.
+                <div style="margin-bottom: 25px;">
+                    <h3 style="margin: 0 0 8px 0; color: #eaeff5; font-size: 20px; font-weight: bold;">Auto-X</h3>
+                    <div style="opacity: 0.8; font-size: 13px; color: #b0b8c5; line-height: 1.4;">
+                        Skrypt na automatyczne atakowanie innych przeciwników wg. przedziału poziomów.
                     </div>
                 </div>
-
-                <!-- Główny status skryptu -->
-                <div style="
-                    margin-bottom: 20px; 
-                    padding: 12px; 
-                    background: rgba(255,255,255,0.03); 
-                    border-radius: 6px;
-                    font-size: 14px;
-                ">
-                    <strong style="color: #eaeff5;">Status skryptu:</strong> 
-                    <span id="heal-status" style="color: ${CONFIG.autoHealEnabled ? '#00ff88' : '#ff4444'}; font-weight: bold;">
-                        ${CONFIG.autoHealEnabled ? 'AKTYWNY' : 'NIEAKTYWNY'}
-                    </span>
+                
+                <!-- Status skryptu - PRZEŁĄCZNIK -->
+                <div style="margin-bottom: 25px; padding: 15px; background: rgba(255,255,255,0.03); border-radius: 8px; border: 1px solid rgba(255,255,255,0.08);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                        <div>
+                            <div style="font-size: 14px; color: #eaeff5;">Status skryptu</div>
+                            <div style="font-size: 11px; opacity: 0.7; color: #b0b8c5;">Włącz/wyłącz automatyczne atakowanie</div>
+                        </div>
+                        <label class="auto-x-switch" style="margin: 0;">
+                            <input type="checkbox" id="auto-x-enabled" ${config.enabled ? 'checked' : ''}>
+                            <span class="auto-x-slider"></span>
+                        </label>
+                    </div>
+                    <div id="auto-x-status" style="font-size: 12px; padding: 6px 10px; border-radius: 6px; background: ${config.enabled ? 'rgba(0,255,136,0.15)' : 'rgba(255,50,50,0.15)'}; color: ${config.enabled ? '#00ff88' : '#ff6b6b'}; text-align: center; border: 1px solid ${config.enabled ? 'rgba(0,255,136,0.3)' : 'rgba(255,50,50,0.3)'};">
+                        ${config.enabled ? '🟢 SKRYPT AKTYWNY' : '🔴 SKRYPT NIEAKTYWNY'}
+                    </div>
                 </div>
-
-                <!-- Sekcja 1: Podstawowe ustawienia leczenia -->
-                <div style="margin-bottom: 20px;">
-                    <div style="font-weight: bold; margin-bottom: 12px; color: #eaeff5; font-size: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px;">
-                        Podstawowe ustawienia
+                
+                <!-- Przedział poziomów -->
+                <div style="margin-bottom: 25px; padding: 15px; background: rgba(255,255,255,0.03); border-radius: 8px; border: 1px solid rgba(255,255,255,0.08);">
+                    <div style="font-size: 14px; color: #eaeff5; margin-bottom: 15px;">Przedział poziomów do atakowania</div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-items: end; margin-bottom: 15px;">
+                        <div>
+                            <label style="display: block; font-size: 11px; opacity: 0.7; margin-bottom: 6px; color: #b0b8c5;">Poziom minimalny</label>
+                            <input type="number" id="auto-x-min-level" min="1" max="300" value="${config.minLevel}" 
+                                style="width: 100%; padding: 10px 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; color: #eaeff5; font-size: 14px; font-weight: bold; text-align: center;">
+                        </div>
+                        <div>
+                            <label style="display: block; font-size: 11px; opacity: 0.7; margin-bottom: 6px; color: #b0b8c5;">Poziom maksymalny</label>
+                            <input type="number" id="auto-x-max-level" min="1" max="300" value="${config.maxLevel}" 
+                                style="width: 100%; padding: 10px 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; color: #eaeff5; font-size: 14px; font-weight: bold; text-align: center;">
+                        </div>
                     </div>
                     
-                    <!-- Leczenie w trakcie walki -->
-                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; padding: 8px; background: rgba(255,255,255,0.02); border-radius: 4px;">
-                        <div>
-                            <strong style="color: #eaeff5; font-size: 13px;">Leczenie w trakcie walki:</strong>
-                            <div style="font-size: 11px; opacity: 0.7; color: #b0b8c5;">Automatyczne leczenie podczas walki</div>
-                        </div>
-                        <div style="display: flex; align-items: center; gap: 10px;">
-                            <span id="combat-heal-status" style="color: ${CONFIG.combatHealEnabled ? '#00ff88' : '#ff4444'}; font-weight: bold; font-size: 13px;">
-                                ${CONFIG.combatHealEnabled ? 'AKTYWNE' : 'NIEAKTYWNE'}
-                            </span>
-                            <label class="switch">
-                                <input type="checkbox" id="combat-heal-toggle" ${CONFIG.combatHealEnabled ? 'checked' : ''}>
-                                <span class="slider"></span>
-                            </label>
-                        </div>
-                    </div>
-
-                    <!-- Leczenie po śmierci -->
-                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; padding: 8px; background: rgba(255,255,255,0.02); border-radius: 4px;">
-                        <div>
-                            <strong style="color: #eaeff5; font-size: 13px;">Leczenie postaci po śmierci:</strong>
-                            <div style="font-size: 11px; opacity: 0.7; color: #b0b8c5;">Automatyczne leczenie po śmierci</div>
-                        </div>
-                        <div style="display: flex; align-items: center; gap: 10px;">
-                            <span id="resurrect-heal-status" style="color: ${CONFIG.resurrectHealEnabled ? '#00ff88' : '#ff4444'}; font-weight: bold; font-size: 13px;">
-                                ${CONFIG.resurrectHealEnabled ? 'AKTYWNE' : 'NIEAKTYWNE'}
-                            </span>
-                            <label class="switch">
-                                <input type="checkbox" id="resurrect-heal-toggle" ${CONFIG.resurrectHealEnabled ? 'checked' : ''}>
-                                <span class="slider"></span>
-                            </label>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Sekcja 2: Opcje leczenia -->
-                <div style="margin-bottom: 20px;">
-                    <div style="font-weight: bold; margin-bottom: 12px; color: #eaeff5; font-size: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px;">
-                        Opcje leczenia
+                    <div style="height: 1px; background: rgba(255,255,255,0.1); margin: 15px 0; position: relative;">
+                        <div style="position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); background: rgba(28,28,28,0.9); padding: 0 10px; font-size: 10px; color: rgba(255,255,255,0.4);">LUB</div>
                     </div>
                     
-                    <!-- Mikstury -->
-                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; padding: 8px; background: rgba(255,255,255,0.02); border-radius: 4px;">
-                        <div>
-                            <strong style="color: #eaeff5; font-size: 13px;">Mikstury:</strong>
-                            <div style="font-size: 11px; opacity: 0.7; color: #b0b8c5;">Używaj zwykłych mikstur leczenia</div>
-                        </div>
-                        <div style="display: flex; align-items: center; gap: 10px;">
-                            <span id="potions-status" style="color: ${CONFIG.usePotions ? '#00ff88' : '#ff4444'}; font-weight: bold; font-size: 13px;">
-                                ${CONFIG.usePotions ? 'AKTYWNE' : 'NIEAKTYWNE'}
-                            </span>
-                            <label class="switch">
-                                <input type="checkbox" id="potions-toggle" ${CONFIG.usePotions ? 'checked' : ''}>
-                                <span class="slider"></span>
-                            </label>
-                        </div>
-                    </div>
-
-                    <!-- Mikstury procentowe -->
-                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; padding: 8px; background: rgba(255,255,255,0.02); border-radius: 4px;">
-                        <div>
-                            <strong style="color: #eaeff5; font-size: 13px;">Mikstury procentowe:</strong>
-                            <div style="font-size: 11px; opacity: 0.7; color: #b0b8c5;">Używaj mikstur % leczenia</div>
-                        </div>
-                        <div style="display: flex; align-items: center; gap: 10px;">
-                            <span id="percent-potions-status" style="color: ${CONFIG.usePercentPotions ? '#00ff88' : '#ff4444'}; font-weight: bold; font-size: 13px;">
-                                ${CONFIG.usePercentPotions ? 'AKTYWNE' : 'NIEAKTYWNE'}
-                            </span>
-                            <label class="switch">
-                                <input type="checkbox" id="percent-potions-toggle" ${CONFIG.usePercentPotions ? 'checked' : ''}>
-                                <span class="slider"></span>
-                            </label>
-                        </div>
-                    </div>
-
-                    <!-- Zawsze lecz do pełna -->
-                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; padding: 8px; background: rgba(255,255,255,0.02); border-radius: 4px;">
-                        <div>
-                            <strong style="color: #eaeff5; font-size: 13px;">Zawsze lecz do pełna:</strong>
-                            <div style="font-size: 11px; opacity: 0.7; color: #b0b8c5;">Nawet gdy zmarnujesz część mikstury</div>
-                        </div>
-                        <div style="display: flex; align-items: center; gap: 10px;">
-                            <span id="full-heal-status" style="color: ${CONFIG.alwaysFullHeal ? '#00ff88' : '#ff4444'}; font-weight: bold; font-size: 13px;">
-                                ${CONFIG.alwaysFullHeal ? 'AKTYWNE' : 'NIEAKTYWNE'}
-                            </span>
-                            <label class="switch">
-                                <input type="checkbox" id="full-heal-toggle" ${CONFIG.alwaysFullHeal ? 'checked' : ''}>
-                                <span class="slider"></span>
-                            </label>
-                        </div>
-                    </div>
-
-                    <!-- Próg leczenia -->
-                    <div style="padding: 10px; background: rgba(255,255,255,0.02); border-radius: 4px;">
-                        <div style="margin-bottom: 8px;">
-                            <strong style="color: #eaeff5; font-size: 13px;">Lecz gdy życie spadnie poniżej:</strong>
-                        </div>
-                        <div style="display: flex; align-items: center; gap: 10px;">
-                            <input type="range" id="heal-threshold" min="1" max="100" value="${CONFIG.healThreshold}" 
-                                   style="flex: 1; height: 6px; background: rgba(255,255,255,0.15); border-radius: 3px; cursor: pointer;">
-                            <span id="threshold-value" style="color: #00ff88; font-weight: bold; min-width: 30px; text-align: center;">${CONFIG.healThreshold}%</span>
-                        </div>
-                        <div style="font-size: 10px; opacity: 0.7; margin-top: 5px; color: #b0b8c5;">
-                            Ustaw próg życia, poniżej którego ma nastąpić automatyczne leczenie
-                        </div>
+                    <div>
+                        <label style="display: block; font-size: 11px; opacity: 0.7; margin-bottom: 6px; color: #b0b8c5;">Konkretny poziom (opcjonalnie)</label>
+                        <input type="number" id="auto-x-target-level" min="1" max="300" value="${config.targetLevel || ''}" placeholder="Wpisz konkretny poziom..." 
+                            style="width: 100%; padding: 10px 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; color: #eaeff5; font-size: 14px; text-align: center;">
                     </div>
                 </div>
-
-                <!-- Przyciski akcji -->
-                <div style="display: flex; gap: 10px; margin-top: auto;">
-                    <button id="save-heal-settings" style="
-                        padding: 10px 20px; 
-                        background: linear-gradient(135deg, #00ff88, #0099ff); 
-                        border: none; 
-                        border-radius: 4px; 
-                        color: #000; 
-                        font-weight: bold; 
-                        cursor: pointer;
-                        font-size: 13px;
-                        flex: 1;
-                    ">
-                        Zapisz ustawienia
-                    </button>
-                    <button id="toggle-auto-heal" style="
-                        padding: 10px 20px; 
-                        background: ${CONFIG.autoHealEnabled ? '#ff4444' : '#00ff88'}; 
-                        border: none; 
-                        border-radius: 4px; 
-                        color: #000; 
-                        font-weight: bold; 
-                        cursor: pointer;
-                        font-size: 13px;
-                        flex: 1;
-                    ">
-                        ${CONFIG.autoHealEnabled ? 'Wyłącz auto-heal' : 'Włącz auto-heal'}
-                    </button>
+                
+                <!-- Ustawienia zaawansowane -->
+                <div style="margin-bottom: 20px; padding: 15px; background: rgba(255,255,255,0.03); border-radius: 8px; border: 1px solid rgba(255,255,255,0.08);">
+                    <div style="font-size: 14px; color: #eaeff5; margin-bottom: 15px;">Ustawienia zaawansowane</div>
+                    
+                    <!-- Atakuj wszystkich -->
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding: 12px; background: rgba(255,255,255,0.02); border-radius: 6px; border: 1px solid rgba(255,255,255,0.05);">
+                        <div style="flex: 1;">
+                            <div style="font-size: 13px; color: #eaeff5; margin-bottom: 4px;">Atakuj wszystkich</div>
+                            <div style="font-size: 11px; opacity: 0.7; color: #b0b8c5; line-height: 1.3;">Atakuj każdego gracza w określonym przedziale poziomów</div>
+                        </div>
+                        <label class="auto-x-switch">
+                            <input type="checkbox" id="auto-x-attack-all" ${config.attackAll ? 'checked' : ''}>
+                            <span class="auto-x-slider"></span>
+                        </label>
+                    </div>
+                    
+                    <!-- Atakuj oprócz klanowiczów -->
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding: 12px; background: rgba(255,255,255,0.02); border-radius: 6px; border: 1px solid rgba(255,255,255,0.05);">
+                        <div style="flex: 1;">
+                            <div style="font-size: 13px; color: #eaeff5; margin-bottom: 4px;">Atakuj wszystkich oprócz klanowiczów</div>
+                            <div style="font-size: 11px; opacity: 0.7; color: #b0b8c5; line-height: 1.3;">Automatycznie pomijaj członków własnego klanu</div>
+                        </div>
+                        <label class="auto-x-switch">
+                            <input type="checkbox" id="auto-x-attack-except-clan" ${config.attackExceptClan ? 'checked' : ''}>
+                            <span class="auto-x-slider"></span>
+                        </label>
+                    </div>
+                    
+                    <!-- Pomijaj walkę turową -->
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: rgba(255,255,255,0.02); border-radius: 6px; border: 1px solid rgba(255,255,255,0.05);">
+                        <div style="flex: 1;">
+                            <div style="font-size: 13px; color: #eaeff5; margin-bottom: 4px;">Pomijaj walkę turową</div>
+                            <div style="font-size: 11px; opacity: 0.7; color: #b0b8c5; line-height: 1.3;">Zmniejsz opóźnienia między akcjami w walce</div>
+                        </div>
+                        <label class="auto-x-switch">
+                            <input type="checkbox" id="auto-x-fast-combat" ${config.fastCombat ? 'checked' : ''}>
+                            <span class="auto-x-slider"></span>
+                        </label>
+                    </div>
+                </div>
+                
+                <!-- Informacje -->
+                <div style="padding: 12px; background: rgba(255,255,255,0.02); border-radius: 6px; border: 1px solid rgba(255,255,255,0.05);">
+                    <div style="font-size: 10px; color: rgba(255,255,255,0.4); text-align: center; line-height: 1.4;">
+                        ⚠️ Używaj odpowiedzialnie. Automatyczne atakowanie może naruszać regulamin gry.
+                    </div>
                 </div>
             </div>
-
+            
             <style>
                 /* Style dla przełączników */
-                .switch {
+                .auto-x-switch {
                     position: relative;
                     display: inline-block;
-                    width: 40px;
-                    height: 20px;
+                    width: 50px;
+                    height: 26px;
+                    flex-shrink: 0;
+                    margin-left: 15px;
                 }
-
-                .switch input {
+                
+                .auto-x-switch input {
                     opacity: 0;
                     width: 0;
                     height: 0;
                 }
-
-                .slider {
+                
+                .auto-x-slider {
                     position: absolute;
                     cursor: pointer;
                     top: 0;
                     left: 0;
                     right: 0;
                     bottom: 0;
-                    background-color: #ff4444;
+                    background-color: rgba(255,255,255,0.15);
                     transition: .3s;
-                    border-radius: 20px;
+                    border-radius: 26px;
+                    border: 1px solid rgba(255,255,255,0.2);
                 }
-
-                .slider:before {
+                
+                .auto-x-slider:before {
                     position: absolute;
                     content: "";
-                    height: 16px;
-                    width: 16px;
+                    height: 20px;
+                    width: 20px;
                     left: 2px;
                     bottom: 2px;
                     background-color: white;
                     transition: .3s;
                     border-radius: 50%;
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
                 }
-
-                input:checked + .slider {
-                    background-color: #00ff88;
+                
+                input:checked + .auto-x-slider {
+                    background: linear-gradient(135deg, #00ff88, #0099ff);
+                    border-color: rgba(0,255,136,0.5);
                 }
-
-                input:checked + .slider:before {
-                    transform: translateX(20px);
+                
+                input:checked + .auto-x-slider:before {
+                    transform: translateX(24px);
                 }
-
-                /* Styl dla suwaka progu leczenia */
-                #heal-threshold::-webkit-slider-thumb {
-                    appearance: none;
-                    width: 18px;
-                    height: 18px;
-                    border-radius: 50%;
-                    background: #000000;
-                    border: 2px solid rgba(255,255,255,0.3);
-                    cursor: pointer;
-                    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+                
+                /* Style dla input number */
+                input[type="number"]::-webkit-outer-spin-button,
+                input[type="number"]::-webkit-inner-spin-button {
+                    -webkit-appearance: none;
+                    margin: 0;
                 }
-
-                #heal-threshold::-webkit-slider-track {
-                    background: rgba(255,255,255,0.15);
-                    border-radius: 3px;
-                    height: 6px;
-                }
-
-                /* Przyciski hover */
-                button:hover {
-                    opacity: 0.9;
-                    transform: translateY(-1px);
+                
+                input[type="number"] {
+                    -moz-appearance: textfield;
                     transition: all 0.2s ease;
+                    box-sizing: border-box;
+                }
+                
+                input[type="number"]:focus {
+                    outline: none;
+                    border-color: rgba(0, 255, 136, 0.4);
+                    background: rgba(255,255,255,0.08);
+                    box-shadow: 0 0 0 2px rgba(0, 255, 136, 0.1);
+                }
+                
+                input[type="number"]:hover {
+                    border-color: rgba(255,255,255,0.2);
+                }
+                
+                /* Usunięcie scrollbara */
+                #inwazja-content::-webkit-scrollbar {
+                    width: 0px;
+                    background: transparent;
+                }
+                
+                /* Poprawki wizualne */
+                #inwazja-content {
+                    scrollbar-width: none;
+                    -ms-overflow-style: none;
+                }
+                
+                #inwazja-content::-webkit-scrollbar-track {
+                    background: transparent;
+                }
+                
+                #inwazja-content::-webkit-scrollbar-thumb {
+                    background: transparent;
                 }
             </style>
         `;
-
-        // Inicjalizacja event listeners
-        initializeAutoHeal();
+        
+        // Usunięcie scrollbara poprzez CSS
+        const style = document.createElement('style');
+        style.textContent = `
+            #inwazja-content {
+                scrollbar-width: none !important;
+                -ms-overflow-style: none !important;
+            }
+            #inwazja-content::-webkit-scrollbar {
+                display: none !important;
+                width: 0 !important;
+                height: 0 !important;
+            }
+        `;
+        document.head.appendChild(style);
+        
+        // Inicjalizacja event listenerów
+        initializeAutoXEventListeners(config);
     };
-
-    function initializeAutoHeal() {
-        // Główny przełącznik auto-heal
-        document.getElementById('toggle-auto-heal')?.addEventListener('click', function() {
-            CONFIG.autoHealEnabled = !CONFIG.autoHealEnabled;
+    
+    function initializeAutoXEventListeners(config) {
+        // Przełącznik aktywności
+        const enabledCheckbox = document.getElementById('auto-x-enabled');
+        const statusElement = document.getElementById('auto-x-status');
+        
+        enabledCheckbox.addEventListener('change', function(e) {
+            config.enabled = e.target.checked;
             
-            const statusElement = document.getElementById('heal-status');
-            if (statusElement) {
-                statusElement.textContent = CONFIG.autoHealEnabled ? 'AKTYWNY' : 'NIEAKTYWNY';
-                statusElement.style.color = CONFIG.autoHealEnabled ? '#00ff88' : '#ff4444';
+            statusElement.textContent = config.enabled ? '🟢 SKRYPT AKTYWNY' : '🔴 SKRYPT NIEAKTYWNY';
+            statusElement.style.background = config.enabled ? 'rgba(0,255,136,0.15)' : 'rgba(255,50,50,0.15)';
+            statusElement.style.color = config.enabled ? '#00ff88' : '#ff6b6b';
+            statusElement.style.borderColor = config.enabled ? 'rgba(0,255,136,0.3)' : 'rgba(255,50,50,0.3)';
+            
+            saveAutoXConfig(config);
+            updateAutoXBehavior(config);
+        });
+        
+        // Poziomy
+        document.getElementById('auto-x-min-level').addEventListener('change', function(e) {
+            let value = parseInt(e.target.value) || 1;
+            value = Math.max(1, Math.min(300, value));
+            
+            const maxLevel = parseInt(document.getElementById('auto-x-max-level').value) || 300;
+            if (value > maxLevel) {
+                value = maxLevel;
+                e.target.value = value;
             }
             
-            this.textContent = CONFIG.autoHealEnabled ? 'Wyłącz auto-heal' : 'Włącz auto-heal';
-            this.style.background = CONFIG.autoHealEnabled ? '#ff4444' : '#00ff88';
-            
-            window.inwazjaConfig.autoHealEnabled = CONFIG.autoHealEnabled;
-            window.inwazjaSaveConfig(window.inwazjaConfig);
+            config.minLevel = value;
+            saveAutoXConfig(config);
+            updateAutoXBehavior(config);
         });
-
-        // Przełącznik leczenia w walce
-        setupToggle('combat-heal-toggle', 'combat-heal-status', 'combatHealEnabled');
         
-        // Przełącznik leczenia po śmierci
-        setupToggle('resurrect-heal-toggle', 'resurrect-heal-status', 'resurrectHealEnabled');
+        document.getElementById('auto-x-max-level').addEventListener('change', function(e) {
+            let value = parseInt(e.target.value) || 300;
+            value = Math.max(1, Math.min(300, value));
+            
+            const minLevel = parseInt(document.getElementById('auto-x-min-level').value) || 1;
+            if (value < minLevel) {
+                value = minLevel;
+                e.target.value = value;
+            }
+            
+            config.maxLevel = value;
+            saveAutoXConfig(config);
+            updateAutoXBehavior(config);
+        });
         
-        // Przełącznik mikstur
-        setupToggle('potions-toggle', 'potions-status', 'usePotions');
+        document.getElementById('auto-x-target-level').addEventListener('change', function(e) {
+            let value = parseInt(e.target.value) || null;
+            if (value !== null) {
+                value = Math.max(1, Math.min(300, value));
+            }
+            config.targetLevel = value;
+            e.target.value = value || '';
+            saveAutoXConfig(config);
+            updateAutoXBehavior(config);
+        });
         
-        // Przełącznik mikstur procentowych
-        setupToggle('percent-potions-toggle', 'percent-potions-status', 'usePercentPotions');
+        // Przełączniki
+        document.getElementById('auto-x-attack-all').addEventListener('change', function(e) {
+            config.attackAll = e.target.checked;
+            saveAutoXConfig(config);
+            updateAutoXBehavior(config);
+        });
         
-        // Przełącznik leczenia do pełna
-        setupToggle('full-heal-toggle', 'full-heal-status', 'alwaysFullHeal');
-
-        // Suwak progu leczenia
-        const thresholdSlider = document.getElementById('heal-threshold');
-        const thresholdValue = document.getElementById('threshold-value');
+        document.getElementById('auto-x-attack-except-clan').addEventListener('change', function(e) {
+            config.attackExceptClan = e.target.checked;
+            saveAutoXConfig(config);
+            updateAutoXBehavior(config);
+        });
         
-        if (thresholdSlider && thresholdValue) {
-            thresholdSlider.addEventListener('input', function() {
-                const value = this.value;
-                thresholdValue.textContent = value + '%';
-                CONFIG.healThreshold = parseInt(value);
+        document.getElementById('auto-x-fast-combat').addEventListener('change', function(e) {
+            config.fastCombat = e.target.checked;
+            saveAutoXConfig(config);
+            updateAutoXBehavior(config);
+        });
+        
+        // Walidacja przy wpisywaniu
+        document.querySelectorAll('input[type="number"]').forEach(input => {
+            input.addEventListener('input', function(e) {
+                let value = parseInt(e.target.value);
+                if (isNaN(value)) return;
                 
-                window.inwazjaConfig.healThreshold = CONFIG.healThreshold;
-                window.inwazjaSaveConfig(window.inwazjaConfig);
+                if (value < 1) e.target.value = 1;
+                if (value > 300) e.target.value = 300;
             });
-        }
-
-        // Zapisywanie ustawień
-        document.getElementById('save-heal-settings')?.addEventListener('click', function() {
-            window.inwazjaSaveConfig(window.inwazjaConfig);
-            
-            const originalText = this.textContent;
-            this.textContent = 'Zapisano.';
-            this.style.background = '#00ff88';
-            setTimeout(() => {
-                this.textContent = originalText;
-                this.style.background = 'linear-gradient(135deg, #00ff88, #0099ff)';
-            }, 1000);
         });
-
-        function setupToggle(toggleId, statusId, configKey) {
-            const toggle = document.getElementById(toggleId);
-            const status = document.getElementById(statusId);
-            
-            if (toggle && status) {
-                toggle.addEventListener('change', function() {
-                    CONFIG[configKey] = this.checked;
-                    status.textContent = this.checked ? 'AKTYWNE' : 'NIEAKTYWNE';
-                    status.style.color = this.checked ? '#00ff88' : '#ff4444';
-                    
-                    window.inwazjaConfig[configKey] = CONFIG[configKey];
-                    window.inwazjaSaveConfig(window.inwazjaConfig);
-                });
-            }
-        }
     }
-
+    
+    function updateAutoXBehavior(config) {
+        if (!config.enabled) {
+            console.log('Auto-X: Skrypt wyłączony');
+            return;
+        }
+        
+        console.log('Auto-X: Konfiguracja zaktualizowana', config);
+        
+        // Główna logika automatycznego atakowania
+        startAutoXEngine(config);
+    }
+    
+    function startAutoXEngine(config) {
+        console.log('Auto-X: Rozpoczynanie automatycznego atakowania z konfiguracją:', config);
+        
+        if (config.targetLevel) {
+            console.log(`Auto-X: 🎯 Celowanie na poziom ${config.targetLevel}`);
+        } else {
+            console.log(`Auto-X: 🎯 Celowanie na przedział ${config.minLevel}-${config.maxLevel}`);
+        }
+        
+        if (config.attackExceptClan) {
+            console.log('Auto-X: 👥 Pomijanie klanowiczów');
+        }
+        
+        if (config.fastCombat) {
+            console.log('Auto-X: ⚡ Pomijanie walki turowej');
+        }
+        
+        // Tutaj będzie główna logika gry - placeholder
+        simulateAutoXBehavior(config);
+    }
+    
+    function simulateAutoXBehavior(config) {
+        // Symulacja działania - do zastąpienia rzeczywistą logiką gry
+        setInterval(() => {
+            if (!config.enabled) return;
+            
+            // Symulacja znalezienia celu
+            const randomLevel = Math.floor(Math.random() * 300) + 1;
+            if ((config.targetLevel && randomLevel === config.targetLevel) || 
+                (!config.targetLevel && randomLevel >= config.minLevel && randomLevel <= config.maxLevel)) {
+                console.log(`Auto-X: 🎯 Znaleziono cel poziom ${randomLevel} - atakowanie...`);
+            }
+        }, 5000);
+    }
+    
+    // Eksport funkcji dla core-ui
+    console.log('✅ Auto-X Module: POPRAWIONY moduł załadowany i gotowy do użycia');
+    
 })();
